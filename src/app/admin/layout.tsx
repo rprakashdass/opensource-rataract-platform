@@ -56,12 +56,6 @@ export default function AdminLayout({
               Events
             </Link>
             <Link
-              href={`${ROUTES.ADMIN}/projects`}
-              className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
-            >
-              Projects
-            </Link>
-            <Link
               href={`${ROUTES.ADMIN}/gallery`}
               className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
             >

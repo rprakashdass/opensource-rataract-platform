@@ -11,7 +11,6 @@ export const ROUTES = {
   HOME: "/",
   ABOUT: "/about",
   BOARD: "/board",
-  PROJECTS: "/projects",
   EVENTS: "/events",
   GALLERY: "/gallery",
   LOGIN: "/auth/login",

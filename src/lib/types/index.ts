@@ -117,7 +117,6 @@ export type GalleryItem = {
   imageUrl: string;
   thumbnailUrl?: string | null;
   eventId?: string | null;
-  projectId?: string | null;
   category?: string | null;
   order: number;
   createdAt: Date;

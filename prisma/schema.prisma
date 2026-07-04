@@ -50,7 +50,6 @@ model Club {
   // Relations
   members       Member[]
   boardMembers  BoardMember[]
-  projects      Project[]
   events        Event[]
   galleryItems  GalleryItem[]
 }
@@ -168,7 +167,6 @@ model Member {
   // Relations
   boardMembership BoardMember?
   eventAttendees EventAttendee[]
-  projectMembers ProjectMember[]
 }
 
 model BoardMember {
@@ -250,54 +248,6 @@ model EventAttendee {
 }
 
 // ============================================================================
-// PROJECTS
-// ============================================================================
-
-model Project {
-  id            String   @id @default(cuid())
-  clubId        String
-  club          Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-
-  title         String
-  slug          String
-  description   String?
-
-  status        String   @default("planning") // planning, ongoing, completed, archived
-  category      String? // "community", "environment", "health", etc.
-
-  startDate     DateTime
-  endDate       DateTime?
-
-  imageUrl      String?
-
-  impact        String? // Description of the impact
-  beneficiaries Int?    // Number of people benefited
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  members       ProjectMember[]
-  galleryItems  GalleryItem[]
-
-  @@unique([clubId, slug])
-}
-
-model ProjectMember {
-  id            String   @id @default(cuid())
-  projectId     String
-  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  memberId      String
-  member        Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
-  role          String? // Lead, Coordinator, Volunteer, etc.
-  joinedAt      DateTime @default(now())
-
-  @@unique([projectId, memberId])
-}
-
-// ============================================================================
 // GALLERY
 // ============================================================================
 
@@ -316,10 +266,7 @@ model GalleryItem {
   eventId       String?
   event         Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
-  projectId     String?
-  project       Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-
-  category      String? // "event", "project", "achievement", "news", etc.
+  category      String? // "event", "achievement", "news", etc.
 
   order         Int      @default(0) // Display order
 

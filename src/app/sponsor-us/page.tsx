@@ -42,31 +42,9 @@ export default function SponsorPage() {
   };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch("/api/admin/projects");
-        const data = await res.json();
-        if (data && data.length > 0) {
-          const mapped = data.map((p: any) => ({
-            id: p.id,
-            title: p.title,
-            slug: p.slug,
-            description: p.description || "",
-            coverImage: p.imageUrl || "",
-          }));
-          setProjects(mapped);
-          setError("");
-        } else {
-          setProjects([]);
-          setError("No active campaigns are currently available.");
-        }
-      } catch (err) {
-        console.error("Failed fetching sponsor projects:", err);
-        setProjects([]);
-        setError("Unable to load campaigns right now.");
-      }
-    };
-    fetchProjects();
+    // Projects have been removed - campaigns are now event-based
+    setProjects([]);
+    setError("Campaigns are now managed through our Events system. Check the Events page!");
   }, []);
 
   const impact = getImpact(donationAmount);
