@@ -1,104 +1,14 @@
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import HeroSection from "./_components/HeroSection";
 import PartnersSection from "./_components/PartnersSection";
-import { Separator } from "@/components/ui/separator";
 import AboutSection from "./_components/AboutSection";
 import EventsSection from "./_components/EventsSection";
 import BoardCouncil from "./_components/BoardCouncil";
-import { currentYear } from "@/lib/utils";
 import { allPositions, MemberType, Position } from "@/utils/positions";
 import { prisma } from "@/lib/prisma";
 
-// Static mock fallback in case Prisma database is not seeded/configured yet
-const mockMembers = [
-  {
-    id: "m1",
-    name: "Aditya Vardhan",
-    imageUrl: "/user.png",
-    roles: [{
-      id: "r1",
-      memberType: MemberType.COUNCIL,
-      position: Position.PRESIDENT,
-      yearId: "y1",
-      memberId: "m1"
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: "m2",
-    name: "Rohan Gupta",
-    imageUrl: "/user.png",
-    roles: [{
-      id: "r2",
-      memberType: MemberType.COUNCIL,
-      position: Position.SECRETARY,
-      yearId: "y1",
-      memberId: "m2"
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: "m3",
-    name: "Sneha Kapoor",
-    imageUrl: "/user.png",
-    roles: [{
-      id: "r3",
-      memberType: MemberType.COUNCIL,
-      position: Position.VICE_PRESIDENT,
-      yearId: "y1",
-      memberId: "m3"
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: "m4",
-    name: "Arjun Malhotra",
-    imageUrl: "/user.png",
-    roles: [{
-      id: "r4",
-      memberType: MemberType.COUNCIL,
-      position: Position.SERGEANT_AT_ARMS,
-      yearId: "y1",
-      memberId: "m4"
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: "m5",
-    name: "Nisha Singhal",
-    imageUrl: "/user.png",
-    roles: [{
-      id: "r5",
-      memberType: MemberType.COUNCIL,
-      position: Position.TREASURER,
-      yearId: "y1",
-      memberId: "m5"
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: "m6",
-    name: "Vikram Sen",
-    imageUrl: "/user.png",
-    roles: [{
-      id: "r6",
-      memberType: MemberType.COUNCIL,
-      position: Position.PUBLIC_RELATION_OFFICER,
-      yearId: "y1",
-      memberId: "m6"
-    }],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
 export default async function Home() {
-  let members = mockMembers;
+  let members: any[] = [];
   try {
     const dbMembers = await prisma.member.findMany({
       include: {
@@ -123,7 +33,7 @@ export default async function Home() {
       }));
     }
   } catch (error) {
-    console.error("Prisma query failed on Home page, using fallback:", error);
+    console.error("Prisma query failed on Home page:", error);
   }
 
   // Sort members by their position and type
@@ -171,7 +81,13 @@ export default async function Home() {
       </div>
       <div>
         <MaxWidthWrapper>
-          <BoardCouncil members={sortedMembers} />
+          {sortedMembers.length > 0 ? (
+            <BoardCouncil members={sortedMembers} />
+          ) : (
+            <div className="rounded-3xl border border-dashed border-primary/20 bg-card/80 p-8 text-center text-sm text-muted-foreground">
+              Leadership details will appear here once members are added to the database.
+            </div>
+          )}
         </MaxWidthWrapper>
       </div>
     </main>
