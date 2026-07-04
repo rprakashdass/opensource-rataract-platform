@@ -52,6 +52,8 @@ export async function POST(req: Request) {
         email: data.email,
         description: data.description,
         tenureYear: data.tenureYear,
+        logoUrl: data.logoUrl,
+        bannerUrl: data.bannerUrl,
       },
     });
     return NextResponse.json(updated);

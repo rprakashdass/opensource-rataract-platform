@@ -68,7 +68,7 @@ export default async function EventsPage() {
   const events = dbEvents.length > 0 ? dbEvents : mockEvents;
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
+    <div className="min-h-screen bg-background pt-32 pb-16">
       <MaxWidthWrapper>
         <div className="space-y-12">
           {/* Header */}

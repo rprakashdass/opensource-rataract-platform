@@ -77,20 +77,14 @@ export default function BoardCouncil({ members }: { members: Member[] }) {
         {/* Right Side: Interactive Selection Dashboard */}
         <div className="lg:col-span-3 grid grid-cols-2 gap-4">
           {displayMembers.map((member, idx) => {
-            const isActive = idx === activeIdx;
+            if (idx === activeIdx) return null; // Hide active member to prevent duplicate showing on screen
             return (
               <button
                 key={member.id}
                 onClick={() => setActiveIdx(idx)}
-                className={`p-5 rounded-2xl border text-left flex items-center gap-4 transition-all duration-300 cursor-pointer ${
-                  isActive
-                    ? "bg-primary/5 border-primary shadow-md translate-x-1"
-                    : "bg-card border-primary/10 hover:border-primary/20 hover:bg-primary/5"
-                }`}
+                className="p-5 rounded-2xl border text-left flex items-center gap-4 transition-all duration-300 cursor-pointer bg-card border-primary/10 hover:border-primary/20 hover:bg-primary/5"
               >
-                <div className={`relative w-12 h-12 rounded-full overflow-hidden border-2 flex-shrink-0 ${
-                  isActive ? "border-primary" : "border-primary/20"
-                }`}>
+                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20 flex-shrink-0">
                   <Image
                     src={member.imageUrl || "/user.png"}
                     alt={member.name}
@@ -100,7 +94,7 @@ export default function BoardCouncil({ members }: { members: Member[] }) {
                   />
                 </div>
                 <div className="overflow-hidden">
-                  <h4 className={`font-bold text-sm truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                  <h4 className="font-bold text-sm truncate text-foreground">
                     {member.name}
                   </h4>
                   <p className="text-[10px] text-muted-foreground truncate uppercase tracking-wider font-semibold mt-0.5">

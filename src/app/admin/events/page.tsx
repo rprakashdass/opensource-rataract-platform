@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Trash2, Plus, Calendar, Image as ImageIcon } from "lucide-react";
+import { Trash2, Plus, Calendar, Image as ImageIcon, Pencil, X } from "lucide-react";
 
 interface Event {
   id: string;
@@ -10,6 +10,7 @@ interface Event {
   description?: string | null;
   location?: string | null;
   startDate: string;
+  endDate?: string | null;
   status: string;
   imageUrl?: string | null;
 }
@@ -19,6 +20,7 @@ export default function EventsAdmin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
   const [title, setTitle] = useState("");
@@ -49,12 +51,44 @@ export default function EventsAdmin() {
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
-    setSlug(
-      val
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^\w\-]+/g, "")
-    );
+    if (!editingId) {
+      setSlug(
+        val
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^\w\-]+/g, "")
+      );
+    }
+  };
+
+  const handleEditClick = (event: Event) => {
+    setEditingId(event.id);
+    setTitle(event.title || "");
+    setSlug(event.slug || "");
+    setDescription(event.description || "");
+    setLocation(event.location || "");
+    
+    // datetime-local input requires YYYY-MM-DDTHH:MM format
+    const sDate = event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "";
+    setStartDate(sDate);
+    
+    const eDate = event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "";
+    setEndDate(eDate);
+    
+    setImageUrl(event.imageUrl || "");
+    setStatus(event.status || "upcoming");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setTitle("");
+    setSlug("");
+    setDescription("");
+    setLocation("");
+    setStartDate("");
+    setEndDate("");
+    setImageUrl("");
+    setStatus("upcoming");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,10 +97,13 @@ export default function EventsAdmin() {
     setError("");
 
     try {
-      const res = await fetch("/api/admin/events", {
-        method: "POST",
+      const url = "/api/admin/events";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: editingId,
           title,
           slug,
           description,
@@ -81,17 +118,7 @@ export default function EventsAdmin() {
       const result = await res.json();
       if (result.error) throw new Error(result.error);
 
-      // Reset form
-      setTitle("");
-      setSlug("");
-      setDescription("");
-      setLocation("");
-      setStartDate("");
-      setEndDate("");
-      setImageUrl("");
-      setStatus("upcoming");
-
-      // Refresh list
+      handleCancelEdit();
       fetchEvents();
     } catch (err: any) {
       setError(err.message);
@@ -138,7 +165,7 @@ export default function EventsAdmin() {
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
           <div className="flex items-center gap-2 mb-6 text-pink-700 font-semibold border-b pb-2">
             <Plus className="h-5 w-5" />
-            <span>Create Event</span>
+            <span>{editingId ? "Edit Event" : "Create Event"}</span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -214,14 +241,34 @@ export default function EventsAdmin() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
-                placeholder="Unsplash image URL..."
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  placeholder="Paste an Image URL..."
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Or upload:</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setImageUrl(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 cursor-pointer"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
@@ -235,13 +282,24 @@ export default function EventsAdmin() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-pink-600 hover:bg-pink-700 text-white font-medium py-2 rounded text-sm transition disabled:bg-pink-400 cursor-pointer flex items-center justify-center gap-2"
-            >
-              {submitting ? "Uploading..." : "Save Event"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-pink-600 hover:bg-pink-700 text-white font-medium py-2 rounded text-sm transition disabled:bg-pink-400 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {submitting ? "Processing..." : editingId ? "Update Event" : "Save Event"}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded text-sm border border-gray-300 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -292,10 +350,18 @@ export default function EventsAdmin() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {event.location || "N/A"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                        <button
+                          onClick={() => handleEditClick(event)}
+                          className="text-pink-600 hover:text-pink-955 cursor-pointer"
+                          title="Edit Event"
+                        >
+                          <Pencil className="h-5 w-5 inline" />
+                        </button>
                         <button
                           onClick={() => handleDelete(event.id)}
                           className="text-red-600 hover:text-red-900 cursor-pointer"
+                          title="Delete Event"
                         >
                           <Trash2 className="h-5 w-5 inline" />
                         </button>

@@ -151,23 +151,20 @@ export const domains: Domain[] = [
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-32 pb-16">
       <MaxWidthWrapper className="py-2 space-y-2 lg:py-6 lg:space-y-6">
         <motion.div variants={fadeIn}>
-          <Card className="border-none bg-background/50 shadow-none">
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-                About Us
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <p className="mx-auto max-w-3xl text-muted-foreground">
-                At our Rotaract Club, we strive to create a better world
-                through volunteerism, community service, and professional
-                development.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="max-w-2xl space-y-4 mb-8">
+            <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
+              Who We Are
+            </span>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+              About Us
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              At our Rotaract Club, we strive to create a better world through volunteerism, community service, and professional development.
+            </p>
+          </div>
         </motion.div>
 
         <motion.div
