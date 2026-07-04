@@ -37,7 +37,7 @@ export async function GET() {
     const club = await getOrCreateDefaultClub();
     return NextResponse.json(club);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown errors";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
