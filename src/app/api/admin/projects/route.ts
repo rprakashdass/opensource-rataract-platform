@@ -2,29 +2,53 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "../club/route";
 
+function validateProjectPayload(data: any) {
+  if (typeof data.title !== "string" || !data.title.trim()) {
+    throw new Error("Project title is required.");
+  }
+  if (typeof data.slug !== "string" || !data.slug.trim()) {
+    throw new Error("Project slug is required.");
+  }
+  if (typeof data.startDate !== "string" || !data.startDate.trim()) {
+    throw new Error("Project start date is required.");
+  }
+
+  return {
+    title: data.title.trim(),
+    slug: data.slug.trim(),
+    description: typeof data.description === "string" ? data.description.trim() : null,
+    startDate: new Date(data.startDate),
+    endDate: typeof data.endDate === "string" && data.endDate.trim() ? new Date(data.endDate) : null,
+    imageUrl: typeof data.imageUrl === "string" && data.imageUrl.trim() ? data.imageUrl.trim() : null,
+    status: typeof data.status === "string" && data.status.trim() ? data.status.trim() : "planning",
+    category: typeof data.category === "string" && data.category.trim() ? data.category.trim() : "Community",
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+    const payload = validateProjectPayload(data);
     const club = await getOrCreateDefaultClub();
 
     const project = await prisma.project.create({
       data: {
         clubId: club.id,
-        title: data.title,
-        slug: data.slug || data.title.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]+/g, ""),
-        description: data.description,
-        startDate: new Date(data.startDate || Date.now()),
-        endDate: data.endDate ? new Date(data.endDate) : null,
-        imageUrl: data.imageUrl || "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800",
-        status: data.status || "planning",
-        category: data.category || "Community",
+        title: payload.title,
+        slug: payload.slug,
+        description: payload.description,
+        startDate: payload.startDate,
+        endDate: payload.endDate,
+        imageUrl: payload.imageUrl,
+        status: payload.status,
+        category: payload.category,
       },
     });
 
     return NextResponse.json(project);
-  } catch (error: any) {
-    console.error("Prisma error in admin projects API:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
 
@@ -36,8 +60,9 @@ export async function GET() {
       },
     });
     return NextResponse.json(projects);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -50,7 +75,8 @@ export async function DELETE(req: Request) {
     }
     await prisma.project.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
