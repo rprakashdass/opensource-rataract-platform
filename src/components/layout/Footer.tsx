@@ -10,18 +10,14 @@ const footerLinks = {
   about: [
     { name: "Rotaract", href: "https://www.rotary.org/en" },
     { name: "Rotary", href: "https://www.rotary.org/en" },
-    { name: "Club History", href: "/our-archive" },
     { name: "Our Events", href: "/events" },
   ],
   team: [
     { name: "Team Page", href: "/team" },
     { name: "Board Council", href: "/team/#boardCouncil" },
     { name: "Board of Directors", href: "/team/#boardOfDirectors" },
-    { name: "Past Tenures", href: "/our-archive" },
   ],
-  documents: [
-    { name: "Newsletters", href: "/newsletter" },
-  ],
+  documents: [],
 };
 
 export default function Footer() {
@@ -81,7 +77,7 @@ export default function Footer() {
             </div>
 
             {/* Links Block */}
-            <div className="lg:col-span-4 grid gap-8 sm:grid-cols-3">
+            <div className="lg:col-span-4 grid gap-8 sm:grid-cols-2">
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">About</h3>
                 <ul className="space-y-3">
@@ -101,21 +97,6 @@ export default function Footer() {
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Team</h3>
                 <ul className="space-y-3">
                   {footerLinks.team.map((link) => (
-                    <li key={link.name}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
-                      >
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Documents</h3>
-                <ul className="space-y-3">
-                  {footerLinks.documents.map((link) => (
                     <li key={link.name}>
                       <Link
                         href={link.href}

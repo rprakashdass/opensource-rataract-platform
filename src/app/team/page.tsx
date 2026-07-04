@@ -84,7 +84,7 @@ export default async function TeamPage() {
   const finalMembers = dbMembers.length > 0 ? dbMembers : [...mockCouncil, ...mockDirectors];
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
+    <div className="min-h-screen bg-background pt-32 pb-16">
       <MaxWidthWrapper>
         <div className="space-y-12">
           {/* Header section */}

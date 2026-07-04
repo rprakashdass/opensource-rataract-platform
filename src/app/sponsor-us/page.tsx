@@ -82,11 +82,11 @@ export default function SponsorPage() {
   const impact = getImpact(donationAmount);
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
+    <div className="min-h-screen bg-background pt-32 pb-16">
       <MaxWidthWrapper>
         <div className="space-y-16">
           {/* Header Hero */}
-          <div className="text-center max-w-2xl mx-auto space-y-4">
+          <div className="max-w-2xl space-y-4">
             <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
               Sponsor Our Campaigns
             </span>
@@ -99,7 +99,7 @@ export default function SponsorPage() {
           </div>
 
           {/* Interactive Calculator and Donation Tier Columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
             {/* Impact Calculator Widget (Left) */}
             {/* Impact Calculator Widget (Left) */}
             <div className="lg:col-span-3 bg-card border border-primary/10 p-8 rounded-3xl space-y-6">

@@ -80,3 +80,32 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const data = await req.json();
+    const { id } = data;
+    if (!id) {
+      return NextResponse.json({ error: "Id is required" }, { status: 400 });
+    }
+
+    const updated = await prisma.project.update({
+      where: { id },
+      data: {
+        title: data.title,
+        slug: data.slug,
+        description: data.description,
+        startDate: new Date(data.startDate),
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        imageUrl: data.imageUrl,
+        status: data.status,
+        category: data.category,
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    console.error("Prisma error in admin projects PUT API:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Trash2, Plus, Users, UserPlus } from "lucide-react";
+import { Trash2, Plus, Users, UserPlus, Pencil, X } from "lucide-react";
 
 interface Member {
   id: string;
@@ -15,7 +15,9 @@ interface Member {
     avatar?: string | null;
   } | null;
   boardMembership?: {
+    id?: string | null;
     position?: string | null;
+    order?: number | null;
   } | null;
 }
 
@@ -24,6 +26,7 @@ export default function MembersAdmin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
   const [name, setName] = useState("");
@@ -35,6 +38,7 @@ export default function MembersAdmin() {
   const [phone, setPhone] = useState("");
   const [profession, setProfession] = useState("");
   const [bio, setBio] = useState("");
+  const [avatar, setAvatar] = useState("");
 
   const fetchMembers = async () => {
     try {
@@ -53,16 +57,47 @@ export default function MembersAdmin() {
     fetchMembers();
   }, []);
 
+  const handleEditClick = (member: Member) => {
+    setEditingId(member.id);
+    setName(member.user?.name || "");
+    setEmail(member.user?.email || "");
+    setRole(member.role || "MEMBER");
+    setIsBoard(!!member.boardMembership);
+    setPosition(member.boardMembership?.position || "");
+    setOrder(String(member.boardMembership?.order || 1));
+    setPhone(member.phone || "");
+    setProfession(member.profession || "");
+    setBio(member.bio || "");
+    setAvatar(member.user?.avatar || "");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setName("");
+    setEmail("");
+    setRole("MEMBER");
+    setIsBoard(false);
+    setPosition("");
+    setOrder("1");
+    setPhone("");
+    setProfession("");
+    setBio("");
+    setAvatar("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
 
     try {
-      const res = await fetch("/api/admin/members", {
-        method: "POST",
+      const url = "/api/admin/members";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: editingId,
           name,
           email,
           role,
@@ -72,24 +107,14 @@ export default function MembersAdmin() {
           phone,
           profession,
           bio,
+          avatar,
         }),
       });
 
       const result = await res.json();
       if (result.error) throw new Error(result.error);
 
-      // Reset form
-      setName("");
-      setEmail("");
-      setRole("MEMBER");
-      setIsBoard(false);
-      setPosition("");
-      setOrder("1");
-      setPhone("");
-      setProfession("");
-      setBio("");
-
-      // Refresh list
+      handleCancelEdit();
       fetchMembers();
     } catch (err: any) {
       setError(err.message);
@@ -136,7 +161,7 @@ export default function MembersAdmin() {
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm h-fit">
           <div className="flex items-center gap-2 mb-6 text-purple-700 font-semibold border-b pb-2">
             <UserPlus className="h-5 w-5" />
-            <span>Add Member / User</span>
+            <span>{editingId ? "Edit Member / User" : "Add Member / User"}</span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -162,6 +187,37 @@ export default function MembersAdmin() {
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="e.g. john@example.com"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={avatar}
+                  onChange={(e) => setAvatar(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Paste an Image URL..."
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">Or upload:</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setAvatar(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 py-2">
@@ -236,13 +292,24 @@ export default function MembersAdmin() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 rounded text-sm transition disabled:bg-purple-400 cursor-pointer flex items-center justify-center gap-2"
-            >
-              {submitting ? "Uploading..." : "Save Member"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 rounded text-sm transition disabled:bg-purple-400 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {submitting ? "Processing..." : editingId ? "Update Member" : "Save Member"}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded text-sm border border-gray-300 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -290,10 +357,18 @@ export default function MembersAdmin() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {member.profession || "N/A"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                        <button
+                          onClick={() => handleEditClick(member)}
+                          className="text-purple-600 hover:text-purple-900 cursor-pointer"
+                          title="Edit Member"
+                        >
+                          <Pencil className="h-5 w-5 inline" />
+                        </button>
                         <button
                           onClick={() => handleDelete(member.id)}
                           className="text-red-600 hover:text-red-900 cursor-pointer"
+                          title="Delete Member"
                         >
                           <Trash2 className="h-5 w-5 inline" />
                         </button>

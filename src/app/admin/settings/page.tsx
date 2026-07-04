@@ -9,6 +9,8 @@ export default function SettingsAdmin() {
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [tenureYear, setTenureYear] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -24,6 +26,8 @@ export default function SettingsAdmin() {
           setEmail(data.email || "");
           setDescription(data.description || "");
           setTenureYear(data.tenureYear || "2026-27");
+          setLogoUrl(data.logoUrl || "");
+          setBannerUrl(data.bannerUrl || "");
         }
       } catch (err) {
         console.error("Error loading club details:", err);
@@ -49,6 +53,8 @@ export default function SettingsAdmin() {
           email,
           description,
           tenureYear,
+          logoUrl,
+          bannerUrl,
         }),
       });
       const data = await res.json();
@@ -116,6 +122,70 @@ export default function SettingsAdmin() {
                 className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="e.g. 2026-27"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club Logo</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="Paste a Logo URL..."
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Or upload:</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setLogoUrl(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club Banner</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={bannerUrl}
+                  onChange={(e) => setBannerUrl(e.target.value)}
+                  className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="Paste a Banner URL..."
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Or upload:</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setBannerUrl(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
