@@ -1,0 +1,23 @@
+export default function ProjectsPage() {
+  return (
+    <main className="min-h-screen bg-white">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 className="text-4xl font-bold text-gray-900 mb-12">Our Projects</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition">
+              <div className="w-full h-40 bg-gray-300" />
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900">Project {i}</h3>
+                <p className="text-gray-600 mt-2 text-sm">Making an impact in our community</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-12">
+          <p>Projects list coming soon in Sprint 2 with CMS integration.</p>
+        </div>
+      </section>
+    </main>
+  );
+}
