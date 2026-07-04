@@ -13,25 +13,9 @@ interface Project {
   coverImage: string;
 }
 
-const mockProjects: Project[] = [
-  {
-    id: "p1",
-    title: "Educational Support Initiative",
-    slug: "educational-support",
-    description: "An educational project providing free tuition, study materials, and moral support to kids from low-income communities.",
-    coverImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=800"
-  },
-  {
-    id: "p2",
-    title: "Emergency Relief Campaign",
-    slug: "emergency-relief",
-    description: "Disaster management project supplying dry rations, medicines, clothing, and water purifiers to flood-impacted regions.",
-    coverImage: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800"
-  }
-];
-
 export default function SponsorPage() {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [error, setError] = useState("");
   const [donationAmount, setDonationAmount] = useState(100);
 
   // Dynamic impact calculations based on donation slider
@@ -68,12 +52,18 @@ export default function SponsorPage() {
             title: p.title,
             slug: p.slug,
             description: p.description || "",
-            coverImage: p.imageUrl || "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&q=80&w=800",
+            coverImage: p.imageUrl || "",
           }));
           setProjects(mapped);
+          setError("");
+        } else {
+          setProjects([]);
+          setError("No active campaigns are currently available.");
         }
       } catch (err) {
-        console.warn("Failed fetching sponsor projects, using fallback:", err);
+        console.error("Failed fetching sponsor projects:", err);
+        setProjects([]);
+        setError("Unable to load campaigns right now.");
       }
     };
     fetchProjects();
@@ -183,28 +173,38 @@ export default function SponsorPage() {
           {/* Active Initiatives Showcase Grid */}
           <div className="space-y-8 max-w-5xl mx-auto pt-8">
             <h3 className="text-2xl font-extrabold text-foreground border-b pb-3">Active Campaigns Seeking Funding</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="bg-card border border-primary/10 rounded-3xl overflow-hidden hover:shadow-lg transition-all group"
-                >
-                  <div className="relative aspect-[16/9] w-full">
-                    <Image
-                      src={project.coverImage}
-                      alt={project.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
+            {error ? (
+              <div className="rounded-2xl border border-dashed border-primary/20 bg-card/80 p-6 text-sm text-muted-foreground">
+                {error}
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-primary/20 bg-card/80 p-6 text-sm text-muted-foreground">
+                No campaigns are currently available.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="bg-card border border-primary/10 rounded-3xl overflow-hidden hover:shadow-lg transition-all group"
+                  >
+                    <div className="relative aspect-[16/9] w-full">
+                      <Image
+                        src={project.coverImage || "/favicon.ico"}
+                        alt={project.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
+                    <div className="p-6 space-y-3">
+                      <h4 className="font-extrabold text-lg text-foreground group-hover:text-primary transition-colors">{project.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{project.description}</p>
+                    </div>
                   </div>
-                  <div className="p-6 space-y-3">
-                    <h4 className="font-extrabold text-lg text-foreground group-hover:text-primary transition-colors">{project.title}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{project.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </MaxWidthWrapper>
