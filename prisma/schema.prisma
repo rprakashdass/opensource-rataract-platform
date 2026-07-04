@@ -42,6 +42,10 @@ model Club {
   /// Social Media
   socialMedia Json? // { twitter, instagram, facebook, linkedin }
 
+  /// Payment Information
+  upiId       String?
+  paymentQr   String?
+
   /// Metadata
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -52,7 +56,10 @@ model Club {
   boardMembers  BoardMember[]
   initiatives   Initiative[]
   events        Event[]
+  meetings      Meeting[]
   galleryItems  GalleryItem[]
+  transactions  Transaction[]
+  paymentRequests PaymentRequest[]
 }
 
 // ============================================================================
@@ -80,6 +87,7 @@ model User {
   member        Member?
   sessions      Session[]
   auditLogs     AuditLog[]
+  transactions  Transaction[]
 }
 
 model Session {
@@ -168,6 +176,9 @@ model Member {
   // Relations
   boardMembership BoardMember?
   eventAttendees EventAttendee[]
+  meetingAttendees MeetingAttendance[]
+  transactions  Transaction[]
+  paymentRequests PaymentRequestAssignee[]
 }
 
 model BoardMember {
@@ -234,7 +245,7 @@ model Event {
 
   title         String
   slug          String
-  description   String?
+  description   String?  @db.Text
 
   location      String?
   latitude      Float?
@@ -261,6 +272,7 @@ model Event {
   // Relations
   attendees     EventAttendee[]
   galleryItems  GalleryItem[]
+  transactions  Transaction[]
 
   @@unique([clubId, slug])
 }
@@ -368,4 +380,140 @@ model Setting {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ============================================================================
+// FINANCE & TREASURY
+// ============================================================================
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum TransactionCategory {
+  DUES
+  EVENT_FEE
+  DONATION
+  SPONSORSHIP
+  CATERING
+  LOGISTICS
+  MARKETING
+  OTHER
+}
+
+model PaymentRequest {
+  id            String   @id @default(cuid())
+  clubId        String
+  club          Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  
+  title         String
+  description   String?
+  amount        Float
+  category      TransactionCategory @default(OTHER)
+  isGlobal      Boolean  @default(false)
+  dueDate       DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  dismissedBy   String[] @default([])
+  
+  assignees     PaymentRequestAssignee[]
+  transactions  Transaction[]
+
+  @@index([clubId])
+}
+
+model PaymentRequestAssignee {
+  id               String @id @default(cuid())
+  paymentRequestId String
+  paymentRequest   PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+  
+  memberId         String
+  member           Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  @@unique([paymentRequestId, memberId])
+  @@index([memberId])
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  clubId        String
+  club          Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  type          TransactionType
+  amount        Float
+  date          DateTime @default(now())
+  description   String
+  category      TransactionCategory @default(OTHER)
+  status        TransactionStatus @default(PENDING)
+  receiptUrl    String?
+
+  /// Association with members or users
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  memberId      String?
+  member        Member?  @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  /// Association with events
+  eventId       String?
+  event         Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  /// Association with Payment Request
+  paymentRequestId String?
+  paymentRequest   PaymentRequest? @relation(fields: [paymentRequestId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clubId])
+  @@index([memberId])
+  @@index([eventId])
+  @@index([paymentRequestId])
+}
+
+// ============================================================================
+// MEETINGS
+// ============================================================================
+
+model Meeting {
+  id          String   @id @default(cuid())
+  clubId      String
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  title       String
+  date        DateTime
+  location    String?
+  meetingLink String?
+  agenda      String?  @db.Text
+  agendaUrl   String?
+  minutes     String?  @db.Text
+  minutesUrl  String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attendees   MeetingAttendance[]
+}
+
+model MeetingAttendance {
+  id          String   @id @default(cuid())
+  meetingId   String
+  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  attendedAt  DateTime?
+  
+  @@unique([meetingId, memberId])
 }

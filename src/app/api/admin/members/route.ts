@@ -32,8 +32,28 @@ export async function POST(req: Request) {
     const payload = validateMemberPayload(data);
     const club = await getOrCreateDefaultClub();
 
+    // Create User first
+    const defaultPassword = "rotaract123"; // Standard default password
+    
+    // Check if user already exists
+    let user = await prisma.user.findUnique({
+      where: { email: payload.email }
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: payload.email,
+          name: payload.name,
+          password: defaultPassword, // Standard default password
+          role: "MEMBER"
+        }
+      });
+    }
+
     const member = await prisma.member.create({
       data: {
+        userId: user.id,
         clubId: club.id,
         name: payload.name,
         email: payload.email,
@@ -131,6 +151,14 @@ export async function PUT(req: Request) {
           bio: data.bio,
         },
       });
+
+      // Update User email if it changed
+      if (existing.userId && data.email) {
+        await tx.user.update({
+          where: { id: existing.userId },
+          data: { email: data.email.trim().toLowerCase() }
+        });
+      }
 
       // 3. Update/Create/Delete BoardMember
       if (data.isBoard) {

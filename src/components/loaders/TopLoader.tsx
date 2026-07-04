@@ -21,7 +21,7 @@ export default function TopLoader() {
   }
   return (
     <Suspense>
-      <NextTopLoader showSpinner={false} color="#ffffff" />
+      <NextTopLoader showSpinner={false} color="#7c3aed" height={4} />
     </Suspense>
   );
 }

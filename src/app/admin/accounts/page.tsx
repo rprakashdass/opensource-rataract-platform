@@ -1,7 +1,11 @@
 "use client";
+import { toast } from "sonner";
+import { useLoadingToast } from "@/hooks/useLoadingToast";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X, Key, UserCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Key, UserCheck } from "lucide-react";
+import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 
 interface UserAccount {
   id: string;
@@ -27,6 +31,8 @@ export default function AccountsAdmin() {
   const [name, setName] = useState("");
   const [role, setRole] = useState("ADMIN");
 
+  useLoadingToast(loading, "Loading accounts...");
+
   const fetchAccounts = async () => {
     try {
       const res = await fetch("/api/admin/accounts");
@@ -48,159 +54,50 @@ export default function AccountsAdmin() {
       .catch(() => {});
   }, []);
 
-  const handleEditClick = (account: UserAccount) => {
-    setEditingId(account.id);
-    setLoginId(account.email || "");
-    setName(account.name || "");
-    setPassword(""); // Leave empty unless they want to change it
-    setRole(account.role || "ADMIN");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setLoginId("");
-    setPassword("");
-    setName("");
-    setRole("ADMIN");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError("");
-
-    try {
-      const method = editingId ? "PUT" : "POST";
-      const payload = editingId 
-        ? { id: editingId, loginId, password, role }
-        : { loginId, password, name, role };
-
-      const res = await fetch("/api/admin/accounts", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      await fetchAccounts();
-      handleCancelEdit();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this internal login account?")) return;
+    const loadingToast = toast.loading("Deleting...");
     try {
       const res = await fetch(`/api/admin/accounts?id=${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       await fetchAccounts();
+      toast.success("Deleted", { id: loadingToast });
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message, { id: loadingToast });
     }
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-2">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-700">Accounts</span>
           <h1 className="text-3xl font-bold text-gray-900">Internal Accounts</h1>
-          <p className="text-gray-500 mt-1">Manage login credentials and system access roles.</p>
+          <p className="text-gray-500 mt-1 max-w-2xl text-sm">
+            Manage login credentials and system access roles for all administrators and users.
+          </p>
         </div>
+        <Link href={`${ROUTES.ADMIN}/accounts/new`} className="inline-flex items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition">
+          Add Account
+        </Link>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 text-sm">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center justify-between">
-              {editingId ? "Edit Credentials" : "New Account"}
-              {editingId && (
-                <button onClick={handleCancelEdit} className="text-gray-400 hover:text-gray-600 cursor-pointer">
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!editingId && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="e.g. John Doe"
-                  />
-                </div>
-              )}
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Login ID</label>
-                <input
-                  type="text"
-                  required
-                  value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="e.g. admin_nexus"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password {editingId && <span className="text-gray-400 font-normal">(Leave blank to keep current)</span>}
-                </label>
-                <input
-                  type={editingId ? "password" : "text"}
-                  required={!editingId}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="Secure password"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">System Role</label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
-                >
-                  <option value="ADMIN">Superadmin</option>
-                  <option value="CLUB_ADMIN">Club Admin</option>
-                  <option value="FINANCE_ADMIN">Finance Admin</option>
-                  <option value="FINANCE_VIEWER">Finance Viewer</option>
-                  <option value="MEMBER">Standard Member</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition cursor-pointer font-medium flex justify-center items-center gap-2 mt-4"
-              >
-                {submitting ? "Saving..." : editingId ? "Update Credentials" : (
-                  <><Plus className="h-4 w-4" /> Create Account</>
-                )}
-              </button>
-            </form>
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Registered Accounts</h2>
+            <p className="text-sm text-gray-500">A comprehensive list of all users with login access.</p>
           </div>
         </div>
 
-        <div className="lg:col-span-2">
+
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading accounts...</div>
           ) : accounts.length === 0 ? (
@@ -244,13 +141,13 @@ export default function AccountsAdmin() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                        <button
-                          onClick={() => handleEditClick(acc)}
+                        <Link
+                          href={`${ROUTES.ADMIN}/accounts/new?edit=${acc.id}`}
                           className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
                           title="Edit Credentials"
                         >
                           <Pencil className="h-4 w-4 inline" />
-                        </button>
+                        </Link>
                         {(currentUser?.role === "ADMIN" || currentUser?.role === "CLUB_ADMIN") && (
                           <button
                             onClick={() => handleDelete(acc.id)}
@@ -267,7 +164,6 @@ export default function AccountsAdmin() {
               </table>
             </div>
           )}
-        </div>
       </div>
     </div>
   );

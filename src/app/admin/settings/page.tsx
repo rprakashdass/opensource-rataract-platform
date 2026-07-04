@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Settings, Save } from "lucide-react";
+import { toast } from "sonner";
+import { useLoadingToast } from "@/hooks/useLoadingToast";
 
 export default function SettingsAdmin() {
   const [clubName, setClubName] = useState("");
@@ -11,7 +13,10 @@ export default function SettingsAdmin() {
   const [tenureYear, setTenureYear] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
+  const [upiId, setUpiId] = useState("");
+  const [paymentQr, setPaymentQr] = useState("");
   const [loading, setLoading] = useState(true);
+  useLoadingToast(loading, "Loading configurations...");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -28,6 +33,8 @@ export default function SettingsAdmin() {
           setTenureYear(data.tenureYear || "2026-27");
           setLogoUrl(data.logoUrl || "");
           setBannerUrl(data.bannerUrl || "");
+          setUpiId(data.upiId || "");
+          setPaymentQr(data.paymentQr || "");
         }
       } catch (err) {
         console.error("Error loading club details:", err);
@@ -42,6 +49,7 @@ export default function SettingsAdmin() {
     e.preventDefault();
     setSaving(true);
     setMessage("");
+    const toastId = toast.loading("Saving settings...");
 
     try {
       const res = await fetch("/api/admin/club", {
@@ -55,14 +63,18 @@ export default function SettingsAdmin() {
           tenureYear,
           logoUrl,
           bannerUrl,
+          upiId,
+          paymentQr,
         }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
       setMessage("Club settings successfully saved to database!");
+      toast.success("Settings saved successfully!", { id: toastId });
     } catch (err: any) {
       setMessage("Error saving settings: " + err.message);
+      toast.error(err.message, { id: toastId });
     } finally {
       setSaving(false);
     }
@@ -209,6 +221,49 @@ export default function SettingsAdmin() {
               className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="Brief description of your club..."
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-primary/10">
+            <div>
+              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club UPI ID</label>
+              <input
+                type="text"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="e.g. rotaractclub@upi"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Payment QR Code Image</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={paymentQr}
+                  onChange={(e) => setPaymentQr(e.target.value)}
+                  className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  placeholder="Paste a QR Image URL..."
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Or upload:</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setPaymentQr(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <button

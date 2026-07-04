@@ -13,8 +13,9 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Team", href: "/team" },
-  { label: "Initiatives", href: "/events" },
+  { label: "Events", href: "/events" },
   { label: "Sponsor Us", href: "/sponsor-us" },
+  { label: "Member Portal", href: "/dashboard" },
 ];
 
 export default function Header() {

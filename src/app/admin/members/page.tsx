@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { Pencil } from "lucide-react";
+import DeleteButton from "@/components/admin/DeleteButton";
 
 export default async function MembersAdmin() {
   const members = await prisma.member.findMany({
@@ -27,17 +29,17 @@ export default async function MembersAdmin() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Registered members</p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-500">Total Members</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{members.length}</p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Board members</p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-500">Board Members</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{members.filter((member) => member.boardMembership).length}</p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Creation flow</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">Separate page</p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-500">Regular Members</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{members.filter((member) => !member.boardMembership).length}</p>
         </div>
       </div>
 
@@ -64,6 +66,7 @@ export default async function MembersAdmin() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -87,6 +90,12 @@ export default async function MembersAdmin() {
                           Member
                         </span>
                       )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                      <Link href={`/admin/members/new?edit=${member.id}`} className="text-indigo-600 hover:text-indigo-900 transition" title="Edit Member">
+                        <Pencil className="h-4 w-4 inline" />
+                      </Link>
+                      <DeleteButton endpoint="/api/admin/members" id={member.id} confirmMessage="Are you sure you want to delete this member?" />
                     </td>
                   </tr>
                 ))}

@@ -49,7 +49,7 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search initiatives by title..."
+            placeholder="Search events & initiatives..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-primary/5 border border-primary/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -67,7 +67,7 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
                   : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              {tab === "ALL" ? "All Initiatives" : tab.toLowerCase()}
+              {tab === "ALL" ? "All Events" : tab.toLowerCase()}
             </button>
           ))}
         </div>
@@ -76,7 +76,7 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
       {/* Grid of Initiative Cards */}
       {filteredEvents.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground text-sm">
-          No initiatives found matching your search.
+          No events or initiatives found matching your search.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

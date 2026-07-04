@@ -5,6 +5,7 @@ import { getConfig } from "@/lib/config";
 import LayoutProvider from "@/components/providers/LayoutProvider";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import TopLoader from "@/components/loaders/TopLoader";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,8 +41,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-full flex flex-col bg-white text-gray-950`}>
         <Suspense>
+          <TopLoader />
           <LayoutProvider>{children}</LayoutProvider>
-          <Toaster />
+          <Toaster position="top-right" />
         </Suspense>
       </body>
     </html>

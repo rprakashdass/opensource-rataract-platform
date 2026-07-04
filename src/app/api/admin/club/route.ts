@@ -62,6 +62,8 @@ export async function POST(req: Request) {
           typeof data.tenureYear === "string" && data.tenureYear.trim()
             ? data.tenureYear.trim()
             : null,
+        upiId: typeof data.upiId === "string" ? data.upiId.trim() : null,
+        paymentQr: typeof data.paymentQr === "string" ? data.paymentQr.trim() : null,
       },
     });
     return NextResponse.json(updated);

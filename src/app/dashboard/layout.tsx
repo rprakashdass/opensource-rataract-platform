@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
+import LogoutButton from "@/components/auth/LogoutButton";
+import { getSession } from "@/lib/auth/session";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -14,11 +18,15 @@ export default function DashboardLayout({
           <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Rotaract
           </div>
-          <div className="flex gap-4 items-center">
-            <span className="text-gray-700">Member Dashboard</span>
-            <Link href={ROUTES.HOME} className="text-gray-600 hover:text-gray-900">
-              Logout
-            </Link>
+          <div className="flex gap-6 items-center">
+            {session && (
+              <div className="flex flex-col text-right">
+                <span className="text-sm font-semibold text-gray-900">{session.name}</span>
+                <span className="text-xs text-gray-500">Member Dashboard</span>
+              </div>
+            )}
+            <div className="w-px h-8 bg-gray-200 hidden md:block" />
+            <LogoutButton />
           </div>
         </div>
       </header>
@@ -34,16 +42,22 @@ export default function DashboardLayout({
               Overview
             </Link>
             <Link
-              href={ROUTES.DASHBOARD}
+              href={`${ROUTES.DASHBOARD}/profile`}
               className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
             >
               Profile
             </Link>
             <Link
-              href={ROUTES.DASHBOARD}
+              href={`${ROUTES.DASHBOARD}/events`}
               className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
             >
               Events
+            </Link>
+            <Link
+              href={`${ROUTES.DASHBOARD}/finance`}
+              className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
+            >
+              Finance & Dues
             </Link>
           </nav>
         </aside>

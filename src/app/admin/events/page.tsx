@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { Calendar, Trash2, Pencil, Users } from "lucide-react";
+import DeleteButton from "@/components/admin/DeleteButton";
 
 export default async function EventsAdmin() {
-  const [initiatives, events, initiativeCount, eventCount] = await Promise.all([
+  const [initiatives, events, initiativeCount, eventCount, upcomingEventsCount] = await Promise.all([
     prisma.initiative.findMany({
       include: {
         events: {
@@ -21,6 +23,11 @@ export default async function EventsAdmin() {
     }),
     prisma.initiative.count(),
     prisma.event.count(),
+    prisma.event.count({
+      where: {
+        startDate: { gte: new Date() }
+      }
+    })
   ]);
 
   return (
@@ -52,9 +59,9 @@ export default async function EventsAdmin() {
           <p className="text-sm text-gray-500">Event instances</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{eventCount}</p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Upcoming creation</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">2 paths</p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-500">Upcoming events</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{upcomingEventsCount}</p>
         </div>
       </div>
 
@@ -83,9 +90,15 @@ export default async function EventsAdmin() {
                       <div className="font-semibold text-gray-900">{initiative.title}</div>
                       <div className="text-xs text-gray-500 mt-1">{initiative.events.length} linked instances</div>
                     </div>
-                    <span className="rounded-full bg-pink-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-pink-700">
-                      {initiative.frequency}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-pink-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-pink-700">
+                        {initiative.frequency}
+                      </span>
+                      <Link href={`/admin/events/new?initiativeEdit=${initiative.id}`} className="text-gray-400 hover:text-indigo-600 transition" title="Edit Initiative">
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                      <DeleteButton endpoint="/api/admin/initiatives" id={initiative.id} confirmMessage="Delete this initiative?" />
+                    </div>
                   </div>
                   <div className="mt-3 text-sm text-gray-600 line-clamp-2">{initiative.description || "No description set."}</div>
                 </div>
@@ -118,9 +131,15 @@ export default async function EventsAdmin() {
                       <div className="font-semibold text-gray-900">{event.title}</div>
                       <div className="text-xs text-gray-500 mt-1">{new Date(event.startDate).toLocaleString()}</div>
                     </div>
-                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-700">
-                      {event.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-700">
+                        {event.status}
+                      </span>
+                      <Link href={`/admin/events/${event.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition" title="Manage Event">
+                        Manage Event
+                      </Link>
+                      <DeleteButton endpoint="/api/admin/events" id={event.id} confirmMessage="Delete this event?" />
+                    </div>
                   </div>
                   <div className="mt-3 text-sm text-gray-600">
                     {event.initiative?.title || "Standalone"}

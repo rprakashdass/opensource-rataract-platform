@@ -3,8 +3,18 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import { useLoadingToast } from "@/hooks/useLoadingToast";
+
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function NewMemberPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+
+  const [loading, setLoading] = useState(true);
+  useLoadingToast(loading, "Loading member details...");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,53 +28,86 @@ export default function NewMemberPage() {
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("");
 
+  useEffect(() => {
+    if (editId) {
+      fetch("/api/admin/members")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) throw new Error(data.error);
+          const member = data.find((m: any) => m.id === editId);
+          if (member) {
+            setName(member.name || "");
+            setEmail(member.email || "");
+            setPhone(member.phone || "");
+            setProfession(member.profession || "");
+            setBio(member.bio || "");
+            setAvatar(member.avatar || "");
+            if (member.boardMembership) {
+              setIsBoard(true);
+              setPosition(member.boardMembership.position || "");
+              setOrder(member.boardMembership.order?.toString() || "1");
+            }
+          } else {
+            setError("Member not found");
+          }
+        })
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [editId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const loadingToast = toast.loading(editId ? "Updating member..." : "Creating member...");
     setSubmitting(true);
     setError("");
 
     try {
+      const method = editId ? "PUT" : "POST";
+      const payload = {
+        id: editId || undefined,
+        name,
+        email,
+        isBoard,
+        position,
+        order: Number(order) || 1,
+        phone,
+        profession,
+        bio,
+        avatar,
+      };
+
       const res = await fetch("/api/admin/members", {
-        method: "POST",
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          isBoard,
-          position,
-          order: Number(order) || 1,
-          phone,
-          profession,
-          bio,
-          avatar,
-        }),
+        body: JSON.stringify(payload),
       });
       const result = await res.json();
       if (result.error) throw new Error(result.error);
-      setName("Rtr. ");
-      setEmail("");
-      setIsBoard(false);
-      setPosition("");
-      setOrder("1");
-      setPhone("");
-      setProfession("");
-      setBio("");
-      setAvatar("");
+      
+      toast.success(editId ? "Member updated successfully!" : "Member created successfully!", { id: loadingToast });
+      router.push("/admin/members");
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message, { id: loadingToast });
     } finally {
       setSubmitting(false);
+      toast.dismiss(loadingToast);
     }
   };
+
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-700">Create</span>
-          <h1 className="text-3xl font-bold text-gray-900">Add a new member</h1>
+          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-700">{editId ? "Edit" : "Create"}</span>
+          <h1 className="text-3xl font-bold text-gray-900">{editId ? "Edit member details" : "Add a new member"}</h1>
           <p className="text-sm text-gray-500 max-w-2xl">
-            The form is separated from the members overview so profile entry stays focused.
+            {editId ? "Update the profile information below." : "The form is separated from the members overview so profile entry stays focused."}
           </p>
         </div>
         <Link href="/admin/members" className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
@@ -129,7 +172,7 @@ export default function NewMemberPage() {
 
         <button type="submit" disabled={submitting} className="w-full rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition disabled:opacity-60 inline-flex items-center justify-center gap-2">
           <UserPlus className="h-4 w-4" />
-          {submitting ? "Processing..." : "Save Member"}
+          {submitting ? "Processing..." : editId ? "Update Member" : "Save Member"}
         </button>
       </form>
     </div>
