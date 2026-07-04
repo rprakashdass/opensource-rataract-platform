@@ -23,11 +23,11 @@ export default async function TeamPage() {
     if (membersList.length > 0) {
       dbMembers = membersList.map((member) => ({
         id: member.id,
-        name: member.user?.name || "Member",
-        imageUrl: member.user?.avatar || "/user.png",
+        name: member.name || "Member",
+        imageUrl: member.avatar || "/user.png",
         roles: [{
           id: member.id,
-          memberType: member.role === "BOARD_MEMBER" ? "COUNCIL" : "DIRECTOR",
+          memberType: member.boardMembership ? "COUNCIL" : "DIRECTOR",
           position: member.boardMembership?.position?.replaceAll("_", " ") || "Member",
           yearId: "y1"
         }]

@@ -2,23 +2,46 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    // Placeholder implementation
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setError('Login coming soon in Sprint 2 - Authentication');
-    } catch (err) {
-      setError('An error occurred');
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loginId, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Authentication failed");
+      }
+
+      // Redirect based on role
+      if (data.role === "ADMIN" || data.role === "CLUB_ADMIN" || data.role === "FINANCE_ADMIN") {
+        router.push(ROUTES.ADMIN);
+      } else {
+        router.push("/");
+      }
+      
+      // Refresh page context/state
+      router.refresh();
+
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during sign in');
     } finally {
       setIsLoading(false);
     }
@@ -26,36 +49,40 @@ export default function LoginPage() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
+      <h2 className="text-2xl font-bold text-slate-800">Welcome Back</h2>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 rounded p-3 text-red-200 text-sm">
+        <div className="bg-red-55 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
           {error}
         </div>
       )}
 
       <div>
-        <label className="block text-gray-300 text-sm font-medium mb-2">
-          Email
+        <label className="block text-slate-700 text-sm font-semibold mb-2">
+          Login ID / Email Address
         </label>
         <input
-          type="email"
+          type="text"
           required
           disabled={isLoading}
-          className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 disabled:opacity-50"
-          placeholder="you@example.com"
+          value={loginId}
+          onChange={(e) => setLoginId(e.target.value)}
+          className="w-full px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50"
+          placeholder="e.g. member_pres or you@example.com"
         />
       </div>
 
       <div>
-        <label className="block text-gray-300 text-sm font-medium mb-2">
+        <label className="block text-slate-700 text-sm font-semibold mb-2">
           Password
         </label>
         <input
           type="password"
           required
           disabled={isLoading}
-          className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 disabled:opacity-50"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50"
           placeholder="••••••••"
         />
       </div>
@@ -63,17 +90,10 @@ export default function LoginPage() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium py-2 rounded transition"
+        className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium py-2 rounded-lg transition cursor-pointer shadow-md shadow-purple-200"
       >
         {isLoading ? 'Signing in...' : 'Sign In'}
       </button>
-
-      <div className="text-center text-gray-400 text-sm">
-        Don't have an account?{' '}
-        <Link href={ROUTES.SIGNUP} className="text-purple-400 hover:text-purple-300">
-          Sign up
-        </Link>
-      </div>
     </form>
   );
 }

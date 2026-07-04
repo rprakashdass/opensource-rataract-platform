@@ -19,11 +19,11 @@ export default async function Home() {
     if (dbMembers && dbMembers.length > 0) {
       members = dbMembers.map((m: any) => ({
         id: m.id,
-        name: m.user?.name || "Member",
-        imageUrl: m.user?.avatar || "/user.png",
+        name: m.name || "Member",
+        imageUrl: m.avatar || "/user.png",
         roles: [{
           id: m.id,
-          memberType: (m.role === "BOARD_MEMBER" ? MemberType.COUNCIL : MemberType.DIRECTOR) as MemberType,
+          memberType: (m.boardMembership ? MemberType.COUNCIL : MemberType.DIRECTOR) as MemberType,
           position: (m.boardMembership?.position?.replaceAll("_", " ") || "Member") as Position,
           yearId: "y1",
           memberId: m.id

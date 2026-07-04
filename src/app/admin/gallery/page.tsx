@@ -33,6 +33,7 @@ export default function GalleryAdmin() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Form State
   const [title, setTitle] = useState("");
@@ -68,6 +69,10 @@ export default function GalleryAdmin() {
 
   useEffect(() => {
     fetchData();
+    fetch("/api/auth/me")
+      .then(res => res.json())
+      .then(data => setCurrentUser(data))
+      .catch(() => {});
   }, []);
 
   const handleEditClick = (item: GalleryItem) => {
@@ -353,14 +358,16 @@ export default function GalleryAdmin() {
                         <Pencil className="h-3.5 w-3.5" />
                         <span>Edit</span>
                       </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 hover:text-red-800 cursor-pointer text-xs flex items-center gap-1 font-semibold"
-                        title="Delete Photo"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        <span>Delete</span>
-                      </button>
+                      {(currentUser?.role === "ADMIN" || currentUser?.role === "CLUB_ADMIN") && (
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-600 hover:text-red-800 cursor-pointer text-xs flex items-center gap-1 font-semibold"
+                          title="Delete Photo"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

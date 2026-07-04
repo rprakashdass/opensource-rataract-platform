@@ -66,6 +66,7 @@ model User {
   password      String   // Should be hashed
   name          String?
   avatar        String?
+  role          Role     @default(MEMBER) // System access role
 
   /// Account status
   isActive      Boolean  @default(true)
@@ -105,6 +106,8 @@ enum Role {
   BOARD_MEMBER    // General board member
   MEMBER          // Regular member
   GUEST           // Unauthenticated user
+  FINANCE_ADMIN
+  FINANCE_VIEWER
 }
 
 model Permission {
@@ -135,13 +138,15 @@ model RolePermission {
 
 model Member {
   id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?  @unique
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   clubId        String
   club          Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  role          Role     @default(MEMBER)
+  name          String?  // Decoupled public profile name
+  avatar        String?  // Decoupled public profile avatar
+  email         String?  // Contact email for public profile (not a login credential)
   joinedAt      DateTime @default(now())
 
   // Member Profile
