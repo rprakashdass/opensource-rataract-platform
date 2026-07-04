@@ -29,7 +29,7 @@ export default function MembersAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
-  const [name, setName] = useState("");
+  const [name, setName] = useState("Rtr. ");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("MEMBER");
   const [isBoard, setIsBoard] = useState(false);
