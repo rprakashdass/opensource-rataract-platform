@@ -8,9 +8,6 @@ export async function GET() {
       include: {
         event: {
           select: { title: true }
-        },
-        project: {
-          select: { title: true }
         }
       },
       orderBy: {
@@ -41,7 +38,6 @@ export async function POST(req: Request) {
         imageUrl: data.imageUrl,
         category: data.category || "random",
         eventId: data.eventId || null,
-        projectId: data.projectId || null,
       }
     });
 
@@ -68,7 +64,6 @@ export async function PUT(req: Request) {
         imageUrl: data.imageUrl,
         category: data.category || "random",
         eventId: data.eventId || null,
-        projectId: data.projectId || null,
       }
     });
 

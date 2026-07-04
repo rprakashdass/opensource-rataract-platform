@@ -10,9 +10,7 @@ interface GalleryItem {
   imageUrl: string;
   category: string;
   eventId?: string | null;
-  projectId?: string | null;
   event?: { title: string } | null;
-  project?: { title: string } | null;
 }
 
 interface Event {
@@ -20,15 +18,9 @@ interface Event {
   title: string;
 }
 
-interface Project {
-  id: string;
-  title: string;
-}
-
 export default function GalleryAdmin() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -40,7 +32,6 @@ export default function GalleryAdmin() {
   const [category, setCategory] = useState("random");
   const [imageUrl, setImageUrl] = useState("");
   const [eventId, setEventId] = useState("");
-  const [projectId, setProjectId] = useState("");
 
   const fetchData = async () => {
     try {
@@ -53,11 +44,6 @@ export default function GalleryAdmin() {
       const resEvents = await fetch("/api/admin/events");
       const eventsData = await resEvents.json();
       setEvents(eventsData);
-
-      // Fetch Projects for dropdown
-      const resProjects = await fetch("/api/admin/projects");
-      const projectsData = await resProjects.json();
-      setProjects(projectsData);
 
     } catch (err: any) {
       setError("Failed to fetch gallery records: " + err.message);
@@ -77,7 +63,6 @@ export default function GalleryAdmin() {
     setCategory(item.category || "random");
     setImageUrl(item.imageUrl || "");
     setEventId(item.eventId || "");
-    setProjectId(item.projectId || "");
   };
 
   const handleCancelEdit = () => {
@@ -87,7 +72,6 @@ export default function GalleryAdmin() {
     setCategory("random");
     setImageUrl("");
     setEventId("");
-    setProjectId("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,7 +98,6 @@ export default function GalleryAdmin() {
           category,
           imageUrl,
           eventId: category === "event" ? eventId || null : null,
-          projectId: category === "project" ? projectId || null : null,
         }),
       });
 
@@ -193,7 +176,6 @@ export default function GalleryAdmin() {
               >
                 <option value="random">Random / General</option>
                 <option value="event">Event Association</option>
-                <option value="project">Project Association</option>
                 <option value="initiative">Initiative</option>
               </select>
             </div>
@@ -211,24 +193,6 @@ export default function GalleryAdmin() {
                   <option value="">-- Choose Event --</option>
                   {events.map((ev) => (
                     <option key={ev.id} value={ev.id}>{ev.title}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Project Dropdown Association */}
-            {category === "project" && (
-              <div>
-                <label className="block text-sm font-medium text-purple-950 mb-1">Associate Project *</label>
-                <select
-                  required
-                  value={projectId}
-                  onChange={(e) => setProjectId(e.target.value)}
-                  className="w-full border border-purple-200 bg-purple-50 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="">-- Choose Project --</option>
-                  {projects.map((pr) => (
-                    <option key={pr.id} value={pr.id}>{pr.title}</option>
                   ))}
                 </select>
               </div>
@@ -329,17 +293,11 @@ export default function GalleryAdmin() {
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
                       )}
                       
-                      {/* Show Event/Project connection */}
+                      {/* Show Event connection */}
                       {item.category === "event" && item.event && (
                         <div className="text-[10px] text-pink-700 font-semibold bg-pink-50 w-fit px-2 py-0.5 rounded-full mt-2 flex items-center gap-1">
                           <LinkIcon className="h-3 w-3" />
                           <span>Event: {item.event.title}</span>
-                        </div>
-                      )}
-                      {item.category === "project" && item.project && (
-                        <div className="text-[10px] text-blue-700 font-semibold bg-blue-50 w-fit px-2 py-0.5 rounded-full mt-2 flex items-center gap-1">
-                          <LinkIcon className="h-3 w-3" />
-                          <span>Project: {item.project.title}</span>
                         </div>
                       )}
                     </div>

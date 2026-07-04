@@ -45,12 +45,6 @@ export default function DashboardLayout({
             >
               Events
             </Link>
-            <Link
-              href={ROUTES.DASHBOARD}
-              className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
-            >
-              Projects
-            </Link>
           </nav>
         </aside>
 
