@@ -9,6 +9,15 @@ import React from "react";
 
 const MotionCard = motion(Card);
 
+// Consistent date formatter to avoid hydration mismatch
+const formatDate = (date: Date) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
+};
+
 export default function EventCard({
   event,
   index,
@@ -60,7 +69,7 @@ export default function EventCard({
             </p>
             <div className="flex items-center text-sm opacity-75">
               <CalendarIcon className="mr-2 h-4 w-4" />
-              <span>{event.date.toLocaleDateString()}</span>
+              <span>{formatDate(event.date)}</span>
             </div>
           </div>
         </div>
