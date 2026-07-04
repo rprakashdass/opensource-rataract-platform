@@ -21,17 +21,25 @@ export default function TeamDirectory({ initialMembers }: { initialMembers: Memb
   const [activeTab, setActiveTab] = useState<"ALL" | "BOARD" | "MEMBER">("ALL");
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
-  // Filter members (Board of Directors with designation vs General Members with none)
-  const filteredMembers = initialMembers.filter((member) => {
-    const nameMatch = member.name.toLowerCase().includes(search.toLowerCase());
+  const isBoard = (member: Member) => {
     const position = member.roles[0]?.position || "Member";
-    const isBoard = position !== "Member" && position !== "" && position !== "General Member";
+    return position !== "Member" && position !== "" && position !== "General Member";
+  };
 
-    if (activeTab === "ALL") return nameMatch;
-    if (activeTab === "BOARD") return nameMatch && isBoard;
-    if (activeTab === "MEMBER") return nameMatch && !isBoard;
-    return nameMatch;
-  });
+  // Filter then sort: board/council first, then general members
+  const filteredMembers = initialMembers
+    .filter((member) => {
+      const nameMatch = member.name.toLowerCase().includes(search.toLowerCase());
+      if (activeTab === "BOARD") return nameMatch && isBoard(member);
+      if (activeTab === "MEMBER") return nameMatch && !isBoard(member);
+      return nameMatch;
+    })
+    .sort((a, b) => {
+      // Board members always come first
+      const aIsBoard = isBoard(a) ? 0 : 1;
+      const bIsBoard = isBoard(b) ? 0 : 1;
+      return aIsBoard - bIsBoard;
+    });
 
   return (
     <div className="space-y-12">

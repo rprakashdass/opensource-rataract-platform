@@ -5,15 +5,12 @@ import { Trash2, Plus, Users, UserPlus, Pencil, X } from "lucide-react";
 
 interface Member {
   id: string;
-  role: string;
+  name?: string | null;
+  email?: string | null;
+  avatar?: string | null;
   phone?: string | null;
   profession?: string | null;
   bio?: string | null;
-  user?: {
-    name?: string | null;
-    email?: string | null;
-    avatar?: string | null;
-  } | null;
   boardMembership?: {
     id?: string | null;
     position?: string | null;
@@ -27,11 +24,11 @@ export default function MembersAdmin() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Form State
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("MEMBER");
   const [isBoard, setIsBoard] = useState(false);
   const [position, setPosition] = useState("");
   const [order, setOrder] = useState("1");
@@ -55,27 +52,29 @@ export default function MembersAdmin() {
 
   useEffect(() => {
     fetchMembers();
+    fetch("/api/auth/me")
+      .then(res => res.json())
+      .then(data => setCurrentUser(data))
+      .catch(() => {});
   }, []);
 
   const handleEditClick = (member: Member) => {
     setEditingId(member.id);
-    setName(member.user?.name || "");
-    setEmail(member.user?.email || "");
-    setRole(member.role || "MEMBER");
+    setName(member.name || "");
+    setEmail(member.email || "");
     setIsBoard(!!member.boardMembership);
     setPosition(member.boardMembership?.position || "");
     setOrder(String(member.boardMembership?.order || 1));
     setPhone(member.phone || "");
     setProfession(member.profession || "");
     setBio(member.bio || "");
-    setAvatar(member.user?.avatar || "");
+    setAvatar(member.avatar || "");
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setName("");
     setEmail("");
-    setRole("MEMBER");
     setIsBoard(false);
     setPosition("");
     setOrder("1");
@@ -100,7 +99,6 @@ export default function MembersAdmin() {
           id: editingId,
           name,
           email,
-          role,
           isBoard,
           position,
           order: Number(order) || 1,
@@ -178,7 +176,7 @@ export default function MembersAdmin() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label>
               <input
                 type="email"
                 required
@@ -340,18 +338,17 @@ export default function MembersAdmin() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold">
-                            {member.user?.name ? member.user.name[0].toUpperCase() : "M"}
+                            {member.name ? member.name[0].toUpperCase() : "M"}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-semibold text-gray-900">{member.user?.name}</div>
-                            <div className="text-xs text-gray-500">{member.user?.email}</div>
+                            <div className="text-sm font-semibold text-gray-900">{member.name}</div>
                             {member.phone && <div className="text-xs text-gray-400">{member.phone}</div>}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                          {member.boardMembership?.position || member.role}
+                          {member.boardMembership?.position || "Member"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -365,13 +362,15 @@ export default function MembersAdmin() {
                         >
                           <Pencil className="h-5 w-5 inline" />
                         </button>
-                        <button
-                          onClick={() => handleDelete(member.id)}
-                          className="text-red-600 hover:text-red-900 cursor-pointer"
-                          title="Delete Member"
-                        >
-                          <Trash2 className="h-5 w-5 inline" />
-                        </button>
+                        {(currentUser?.role === "ADMIN" || currentUser?.role === "CLUB_ADMIN") && (
+                          <button
+                            onClick={() => handleDelete(member.id)}
+                            className="text-red-600 hover:text-red-900 cursor-pointer"
+                            title="Delete Member"
+                          >
+                            <Trash2 className="h-5 w-5 inline" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

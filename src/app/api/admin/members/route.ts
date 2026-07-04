@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "../club/route";
+import { getSession } from "@/lib/auth/session";
 
 function validateMemberPayload(data: any) {
   if (typeof data.name !== "string" || !data.name.trim()) {
     throw new Error("Member name is required.");
   }
   if (typeof data.email !== "string" || !data.email.trim()) {
-    throw new Error("Member email is required.");
-  }
-  if (typeof data.password !== "string" || !data.password.trim()) {
-    throw new Error("Member password is required.");
+    throw new Error("Contact email is required.");
   }
   if (data.isBoard && (typeof data.position !== "string" || !data.position.trim())) {
     throw new Error("Board position is required when the member is a board member.");
@@ -18,9 +16,7 @@ function validateMemberPayload(data: any) {
 
   return {
     name: data.name.trim(),
-    email: data.email.trim(),
-    password: data.password,
-    role: typeof data.role === "string" && data.role.trim() ? data.role.trim().toUpperCase() : "MEMBER",
+    email: data.email.trim().toLowerCase(),
     phone: typeof data.phone === "string" && data.phone.trim() ? data.phone.trim() : null,
     profession: typeof data.profession === "string" && data.profession.trim() ? data.profession.trim() : null,
     bio: typeof data.bio === "string" && data.bio.trim() ? data.bio.trim() : null,
@@ -36,42 +32,30 @@ export async function POST(req: Request) {
     const payload = validateMemberPayload(data);
     const club = await getOrCreateDefaultClub();
 
-    const result = await prisma.$transaction(async (tx: any) => {
-      const user = await tx.user.create({
-        data: {
-          email: payload.email,
-          password: payload.password,
-          name: payload.name,
-          avatar: payload.avatar,
-        },
-      });
-
-      const member = await tx.member.create({
-        data: {
-          userId: user.id,
-          clubId: club.id,
-          role: payload.role,
-          phone: payload.phone,
-          profession: payload.profession,
-          bio: payload.bio,
-        },
-      });
-
-      if (data.isBoard) {
-        await tx.boardMember.create({
-          data: {
-            memberId: member.id,
-            clubId: club.id,
-            position: payload.position,
-            order: payload.order,
-          },
-        });
-      }
-
-      return member;
+    const member = await prisma.member.create({
+      data: {
+        clubId: club.id,
+        name: payload.name,
+        email: payload.email,
+        avatar: payload.avatar,
+        phone: payload.phone,
+        profession: payload.profession,
+        bio: payload.bio,
+      },
     });
 
-    return NextResponse.json(result);
+    if (data.isBoard) {
+      await prisma.boardMember.create({
+        data: {
+          memberId: member.id,
+          clubId: club.id,
+          position: payload.position,
+          order: payload.order,
+        },
+      });
+    }
+
+    return NextResponse.json(member);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 400 });
@@ -95,6 +79,11 @@ export async function GET() {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getSession();
+    if (!session || (session.role !== "ADMIN" && session.role !== "CLUB_ADMIN")) {
+      return NextResponse.json({ error: "Access Denied: Only Admins can delete members" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) {
@@ -102,7 +91,7 @@ export async function DELETE(req: Request) {
     }
     const member = await prisma.member.findUnique({ where: { id } });
     if (member) {
-      await prisma.user.delete({ where: { id: member.userId } });
+      await prisma.member.delete({ where: { id } });
     }
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
@@ -130,21 +119,13 @@ export async function PUT(req: Request) {
         throw new Error("Member not found");
       }
 
-      // 1. Update User
-      await tx.user.update({
-        where: { id: existing.userId },
-        data: {
-          name: data.name,
-          email: data.email,
-          avatar: data.avatar || "/user.png",
-        },
-      });
-
-      // 2. Update Member
+      // Update Member
       const member = await tx.member.update({
         where: { id },
         data: {
-          role: data.role || "MEMBER",
+          name: data.name,
+          email: data.email?.trim().toLowerCase() || undefined,
+          avatar: data.avatar || "/user.png",
           phone: data.phone,
           profession: data.profession,
           bio: data.bio,

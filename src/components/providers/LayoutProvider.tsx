@@ -15,7 +15,7 @@ export default function LayoutProvider({
 }) {
   const pathname = usePathname();
   const noLayoutPages = ["/join-now", "/sustainability-hackathon"];
-  if (noLayoutPages.includes(pathname) || pathname.startsWith("/admin")) {
+  if (noLayoutPages.includes(pathname) || pathname.startsWith("/admin") || pathname.startsWith("/auth")) {
     return <>{children}</>;
   }
 

@@ -21,6 +21,7 @@ export default function ProjectsAdmin() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Form State
   const [title, setTitle] = useState("");
@@ -47,6 +48,10 @@ export default function ProjectsAdmin() {
 
   useEffect(() => {
     fetchProjects();
+    fetch("/api/auth/me")
+      .then(res => res.json())
+      .then(data => setCurrentUser(data))
+      .catch(() => {});
   }, []);
 
   const handleTitleChange = (val: string) => {
@@ -361,13 +366,15 @@ export default function ProjectsAdmin() {
                         >
                           <Pencil className="h-5 w-5 inline" />
                         </button>
-                        <button
-                          onClick={() => handleDelete(project.id)}
-                          className="text-red-600 hover:text-red-900 cursor-pointer"
-                          title="Delete Project"
-                        >
-                          <Trash2 className="h-5 w-5 inline" />
-                        </button>
+                        {(currentUser?.role === "ADMIN" || currentUser?.role === "CLUB_ADMIN") && (
+                          <button
+                            onClick={() => handleDelete(project.id)}
+                            className="text-red-600 hover:text-red-900 cursor-pointer"
+                            title="Delete Project"
+                          >
+                            <Trash2 className="h-5 w-5 inline" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "../club/route";
+import { getSession } from "@/lib/auth/session";
 
 function validateEventPayload(data: any) {
   if (typeof data.title !== "string" || !data.title.trim()) {
@@ -71,6 +72,11 @@ export async function GET() {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getSession();
+    if (!session || (session.role !== "ADMIN" && session.role !== "CLUB_ADMIN")) {
+      return NextResponse.json({ error: "Access Denied: Only Admins can delete events" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     if (!id) {

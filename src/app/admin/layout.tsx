@@ -38,6 +38,12 @@ export default function AdminLayout({
               Management
             </div>
             <Link
+              href={`${ROUTES.ADMIN}/accounts`}
+              className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
+            >
+              Accounts
+            </Link>
+            <Link
               href={`${ROUTES.ADMIN}/members`}
               className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
             >
