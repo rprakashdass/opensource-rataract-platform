@@ -2,43 +2,68 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "../club/route";
 
+function validateMemberPayload(data: any) {
+  if (typeof data.name !== "string" || !data.name.trim()) {
+    throw new Error("Member name is required.");
+  }
+  if (typeof data.email !== "string" || !data.email.trim()) {
+    throw new Error("Member email is required.");
+  }
+  if (typeof data.password !== "string" || !data.password.trim()) {
+    throw new Error("Member password is required.");
+  }
+  if (data.isBoard && (typeof data.position !== "string" || !data.position.trim())) {
+    throw new Error("Board position is required when the member is a board member.");
+  }
+
+  return {
+    name: data.name.trim(),
+    email: data.email.trim(),
+    password: data.password,
+    role: typeof data.role === "string" && data.role.trim() ? data.role.trim().toUpperCase() : "MEMBER",
+    phone: typeof data.phone === "string" && data.phone.trim() ? data.phone.trim() : null,
+    profession: typeof data.profession === "string" && data.profession.trim() ? data.profession.trim() : null,
+    bio: typeof data.bio === "string" && data.bio.trim() ? data.bio.trim() : null,
+    avatar: typeof data.avatar === "string" && data.avatar.trim() ? data.avatar.trim() : null,
+    position: typeof data.position === "string" && data.position.trim() ? data.position.trim() : null,
+    order: Number.isFinite(Number(data.order)) ? Number(data.order) : 1,
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+    const payload = validateMemberPayload(data);
     const club = await getOrCreateDefaultClub();
 
-    // Create a transaction to create User and Member
     const result = await prisma.$transaction(async (tx: any) => {
-      // 1. Create User
       const user = await tx.user.create({
         data: {
-          email: data.email || `${Math.random()}@example.com`,
-          password: "temporarypassword", // Placeholder
-          name: data.name,
-          avatar: data.avatar || "/user.png",
+          email: payload.email,
+          password: payload.password,
+          name: payload.name,
+          avatar: payload.avatar,
         },
       });
 
-      // 2. Create Member
       const member = await tx.member.create({
         data: {
           userId: user.id,
           clubId: club.id,
-          role: data.role || "MEMBER",
-          phone: data.phone,
-          profession: data.profession,
-          bio: data.bio,
+          role: payload.role,
+          phone: payload.phone,
+          profession: payload.profession,
+          bio: payload.bio,
         },
       });
 
-      // 3. Create BoardMember details if specified
       if (data.isBoard) {
         await tx.boardMember.create({
           data: {
             memberId: member.id,
             clubId: club.id,
-            position: data.position || "Director",
-            order: Number(data.order) || 1,
+            position: payload.position,
+            order: payload.order,
           },
         });
       }
@@ -47,9 +72,9 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
-    console.error("Prisma error in admin members API:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
 
@@ -62,11 +87,12 @@ export async function GET() {
       },
     });
     return NextResponse.json(members);
-  } catch (error: any) {
-    console.warn("Failed to fetch members from DB, returning empty fallback:", error.message);
-    return NextResponse.json([]);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -74,14 +100,14 @@ export async function DELETE(req: Request) {
     if (!id) {
       return NextResponse.json({ error: "Id is required" }, { status: 400 });
     }
-    // Delete member and cascade deletes user
     const member = await prisma.member.findUnique({ where: { id } });
     if (member) {
       await prisma.user.delete({ where: { id: member.userId } });
     }
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
