@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
   let members: any[] = [];
+  let initiatives: any[] = [];
   try {
     const dbMembers = await prisma.member.findMany({
       include: {
@@ -36,6 +37,30 @@ export default async function Home() {
     console.error("Prisma query failed on Home page:", error);
   }
 
+
+  const dbInitiatives = await prisma.initiative.findMany({
+    include: {
+      events: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    orderBy: {
+      startDate: "desc",
+    },
+    take: 4,
+  });
+
+  initiatives = dbInitiatives.map((initiative: any) => ({
+    id: initiative.id,
+    title: initiative.title,
+    slug: initiative.slug,
+    description: initiative.description || "",
+    coverImage: initiative.imageUrl || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
+    frequency: initiative.frequency.toLowerCase(),
+    instanceCount: initiative.events.length,
+  }));
   // Sort members by their position and type
   const sortedMembers = [...members].sort((a: any, b: any) => {
     const order = ["COUNCIL", "DIRECTOR", "COORDINATOR", "MEMBER"];
@@ -58,7 +83,7 @@ export default async function Home() {
       {/* Premium background blur glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute top-[40%] right-[-10%] w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
-      
+
       <div>
         <MaxWidthWrapper>
           <HeroSection />
@@ -76,7 +101,7 @@ export default async function Home() {
       </div>
       <div className="bg-transparent py-12 border-y border-primary/10">
         <MaxWidthWrapper>
-          <EventsSection />
+          <EventsSection initiatives={initiatives} />
         </MaxWidthWrapper>
       </div>
       <div>

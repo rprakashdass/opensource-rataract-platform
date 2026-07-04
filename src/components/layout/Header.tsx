@@ -10,17 +10,17 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  "Home",
-  "About",
-  "Team",
-  "Events",
-  "Sponsor Us",
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Team", href: "/team" },
+  { label: "Initiatives", href: "/events" },
+  { label: "Sponsor Us", href: "/sponsor-us" },
 ];
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  
+
   const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
   const orgSubName = process.env.NEXT_PUBLIC_ORG_SUB_NAME || "District & Club Platform";
 
@@ -46,10 +46,10 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="ml-auto hidden md:flex items-center space-x-1 bg-primary/5 p-1 rounded-full border border-primary/10">
           {NAV_LINKS.map((item) => {
-            const href = item === "Home" ? "/" : `/${item.toLowerCase().replaceAll(" ", "-")}`;
+            const href = item.href;
             const isActive = pathname === href;
             return (
-              <Link key={item} prefetch href={href}>
+              <Link key={item.label} prefetch href={href}>
                 <button
                   className={cn(
                     "text-xs font-semibold px-4 py-2 rounded-full transition-all duration-300 cursor-pointer select-none",
@@ -58,7 +58,7 @@ export default function Header() {
                       : "text-muted-foreground hover:text-foreground hover:bg-primary/10"
                   )}
                 >
-                  {item}
+                  {item.label}
                 </button>
               </Link>
             );
@@ -76,7 +76,7 @@ export default function Header() {
           <SheetContent side="right" className="w-[280px] border-l border-zinc-200/40 dark:border-zinc-800/40 glass-panel">
             <div className="flex flex-col space-y-4 mt-8">
               {NAV_LINKS.map((item, index) => {
-                const href = item === "Home" ? "/" : `/${item.toLowerCase().replaceAll(" ", "-")}`;
+                const href = item.href;
                 const isActive = pathname === href;
                 return (
                   <Link
@@ -91,7 +91,7 @@ export default function Header() {
                     )}
                     onClick={() => setIsOpen(false)}
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 );
               })}

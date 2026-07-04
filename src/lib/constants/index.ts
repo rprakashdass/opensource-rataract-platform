@@ -12,6 +12,7 @@ export const ROUTES = {
   ABOUT: "/about",
   BOARD: "/board",
   EVENTS: "/events",
+  PROJECTS: "/projects",
   GALLERY: "/gallery",
   LOGIN: "/auth/login",
   SIGNUP: "/auth/signup",
@@ -77,7 +78,7 @@ export const PUBLIC_NAV_ITEMS = [
   { label: "About", href: ROUTES.ABOUT },
   { label: "Board", href: ROUTES.BOARD },
   { label: "Projects", href: ROUTES.PROJECTS },
-  { label: "Events", href: ROUTES.EVENTS },
+  { label: "Initiatives", href: ROUTES.EVENTS },
   { label: "Gallery", href: ROUTES.GALLERY },
 ] as const;
 
@@ -85,7 +86,7 @@ export const PUBLIC_NAV_ITEMS = [
 export const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: ROUTES.ADMIN },
   { label: "Members", href: `${ROUTES.ADMIN}/members` },
-  { label: "Events", href: `${ROUTES.ADMIN}/events` },
+  { label: "Initiatives & Events", href: `${ROUTES.ADMIN}/events` },
   { label: "Projects", href: `${ROUTES.ADMIN}/projects` },
   { label: "Gallery", href: `${ROUTES.ADMIN}/gallery` },
   { label: "Settings", href: `${ROUTES.ADMIN}/settings` },

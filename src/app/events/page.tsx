@@ -11,30 +11,43 @@ export const metadata: Metadata = {
 };
 
 export default async function EventsPage() {
-  let dbEvents: any[] = [];
+  let dbInitiatives: any[] = [];
   try {
-    const queriedEvents = await prisma.event.findMany({
+    const queriedInitiatives = await prisma.initiative.findMany({
+      include: {
+        events: {
+          orderBy: {
+            startDate: "asc",
+          },
+        },
+      },
       orderBy: {
-        startDate: "desc",
+        updatedAt: "desc",
       },
     });
 
-    if (queriedEvents.length > 0) {
-      dbEvents = queriedEvents.map((e: any) => ({
-        id: e.id,
-        title: e.title,
-        slug: e.slug,
-        description: e.description || "",
-        date: e.startDate.toISOString().split("T")[0],
-        location: e.location || "",
-        coverImage: e.imageUrl || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
-      }));
+    if (queriedInitiatives.length > 0) {
+      dbInitiatives = queriedInitiatives.map((initiative: any) => {
+        const nextEvent = initiative.events.find((event: any) => new Date(event.startDate) >= new Date()) || initiative.events[0] || null;
+
+        return {
+          id: initiative.id,
+          title: initiative.title,
+          slug: initiative.slug,
+          description: initiative.description || "",
+          coverImage: initiative.imageUrl || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
+          frequency: initiative.frequency.toLowerCase(),
+          instanceCount: initiative.events.length,
+          nextDate: nextEvent ? nextEvent.startDate.toISOString().split("T")[0] : initiative.startDate.toISOString().split("T")[0],
+          location: nextEvent?.location || "",
+        };
+      });
     }
   } catch (error) {
-    console.error("Prisma events query failed:", error);
+    console.error("Prisma initiatives query failed:", error);
   }
 
-  const events = dbEvents;
+  const events = dbInitiatives;
 
   return (
     <div className="min-h-screen bg-background pt-32 pb-16">
@@ -43,17 +56,17 @@ export default async function EventsPage() {
           {/* Header */}
           <div className="max-w-2xl space-y-4">
             <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
-              Event Campaigns
+              Initiative Campaigns
             </span>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
               Our Active Initiatives
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              We organize fundraising campaigns, local cleanliness drives, and professional leadership conferences throughout the year. Connect with us to participate.
+              We organize recurring service drives, leadership programs, and community campaigns. Each initiative stays as a single card and opens to all manual event instances.
             </p>
           </div>
 
-          {/* Interactive events feed */}
+          {/* Interactive initiatives feed */}
           <EventsFeed initialEvents={events} />
         </div>
       </MaxWidthWrapper>

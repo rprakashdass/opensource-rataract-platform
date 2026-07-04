@@ -21,6 +21,25 @@ export default function AdminLayout({
             </Link>
           </div>
         </div>
+        <div className="border-t border-gray-200 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap gap-2 text-sm">
+            <Link href={ROUTES.ADMIN} className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:text-purple-700 hover:border-purple-200 transition">
+              Dashboard
+            </Link>
+            <Link href={`${ROUTES.ADMIN}/members`} className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:text-purple-700 hover:border-purple-200 transition">
+              Members
+            </Link>
+            <Link href={`${ROUTES.ADMIN}/events`} className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:text-purple-700 hover:border-purple-200 transition">
+              Events
+            </Link>
+            <Link href={`${ROUTES.ADMIN}/gallery`} className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:text-purple-700 hover:border-purple-200 transition">
+              Gallery
+            </Link>
+            <Link href={`${ROUTES.ADMIN}/settings`} className="px-3 py-1.5 rounded-full bg-white border border-gray-200 text-gray-700 hover:text-purple-700 hover:border-purple-200 transition">
+              Settings
+            </Link>
+          </div>
+        </div>
       </header>
 
       <div className="flex">
@@ -53,7 +72,7 @@ export default function AdminLayout({
               href={`${ROUTES.ADMIN}/events`}
               className="block px-4 py-2 rounded hover:bg-purple-50 text-gray-700 hover:text-purple-700 transition"
             >
-              Events
+              Initiatives & Events
             </Link>
             <Link
               href={`${ROUTES.ADMIN}/gallery`}
