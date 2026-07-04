@@ -14,6 +14,16 @@ interface Event {
   coverImage: string;
 }
 
+// Consistent date formatter to avoid hydration mismatch
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString + "T00:00:00Z");
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = date.getUTCDate();
+  const month = months[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+  return `${month} ${day}, ${year}`;
+};
+
 export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "UPCOMING" | "COMPLETED">("ALL");
@@ -101,7 +111,7 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
                 <div className="flex flex-col gap-2 pt-2 border-t border-primary/10 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-4 w-4 text-primary" />
-                    <span>{new Date(event.date).toLocaleDateString()}</span>
+                    <span>{formatDate(event.date)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4 text-primary" />
@@ -134,9 +144,9 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
             </div>
 
             <div className="p-8 space-y-6">
-              <h2 className="text-2xl font-black text-foreground">{selectedEvent.title}</h2>
+              <h2 className="text-2xl font-black text-white">{selectedEvent.title}</h2>
               
-              <div className="flex gap-4 text-xs font-semibold text-muted-foreground uppercase tracking-widest border-y border-primary/10 py-3">
+              <div className="flex gap-4 text-xs font-semibold text-white/80 uppercase tracking-widest border-y border-primary/10 py-3">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4 text-primary" />
                   <span>{new Date(selectedEvent.date).toLocaleDateString()}</span>
@@ -148,8 +158,8 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-foreground uppercase tracking-widest">About Initiative</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">{selectedEvent.description}</p>
+                <h4 className="text-xs font-bold text-white uppercase tracking-widest">About Initiative</h4>
+                <p className="text-sm text-white/80 leading-relaxed">{selectedEvent.description}</p>
               </div>
             </div>
           </div>
