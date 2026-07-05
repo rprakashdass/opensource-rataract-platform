@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
-import { getSession } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 
 function adminOnly(session: any) {
@@ -32,27 +31,34 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const startDate = new Date(event.startDate);
 
     // Send emails
-    for (const member of members) {
-      if (member.user?.email) {
-        const emailHtml = `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>You're invited: ${event.title}</h2>
-            <p>Hi ${member.name},</p>
-            <p>Please find the calendar invite attached for our upcoming event!</p>
-            <p><strong>When:</strong> ${startDate.toLocaleString()}</p>
-            <p><strong>Where:</strong> ${event.location || "TBD"}</p>
-            <br/>
-            <p>See you there!<br/>Rotaract Club</p>
-          </div>
-        `;
+    const emailPromises = members.map(member => {
+      const targetEmail = member.email || member.user?.email;
+      if (!targetEmail) return Promise.resolve();
 
-        sendEmail({
-          to: member.user.email,
-          subject: `Invite: ${event.title}`,
-          html: emailHtml
-        }).catch(err => console.error("Failed to send calendar invite:", err));
-      }
-    }
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>You're invited: ${event.title}</h2>
+          <p>Hi ${member.name || "Member"},</p>
+          <p>Please find the calendar invite attached for our upcoming event!</p>
+          <p><strong>When:</strong> ${startDate.toLocaleString()}</p>
+          <p><strong>Where:</strong> ${event.location || "TBD"}</p>
+          <br/>
+          <p>See you there!<br/>Rotaract Club</p>
+        </div>
+      `;
+
+      return sendEmail({
+        to: targetEmail,
+        subject: `Invite: ${event.title}`,
+        html: emailHtml
+      }).then(res => {
+        if (!res.success) {
+          console.error("Resend API failed to send to", targetEmail, ":", res.error);
+        }
+      }).catch(err => console.error("Failed to send calendar invite to", targetEmail, ":", err));
+    });
+
+    await Promise.all(emailPromises);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

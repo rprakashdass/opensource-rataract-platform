@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
-import { LayoutDashboard, Users, Users2, Calendar, Image as ImageIcon, Settings, UserCircle, Banknote, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, Users2, Calendar, Image as ImageIcon, Settings, UserCircle, Banknote, Bell } from "lucide-react";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -20,7 +20,7 @@ export default function AdminSidebar() {
     { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
     { label: "Finance & Treasury", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
     { label: "Events & Initiatives", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
-    { label: "Meetings & Minutes", href: `${ROUTES.ADMIN}/meetings`, icon: BookOpen },
+    { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
     { label: "Gallery", href: `${ROUTES.ADMIN}/gallery`, icon: ImageIcon },
     { label: "Club Settings", href: `${ROUTES.ADMIN}/settings`, icon: Settings },
   ];

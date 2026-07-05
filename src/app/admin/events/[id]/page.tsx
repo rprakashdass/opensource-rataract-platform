@@ -71,8 +71,8 @@ export default async function EventDashboardPage(
           </div>
         </div>
         
-          <div className="flex gap-4">
-            {/* Stats */}
+          <div className="flex gap-4 items-center">
+            <InviteMailButton eventId={event.id} />
           </div>
         </div>
 
@@ -105,9 +105,6 @@ export default async function EventDashboardPage(
 
           {activeTab === "attendees" && (
             <div className="space-y-6">
-              <div className="flex justify-end gap-4">
-                <InviteMailButton eventId={event.id} />
-              </div>
               <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 overflow-hidden">
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <h2 className="font-bold text-gray-900 flex items-center gap-2">
@@ -135,7 +132,7 @@ export default async function EventDashboardPage(
                 <tr key={attendee.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{attendee.member.name}</div>
-                    <div className="text-xs text-gray-500">{attendee.member.user.email}</div>
+                    <div className="text-xs text-gray-500">{attendee.member.email || attendee.member.user?.email || "No email"}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(attendee.registeredAt).toLocaleString()}

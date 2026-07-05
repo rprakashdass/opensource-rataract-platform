@@ -1,6 +1,4 @@
-import { Resend } from "resend";
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+import nodemailer from "nodemailer";
 
 interface EmailOptions {
   to: string | string[];
@@ -10,26 +8,37 @@ interface EmailOptions {
 }
 
 /**
- * Sends an email using Resend.
- * Defaults to sending from "Rotaract Platform <onboarding@resend.dev>" if a custom domain isn't verified.
+ * Sends an email using Nodemailer and Gmail App Password.
  */
 export async function sendEmail({ to, subject, html, from }: EmailOptions) {
-  if (!resend) {
-    console.warn("⚠️ RESEND_API_KEY is not set. Email not sent:");
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+
+  if (!user || !pass) {
+    console.warn("⚠️ GMAIL_USER or GMAIL_APP_PASSWORD is not set. Email not sent:");
     console.warn(`To: ${to}`);
     console.warn(`Subject: ${subject}`);
     return { success: true, dummy: true };
   }
 
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user,
+      pass,
+    },
+  });
+
   try {
-    const data = await resend.emails.send({
-      from: from || "Rotaract Platform <onboarding@resend.dev>",
+    const info = await transporter.sendMail({
+      from: from || `"Rotaract Club" <${user}>`,
       to,
       subject,
       html,
     });
 
-    return { success: true, data };
+    console.log(`Email sent: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false, error };

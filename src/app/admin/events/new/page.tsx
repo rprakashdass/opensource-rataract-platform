@@ -181,7 +181,7 @@ export default function NewEventsPage() {
       const result = await res.json();
       if (result.error) throw new Error(result.error);
       toast.success("Event saved", { id: loadingToast });
-      router.push(`/admin/events/${result.id}/attendees`);
+      router.push(`/admin/events/${result.id}?tab=attendees`);
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message, { id: loadingToast });
