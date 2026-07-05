@@ -8,12 +8,13 @@ import { allPositions, MemberType, Position } from "@/utils/positions";
 import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
+  // ── Members ──────────────────────────────────────────────────────────────
   let members: any[] = [];
   try {
     const dbMembers = await prisma.member.findMany({
       include: {
         user: true,
-        boardMembership: true
+        boardMembership: true,
       },
     });
     if (dbMembers && dbMembers.length > 0) {
@@ -21,44 +22,62 @@ export default async function Home() {
         id: m.id,
         name: m.user?.name || "Member",
         imageUrl: m.user?.avatar || "/user.png",
-        roles: [{
-          id: m.id,
-          memberType: (m.role === "BOARD_MEMBER" ? MemberType.COUNCIL : MemberType.DIRECTOR) as MemberType,
-          position: (m.boardMembership?.position?.replaceAll("_", " ") || "Member") as Position,
-          yearId: "y1",
-          memberId: m.id
-        }],
+        roles: [
+          {
+            id: m.id,
+            memberType: (m.role === "BOARD_MEMBER" ? MemberType.COUNCIL : MemberType.DIRECTOR) as MemberType,
+            position: (m.boardMembership?.position?.replaceAll("_", " ") || "Member") as Position,
+            yearId: "y1",
+            memberId: m.id,
+          },
+        ],
         createdAt: m.createdAt,
-        updatedAt: m.updatedAt
+        updatedAt: m.updatedAt,
       }));
     }
   } catch (error) {
-    console.error("Prisma query failed on Home page:", error);
+    console.error("Prisma query failed on Home page (members):", error);
   }
 
-  // Sort members by their position and type
   const sortedMembers = [...members].sort((a: any, b: any) => {
     const order = ["COUNCIL", "DIRECTOR", "COORDINATOR", "MEMBER"];
     const aType = a.roles[0]?.memberType || "MEMBER";
     const bType = b.roles[0]?.memberType || "MEMBER";
     const typeComparison = order.indexOf(aType) - order.indexOf(bType);
     if (typeComparison !== 0) return typeComparison;
-
     if (aType === "COUNCIL" && bType === "COUNCIL") {
       const aPos = a.roles[0]?.position as Position;
       const bPos = b.roles[0]?.position as Position;
       return allPositions.indexOf(aPos) - allPositions.indexOf(bPos);
     }
-
     return 0;
   });
+
+  // ── Initiative Events ─────────────────────────────────────────────────────
+  let initiativeEvents: any[] = [];
+  try {
+    initiativeEvents = await prisma.event.findMany({
+      where: { category: "initiative" },
+      orderBy: { startDate: "desc" },
+      select: {
+        id: true,
+        title: true,
+        startDate: true,
+        location: true,
+        imageUrl: true,
+        category: true,
+      },
+    });
+  } catch (error) {
+    console.error("Prisma query failed on Home page (initiative events):", error);
+  }
 
   return (
     <main className="min-h-screen w-full space-y-12 lg:space-y-24 py-8 lg:py-16 bg-background relative overflow-hidden">
       {/* Premium background blur glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute top-[40%] right-[-10%] w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none -z-10" />
-      
+
       <div>
         <MaxWidthWrapper>
           <HeroSection />
@@ -76,7 +95,7 @@ export default async function Home() {
       </div>
       <div className="bg-transparent py-12 border-y border-primary/10">
         <MaxWidthWrapper>
-          <EventsSection />
+          <EventsSection events={initiativeEvents} />
         </MaxWidthWrapper>
       </div>
       <div>

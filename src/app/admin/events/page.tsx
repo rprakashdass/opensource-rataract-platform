@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Trash2, Plus, Calendar, Image as ImageIcon, Pencil, X } from "lucide-react";
+import { Trash2, Plus, Calendar, Image as ImageIcon, Pencil } from "lucide-react";
 
 interface Event {
   id: string;
@@ -13,6 +13,7 @@ interface Event {
   endDate?: string | null;
   status: string;
   imageUrl?: string | null;
+  category?: string | null;
 }
 
 export default function EventsAdmin() {
@@ -22,7 +23,7 @@ export default function EventsAdmin() {
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Form State
+  // Form state
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
@@ -31,6 +32,7 @@ export default function EventsAdmin() {
   const [endDate, setEndDate] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [status, setStatus] = useState("upcoming");
+  const [isInitiative, setIsInitiative] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -67,16 +69,13 @@ export default function EventsAdmin() {
     setSlug(event.slug || "");
     setDescription(event.description || "");
     setLocation(event.location || "");
-    
-    // datetime-local input requires YYYY-MM-DDTHH:MM format
     const sDate = event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "";
     setStartDate(sDate);
-    
     const eDate = event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "";
     setEndDate(eDate);
-    
     setImageUrl(event.imageUrl || "");
     setStatus(event.status || "upcoming");
+    setIsInitiative(event.category === "initiative");
   };
 
   const handleCancelEdit = () => {
@@ -89,6 +88,7 @@ export default function EventsAdmin() {
     setEndDate("");
     setImageUrl("");
     setStatus("upcoming");
+    setIsInitiative(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,9 +97,8 @@ export default function EventsAdmin() {
     setError("");
 
     try {
-      const url = "/api/admin/events";
       const method = editingId ? "PUT" : "POST";
-      const res = await fetch(url, {
+      const res = await fetch("/api/admin/events", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -112,6 +111,7 @@ export default function EventsAdmin() {
           endDate: endDate || null,
           imageUrl: imageUrl || null,
           status,
+          isInitiative,
         }),
       });
 
@@ -130,9 +130,7 @@ export default function EventsAdmin() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
     try {
-      const res = await fetch(`/api/admin/events?id=${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/admin/events?id=${id}`, { method: "DELETE" });
       const result = await res.json();
       if (result.error) throw new Error(result.error);
       fetchEvents();
@@ -259,9 +257,7 @@ export default function EventsAdmin() {
                       const file = e.target.files?.[0];
                       if (file) {
                         const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setImageUrl(reader.result as string);
-                        };
+                        reader.onloadend = () => setImageUrl(reader.result as string);
                         reader.readAsDataURL(file);
                       }
                     }}
@@ -280,6 +276,23 @@ export default function EventsAdmin() {
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
                 placeholder="Describe your event details..."
               />
+            </div>
+
+            {/* Initiative Checkbox */}
+            <div className="flex items-start gap-3 p-3 rounded-lg border border-purple-200 bg-purple-50">
+              <input
+                id="isInitiative"
+                type="checkbox"
+                checked={isInitiative}
+                onChange={(e) => setIsInitiative(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-purple-600 cursor-pointer"
+              />
+              <label htmlFor="isInitiative" className="text-sm cursor-pointer select-none">
+                <span className="font-semibold text-purple-800">Initiative Event</span>
+                <p className="text-xs text-purple-600 mt-0.5">
+                  Show this event in the &quot;Initiatives In Action&quot; section on the homepage.
+                </p>
+              </label>
             </div>
 
             <div className="flex gap-3">
@@ -338,9 +351,16 @@ export default function EventsAdmin() {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-semibold text-gray-900">{event.title}</div>
-                            <span className="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full bg-pink-50 text-pink-800 uppercase mt-1">
-                              {event.status}
-                            </span>
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              <span className="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full bg-pink-50 text-pink-800 uppercase">
+                                {event.status}
+                              </span>
+                              {event.category === "initiative" && (
+                                <span className="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full bg-purple-100 text-purple-700 uppercase">
+                                  Initiative
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -353,7 +373,7 @@ export default function EventsAdmin() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                         <button
                           onClick={() => handleEditClick(event)}
-                          className="text-pink-600 hover:text-pink-955 cursor-pointer"
+                          className="text-pink-600 hover:text-pink-900 cursor-pointer"
                           title="Edit Event"
                         >
                           <Pencil className="h-5 w-5 inline" />

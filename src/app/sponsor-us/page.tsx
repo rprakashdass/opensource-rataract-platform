@@ -95,9 +95,9 @@ export default function SponsorPage() {
                   className="w-full h-2 bg-primary/10 dark:bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
                 />
                 <div className="flex justify-between text-[10px] text-muted-foreground font-semibold">
-                  <span>$50 MIN</span>
-                  <span>$500</span>
-                  <span>$1,000 MAX</span>
+                  <span>₹50 MIN</span>
+                  <span>₹500</span>
+                  <span>₹1,000 MAX</span>
                 </div>
               </div>
 

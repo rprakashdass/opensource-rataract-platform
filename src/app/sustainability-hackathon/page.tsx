@@ -143,15 +143,15 @@ export default function SustainabilityHackathonPage() {
               <ul className="space-y-4 text-xs font-bold text-emerald-300">
                 <li className="flex justify-between border-b border-green-500/20 pb-2">
                   <span>1ST PLACE</span>
-                  <span className="text-green-400 font-extrabold">$500 + Domain Support</span>
+                  <span className="text-green-400 font-extrabold">₹500 + Domain Support</span>
                 </li>
                 <li className="flex justify-between border-b border-green-500/20 pb-2">
                   <span>2ND PLACE</span>
-                  <span className="text-green-400 font-extrabold">$300 + Cloud Credits</span>
+                  <span className="text-green-400 font-extrabold">₹300 + Cloud Credits</span>
                 </li>
                 <li className="flex justify-between pb-2">
                   <span>3RD PLACE</span>
-                  <span className="text-green-400 font-extrabold">$200 + API Key Tier</span>
+                  <span className="text-green-400 font-extrabold">₹200 + API Key Tier</span>
                 </li>
               </ul>
             </div>

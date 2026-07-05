@@ -25,6 +25,8 @@ function validateEventPayload(data: any) {
     endDate: typeof data.endDate === "string" && data.endDate.trim() ? new Date(data.endDate) : null,
     imageUrl: typeof data.imageUrl === "string" && data.imageUrl.trim() ? data.imageUrl.trim() : null,
     status: typeof data.status === "string" && data.status.trim() ? data.status.trim() : "upcoming",
+    // If isInitiative checkbox is checked, store category as "initiative"; otherwise null
+    category: data.isInitiative === true ? "initiative" : null,
   };
 }
 
@@ -45,6 +47,7 @@ export async function POST(req: Request) {
         endDate: payload.endDate,
         imageUrl: payload.imageUrl,
         status: payload.status,
+        category: payload.category,
       },
     });
 
@@ -58,9 +61,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const events = await prisma.event.findMany({
-      orderBy: {
-        startDate: "desc",
-      },
+      orderBy: { startDate: "desc" },
     });
     return NextResponse.json(events);
   } catch (error: unknown) {
@@ -103,6 +104,8 @@ export async function PUT(req: Request) {
         endDate: data.endDate ? new Date(data.endDate) : null,
         imageUrl: data.imageUrl,
         status: data.status,
+        // Update category based on isInitiative flag
+        category: data.isInitiative === true ? "initiative" : null,
       },
     });
 
