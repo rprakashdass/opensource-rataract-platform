@@ -60,7 +60,7 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
   const isStandaloneEvent = initiative.frequency === "ONCE";
 
   return (
-    <div className="min-h-screen bg-background pt-28 pb-16">
+    <div className="min-h-screen bg-background pt-24 sm:pt-28 pb-16">
       <MaxWidthWrapper>
         <div className="space-y-8">
           <Link href="/events" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
@@ -68,37 +68,38 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
             Back to {isStandaloneEvent ? "events" : "initiatives"}
           </Link>
 
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-start">
+          {/* Hero: stacks on mobile, side-by-side on lg */}
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1.1fr_0.9fr] items-start">
             <div className="space-y-6">
               <div className="space-y-4">
                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
                   <Repeat className="h-3.5 w-3.5" />
                   {isStandaloneEvent ? "Standalone Event" : `${initiative.frequency.toLowerCase()} initiative`}
                 </span>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
                   {initiative.title}
                 </h1>
-                <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
                   {initiative.description || `This ${isStandaloneEvent ? "event" : "initiative"} has no description yet.`}
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground font-medium">
+              <div className="flex flex-wrap gap-3 text-sm text-muted-foreground font-medium">
                 {!isStandaloneEvent && (
                   <div className="flex items-center gap-1.5 rounded-full border border-primary/10 bg-card px-3 py-2">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
                     <span>{initiative.events.length} event instances</span>
                   </div>
                 )}
                 <div className="flex items-center gap-1.5 rounded-full border border-primary/10 bg-card px-3 py-2">
-                  <Repeat className="h-4 w-4 text-primary" />
+                  <Repeat className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>{initiative.frequency.toLowerCase()}</span>
                 </div>
               </div>
 
               {!isStandaloneEvent && (
-                <div className="rounded-3xl border border-primary/10 bg-card p-6">
-                  <h2 className="text-lg font-bold text-foreground mb-4">About this initiative</h2>
+                <div className="rounded-3xl border border-primary/10 bg-card p-5 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-bold text-foreground mb-3">About this initiative</h2>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     The initiative itself is the parent card users see on the home page. Each item below is a manually created event instance tied to the same initiative.
                   </p>
@@ -116,15 +117,15 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
                   sizes="(max-width: 1024px) 100vw, 40vw"
                 />
               </div>
-              <div className="p-6 space-y-3">
+              <div className="p-5 sm:p-6 space-y-3">
                 {!isStandaloneEvent && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 text-primary" />
+                    <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
                     <span>Manual event instances below</span>
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {isStandaloneEvent 
+                  {isStandaloneEvent
                     ? "Join us for this single event. Register below to reserve your spot!"
                     : "Each instance keeps its own date, place, and status so the initiative stays as a single card while still showing the full history."
                   }
@@ -133,8 +134,9 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
             </div>
           </div>
 
+          {/* Event instances */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
               {isStandaloneEvent ? "Event Details" : "All event instances"}
             </h2>
 
@@ -143,13 +145,13 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
                 No event instances have been created for this initiative yet.
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {initiative.events.map((event) => (
-                  <article key={event.id} className="rounded-3xl border border-primary/10 bg-card p-5 shadow-sm">
+                  <article key={event.id} className="rounded-3xl border border-primary/10 bg-card p-4 sm:p-5 shadow-sm">
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="text-lg font-bold text-foreground line-clamp-1">{event.title}</h3>
-                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 flex-1">{event.title}</h3>
+                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary flex-shrink-0">
                           {event.status}
                         </span>
                       </div>
@@ -158,15 +160,15 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
                       </p>
                       <div className="space-y-2 border-t border-primary/10 pt-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4 text-primary" />
-                          <span>{new Date(event.startDate).toLocaleString()}</span>
+                          <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{new Date(event.startDate).toLocaleString()}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <MapPin className="h-4 w-4 text-primary" />
-                          <span>{event.location || "Location not set"}</span>
+                          <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{event.location || "Location not set"}</span>
                         </div>
                       </div>
-                      
+
                       {event.minutes && (
                         <div className="mt-4 pt-4 border-t border-primary/10">
                           <h4 className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Meeting Minutes</h4>
@@ -177,9 +179,9 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
                       )}
 
                       <div className="pt-3 border-t border-primary/10 flex justify-end">
-                        <RegisterButton 
-                          eventId={event.id} 
-                          isRegistered={event.attendees?.length > 0} 
+                        <RegisterButton
+                          eventId={event.id}
+                          isRegistered={event.attendees?.length > 0}
                         />
                       </div>
                     </div>

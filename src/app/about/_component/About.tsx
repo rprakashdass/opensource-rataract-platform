@@ -151,14 +151,14 @@ export const domains: Domain[] = [
 
 export default function AboutUs() {
   return (
-    <div className="min-h-screen bg-background pt-32 pb-16">
-      <MaxWidthWrapper className="py-2 space-y-2 lg:py-6 lg:space-y-6">
+    <div className="min-h-screen bg-background pt-24 sm:pt-32 pb-16">
+      <MaxWidthWrapper className="py-2 space-y-10 lg:py-6 lg:space-y-14">
         <motion.div variants={fadeIn}>
           <div className="max-w-2xl space-y-4 mb-8">
             <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
               Who We Are
             </span>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
               About Us
             </h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -167,13 +167,14 @@ export default function AboutUs() {
           </div>
         </motion.div>
 
+        {/* Mission — image on top on mobile, side by side on lg */}
         <motion.div
           variants={fadeIn}
-          className="grid gap-8 lg:grid-cols-2 lg:items-center"
+          className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:items-center"
         >
           <motion.div
             className="flex justify-center"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.03 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
             <Image
@@ -187,12 +188,12 @@ export default function AboutUs() {
           </motion.div>
           <Card className="border-none bg-background/50 shadow-none">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight sm:text-3xl">
                 Our Mission
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm sm:text-base">
                 At our Rotaract Club, we function as a service-oriented
                 organization that strives to create a better world through
                 volunteerism, community service, and professional development.
@@ -204,20 +205,20 @@ export default function AboutUs() {
           </Card>
         </motion.div>
 
-        {/* Parent Club Section */}
+        {/* Parent Club — reverse order on mobile so text comes first */}
         <motion.div
           variants={fadeIn}
-          className="grid gap-8 lg:grid-cols-2 lg:items-center"
+          className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:items-center"
         >
-          <Card className="border-none bg-background/50 shadow-none order-2 lg:order-1">
+          <Card className="border-none bg-background/50 shadow-none order-1 lg:order-none">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold tracking-tight sm:text-3xl">
+              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight sm:text-3xl">
                 Parent Club
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Our Rotaract Club is proudly sponsored by our parent Rotary Club. 
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Our Rotaract Club is proudly sponsored by our parent Rotary Club.
                 Through this partnership, they nurture and support the young
                 leaders of our Rotaract Club, empowering us to create a
                 positive impact in our community and beyond. Together, we work
@@ -230,8 +231,8 @@ export default function AboutUs() {
             </CardContent>
           </Card>
           <motion.div
-            className="flex justify-center lg:order-1"
-            whileHover={{ scale: 1.05 }}
+            className="flex justify-center order-2 lg:order-none"
+            whileHover={{ scale: 1.03 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
             <Image
@@ -244,36 +245,34 @@ export default function AboutUs() {
           </motion.div>
         </motion.div>
 
-        <section className="space-y-8">
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl font-semibold">Our Domains</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+        {/* Domains grid */}
+        <section className="space-y-6 sm:space-y-8">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <h2 className="text-xl sm:text-2xl font-semibold">Our Domains</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
               We work across 12 distinctive domains to attain our common goal of
               Service above Self, exploring the power of teamwork and providing
               humanitarian aid.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {domains.map((domain, index) => (
               <Card key={index} className="hover:shadow-lg transition-all">
-                <CardHeader className="flex flex-row items-center space-x-4 pb-2">
-                  <div className="p-2 rounded-full bg-primary/10 text-primary">
-                    <domain.icon className="h-6 w-6" />
+                <CardHeader className="flex flex-row items-center space-x-3 sm:space-x-4 pb-2">
+                  <div className="p-2 rounded-full bg-primary/10 text-primary flex-shrink-0">
+                    <domain.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <CardTitle className="text-xl">{domain.title}</CardTitle>
+                  <CardTitle className="text-base sm:text-xl">{domain.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="text-muted-foreground">{domain.description}</p>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">{domain.description}</p>
+                  <ul className="list-disc list-inside text-xs sm:text-sm text-muted-foreground">
                     {domain.activities.map((activity, i) => (
                       <li key={i}>{activity}</li>
                     ))}
                   </ul>
                   <Link href={`/about/domains/${domain.title.toLowerCase().replace(/\s+/g, "-")}`} prefetch>
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto text-primary hover:underline"
-                    >
+                    <Button variant="link" className="p-0 h-auto text-primary hover:underline text-sm">
                       Learn More
                       <ArrowRight className="ml-1 h-4 w-4" />
                     </Button>

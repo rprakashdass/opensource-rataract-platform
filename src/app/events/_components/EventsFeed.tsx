@@ -34,42 +34,44 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
   const filteredEvents = initialEvents.filter((event) => {
     const nameMatch = event.title.toLowerCase().includes(search.toLowerCase()) ||
       event.description.toLowerCase().includes(search.toLowerCase());
-
     if (statusFilter === "ALL") return nameMatch;
     if (statusFilter === event.frequency.toUpperCase()) return nameMatch;
     return nameMatch;
   });
 
   return (
-    <div className="space-y-12">
-      {/* Search & Filter Controls Panel */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card border border-primary/10 p-4 rounded-2xl">
+    <div className="space-y-10 sm:space-y-12">
+      {/* Search & Filter Controls */}
+      <div className="flex flex-col gap-4 bg-card border border-primary/10 p-4 rounded-2xl">
         {/* Search input */}
-        <div className="relative w-full md:max-w-xs">
+        <div className="relative w-full">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search events & initiatives..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-primary/5 border border-primary/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full bg-primary/5 border border-primary/10 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
 
-        {/* Tab Filters */}
-        <div className="flex bg-primary/5 p-1 rounded-xl border border-primary/10">
-          {(["ALL", "DAILY", "WEEKLY", "MONTHLY"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setStatusFilter(tab)}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${statusFilter === tab
-                  ? "bg-primary text-primary-foreground shadow"
-                  : "text-muted-foreground hover:text-foreground"
+        {/* Scrollable tab filters on mobile */}
+        <div className="overflow-x-auto -mx-1 px-1 pb-1">
+          <div className="flex bg-primary/5 p-1 rounded-xl border border-primary/10 w-max min-w-full sm:w-auto">
+            {(["ALL", "DAILY", "WEEKLY", "MONTHLY"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setStatusFilter(tab)}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all whitespace-nowrap ${
+                  statusFilter === tab
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
-            >
-              {tab === "ALL" ? "All Events" : tab.toLowerCase()}
-            </button>
-          ))}
+              >
+                {tab === "ALL" ? "All Events" : tab.charAt(0) + tab.slice(1).toLowerCase()}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -79,7 +81,7 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
           No events or initiatives found matching your search.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredEvents.map((event) => (
             <Link
               key={event.id}
@@ -92,12 +94,12 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
                   alt={event.title}
                   fill
                   className="object-cover group-hover:scale-103 transition-transform duration-300"
-                  sizes="(max-width: 768px) 100vw, 33vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
               </div>
 
-              <div className="p-6 space-y-4">
-                <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              <div className="p-5 sm:p-6 space-y-4">
+                <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {event.title}
                 </h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -106,11 +108,11 @@ export default function EventsFeed({ initialEvents }: { initialEvents: Event[] }
 
                 <div className="flex flex-col gap-2 pt-2 border-t border-primary/10 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
-                    <Repeat className="h-4 w-4 text-primary" />
+                    <Repeat className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                     <span>{event.frequency}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <Calendar className="h-3.5 w-3.5 text-primary flex-shrink-0" />
                     <span>{event.instanceCount} instances</span>
                   </div>
                   <div className="flex items-center gap-1.5 normal-case tracking-normal">

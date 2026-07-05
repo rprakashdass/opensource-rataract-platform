@@ -33,34 +33,32 @@ export default async function Home() {
         updatedAt: m.updatedAt
       }));
     }
+    const dbInitiatives = await prisma.initiative.findMany({
+      include: {
+        events: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: {
+        startDate: "desc",
+      },
+      take: 4,
+    });
+
+    initiatives = dbInitiatives.map((initiative: any) => ({
+      id: initiative.id,
+      title: initiative.title,
+      slug: initiative.slug,
+      description: initiative.description || "",
+      coverImage: initiative.imageUrl || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
+      frequency: initiative.frequency.toLowerCase(),
+      instanceCount: initiative.events.length,
+    }));
   } catch (error) {
     console.error("Prisma query failed on Home page:", error);
   }
-
-
-  const dbInitiatives = await prisma.initiative.findMany({
-    include: {
-      events: {
-        select: {
-          id: true,
-        },
-      },
-    },
-    orderBy: {
-      startDate: "desc",
-    },
-    take: 4,
-  });
-
-  initiatives = dbInitiatives.map((initiative: any) => ({
-    id: initiative.id,
-    title: initiative.title,
-    slug: initiative.slug,
-    description: initiative.description || "",
-    coverImage: initiative.imageUrl || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
-    frequency: initiative.frequency.toLowerCase(),
-    instanceCount: initiative.events.length,
-  }));
   // Sort members by their position and type
   const sortedMembers = [...members].sort((a: any, b: any) => {
     const order = ["COUNCIL", "DIRECTOR", "COORDINATOR", "MEMBER"];

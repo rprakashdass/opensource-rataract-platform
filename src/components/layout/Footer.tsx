@@ -1,9 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Instagram,
-  Linkedin,
-} from "lucide-react";
+import { Instagram, Linkedin } from "lucide-react";
 import MaxWidthWrapper from "../wrappers/MaxWidthWrapper";
 
 const footerLinks = {
@@ -17,7 +14,6 @@ const footerLinks = {
     { name: "Board Council", href: "/team/#boardCouncil" },
     { name: "Board of Directors", href: "/team/#boardOfDirectors" },
   ],
-  documents: [],
 };
 
 export default function Footer() {
@@ -35,21 +31,24 @@ export default function Footer() {
   return (
     <footer className="border-t border-primary/10 bg-white dark:bg-black">
       <MaxWidthWrapper>
-        <div className="w-full py-16 md:py-24">
-          <div className="grid gap-12 lg:grid-cols-6 items-start">
-            {/* Brand block */}
-            <div className="lg:col-span-2 space-y-6">
+        <div className="w-full py-12 sm:py-16 md:py-24">
+          {/* Main footer grid — single col on mobile, 6-col on lg */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-12 items-start">
+            {/* Brand block — full width on mobile, 2-col span on lg */}
+            <div className="sm:col-span-2 lg:col-span-2 space-y-5">
               <Link href="/" className="inline-flex items-center gap-3">
                 <Image
                   src="/favicon.ico"
                   alt="Rotaract Club Logo"
-                  width={64}
-                  height={64}
-                  className="hover:rotate-12 transition-transform duration-300"
+                  width={52}
+                  height={52}
+                  className="hover:rotate-12 transition-transform duration-300 flex-shrink-0"
                 />
                 <div>
-                  <h2 className="text-xl font-bold bg-gradient-to-r from-zinc-950 to-zinc-700 dark:from-zinc-50 dark:to-zinc-300 bg-clip-text text-transparent">{appName}</h2>
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
+                  <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-zinc-950 to-zinc-700 dark:from-zinc-50 dark:to-zinc-300 bg-clip-text text-transparent">
+                    {appName}
+                  </h2>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
                     {orgSubName}
                   </p>
                 </div>
@@ -64,11 +63,11 @@ export default function Footer() {
                     <Link
                       key={index}
                       href={social.href}
-                      className="text-muted-foreground hover:text-primary hover:border-primary transition-all p-2.5 rounded-full border border-primary/10 hover:scale-115"
+                      className="text-muted-foreground hover:text-primary hover:border-primary transition-all p-2.5 rounded-full border border-primary/10"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Icon className="h-4.5 w-4.5" />
+                      <Icon className="h-4 w-4" />
                       <span className="sr-only">{social.name}</span>
                     </Link>
                   );
@@ -76,46 +75,40 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Links Block */}
-            <div className="lg:col-span-4 grid gap-8 sm:grid-cols-2">
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">About</h3>
-                <ul className="space-y-3">
-                  {footerLinks.about.map((link) => (
-                    <li key={link.name}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
-                      >
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Team</h3>
-                <ul className="space-y-3">
-                  {footerLinks.team.map((link) => (
-                    <li key={link.name}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
-                      >
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {/* Links — each takes 1 col on sm (within the 2-col sm grid), 2-col span on lg */}
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">About</h3>
+              <ul className="space-y-3">
+                {footerLinks.about.map((link) => (
+                  <li key={link.name}>
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Team</h3>
+              <ul className="space-y-3">
+                {footerLinks.team.map((link) => (
+                  <li key={link.name}>
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          <div className="mt-16 pt-8 border-t border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground">
+          {/* Bottom bar */}
+          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground text-center sm:text-left">
               &copy; {new Date().getFullYear()} {appName}. All rights reserved.
             </p>
-            <div className="flex gap-6 text-xs text-muted-foreground">
+            <div className="flex gap-4 sm:gap-6 text-xs text-muted-foreground">
               <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
             </div>
