@@ -11,7 +11,7 @@ interface UserAccount {
   id: string;
   email: string;
   name: string;
-  role: string;
+  roles: string[];
   member?: {
     id: string;
   } | null;
@@ -25,11 +25,7 @@ export default function AccountsAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Form State
-  const [loginId, setLoginId] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("ADMIN");
+
 
   useLoadingToast(loading, "Loading accounts...");
 
@@ -136,9 +132,13 @@ export default function AccountsAdmin() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {acc.role || "NONE"}
-                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {acc.roles?.map(r => (
+                            <span key={r} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {r.replace('_', ' ')}
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                         <Link
@@ -148,7 +148,7 @@ export default function AccountsAdmin() {
                         >
                           <Pencil className="h-4 w-4 inline" />
                         </Link>
-                        {(currentUser?.role === "ADMIN" || currentUser?.role === "CLUB_ADMIN") && (
+                        {((currentUser?.roles?.includes('ADMIN') || currentUser?.roles?.includes('CLUB_ADMIN'))) && (
                           <button
                             onClick={() => handleDelete(acc.id)}
                             className="text-red-600 hover:text-red-900 cursor-pointer"

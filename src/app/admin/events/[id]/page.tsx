@@ -16,7 +16,7 @@ export default async function EventDashboardPage(
   const activeTab = searchParams.tab || "details";
   const session = await getSession();
 
-  if (!session || (session.role !== "ADMIN" && session.role !== "CLUB_ADMIN")) {
+  if (!session || (!(session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')))) {
     redirect("/auth/login");
   }
 

@@ -9,7 +9,7 @@ async function verifyAdmin() {
   if (!session) return false;
   
   // Checking for admin/treasury roles
-  return ["ADMIN", "CLUB_ADMIN", "TREASURER"].includes(session.role);
+  return session.roles?.some(r => ['ADMIN', 'CLUB_ADMIN', 'TREASURER'].includes(r));
 }
 
 export async function GET() {

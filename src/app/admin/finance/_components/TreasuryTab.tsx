@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useLoadingToast } from "@/hooks/useLoadingToast";
 import Link from "next/link";
 import DeleteButton from "@/components/admin/DeleteButton";
+import { TransactionCreateDialog } from "./TransactionCreateDialog";
 import TransactionEditDialog from "./TransactionEditDialog";
 
 export default function TreasuryTab() {
@@ -66,6 +67,9 @@ export default function TreasuryTab() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-end mb-4">
+        <TransactionCreateDialog />
+      </div>
       {/* Financial Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">

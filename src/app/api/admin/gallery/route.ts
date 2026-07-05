@@ -78,7 +78,7 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "CLUB_ADMIN")) {
+    if (!session || (!(session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')))) {
       return NextResponse.json({ error: "Access Denied: Only Admins can delete gallery items" }, { status: 403 });
     }
 

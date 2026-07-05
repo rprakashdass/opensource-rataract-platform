@@ -35,28 +35,25 @@ export default async function EventsAdmin() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <span className="text-xs font-extrabold uppercase tracking-widest text-pink-700">Events</span>
-          <h1 className="text-3xl font-bold text-gray-900">Initiatives and instances</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Events & Series</h1>
           <p className="text-sm text-gray-500 max-w-2xl">
-            The overview stays clean and readable. Use the creation page when you want to add a new initiative or a new event instance.
+            The overview stays clean and readable. Use the creation page when you want to add a new event or recurring series.
           </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/admin/events/new?section=initiative" className="inline-flex items-center justify-center rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 transition">
-            Create Initiative
-          </Link>
-          <Link href="/admin/events/new?section=event" className="inline-flex items-center justify-center rounded-md border border-pink-200 bg-white px-4 py-2 text-sm font-medium text-pink-700 hover:bg-pink-50 transition">
-            Create Event Instance
+          <Link href="/admin/events/new" className="inline-flex items-center justify-center rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 transition">
+            Create Event
           </Link>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Initiatives</p>
+          <p className="text-sm text-gray-500">Recurring Series</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{initiativeCount}</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Event instances</p>
+          <p className="text-sm text-gray-500">All Event Occurrences</p>
           <p className="mt-2 text-3xl font-bold text-gray-900">{eventCount}</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -69,10 +66,10 @@ export default async function EventsAdmin() {
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Created initiatives</h2>
-              <p className="text-sm text-gray-500">One card per initiative, with all linked instances underneath.</p>
+              <h2 className="text-lg font-semibold text-gray-900">Recurring Event Series</h2>
+              <p className="text-sm text-gray-500">One card per series, with all linked event occurrences underneath.</p>
             </div>
-            <Link href="/admin/events/new?section=initiative" className="text-sm font-medium text-pink-700 hover:underline">
+            <Link href="/admin/events/new" className="text-sm font-medium text-pink-700 hover:underline">
               Add new
             </Link>
           </div>
@@ -110,10 +107,10 @@ export default async function EventsAdmin() {
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Created event instances</h2>
-              <p className="text-sm text-gray-500">Manual entries that belong to an initiative or stand alone.</p>
+              <h2 className="text-lg font-semibold text-gray-900">All Event Occurrences</h2>
+              <p className="text-sm text-gray-500">Manual entries that belong to a series or stand alone.</p>
             </div>
-            <Link href="/admin/events/new?section=event" className="text-sm font-medium text-pink-700 hover:underline">
+            <Link href="/admin/events/new" className="text-sm font-medium text-pink-700 hover:underline">
               Add new
             </Link>
           </div>

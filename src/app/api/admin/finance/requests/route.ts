@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 
 function adminOnly(session: any) {
-  return session && (session.role === "ADMIN" || session.role === "CLUB_ADMIN");
+  return session && session.roles?.some((r: string) => ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "TREASURER"].includes(r));
 }
 
 export async function GET() {

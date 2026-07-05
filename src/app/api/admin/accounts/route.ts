@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 
 function adminOnly(session: any) {
-  return session && (session.role === "ADMIN" || session.role === "CLUB_ADMIN");
+  return session && ((session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')));
 }
 
 // GET: Fetch internal login accounts only (Users with NO linked public Member)
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { loginId, password, name, role } = await req.json();
+    const { loginId, password, name, roles } = await req.json();
 
     if (!loginId || !password) {
       return NextResponse.json({ error: "Login ID and Password are required." }, { status: 400 });
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         password,
         name: name || "Internal Account",
         avatar: "/user.png",
-        role: (role as any) || "ADMIN",
+        roles: roles || ["ADMIN"],
       },
     });
 
@@ -67,13 +67,13 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { id, loginId, password, role } = await req.json();
+    const { id, loginId, password, roles } = await req.json();
     if (!id) return NextResponse.json({ error: "User ID is required." }, { status: 400 });
 
     const updateData: any = {};
     if (loginId) updateData.email = loginId.toLowerCase();
     if (password) updateData.password = password;
-    if (role) updateData.role = role;
+    if (roles && Array.isArray(roles)) updateData.roles = roles;
 
     await prisma.user.update({ where: { id }, data: updateData });
 

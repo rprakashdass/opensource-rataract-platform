@@ -73,7 +73,7 @@ model User {
   password      String // Should be hashed
   name          String?
   avatar        String?
-  role          Role      @default(MEMBER) // System access role
+  roles         Role[]    @default([MEMBER]) // System access roles
 
   /// Account status
   isActive  Boolean   @default(true)

@@ -28,6 +28,7 @@ function validateEventPayload(data: any) {
     endDate: typeof data.endDate === "string" && data.endDate.trim() ? new Date(data.endDate) : null,
     imageUrl: typeof data.imageUrl === "string" && data.imageUrl.trim() ? data.imageUrl.trim() : null,
     status: typeof data.status === "string" && data.status.trim() ? data.status.trim() : "upcoming",
+    frequency: typeof data.frequency === "string" && data.frequency.trim() ? data.frequency.trim() : "ONCE",
   };
 }
 
@@ -37,10 +38,30 @@ export async function POST(req: Request) {
     const payload = validateEventPayload(data);
     const club = await getOrCreateDefaultClub();
 
+    let initiativeId = payload.initiativeId;
+
+    if (!initiativeId && payload.frequency !== "ONCE") {
+      // Create a recurring series (Initiative) automatically
+      const newInitiative = await prisma.initiative.create({
+        data: {
+          clubId: club.id,
+          title: payload.title,
+          slug: payload.slug,
+          description: payload.description,
+          imageUrl: payload.imageUrl,
+          frequency: payload.frequency as any,
+          startDate: payload.startDate,
+          endDate: payload.endDate,
+          status: "active",
+        },
+      });
+      initiativeId = newInitiative.id;
+    }
+
     const event = await prisma.event.create({
       data: {
         clubId: club.id,
-        initiativeId: payload.initiativeId,
+        initiativeId: initiativeId,
         title: payload.title,
         slug: payload.slug,
         description: payload.description,
@@ -123,7 +144,7 @@ export async function GET() {
 export async function DELETE(req: Request) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "CLUB_ADMIN")) {
+    if (!session || (!(session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')))) {
       return NextResponse.json({ error: "Access Denied: Only Admins can delete events" }, { status: 403 });
     }
 

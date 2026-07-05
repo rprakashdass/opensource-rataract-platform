@@ -21,7 +21,7 @@ export default function NewAccountPage() {
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState("ADMIN");
+  const [roles, setRoles] = useState<string[]>(["ADMIN"]);
 
   useEffect(() => {
     if (editId) {
@@ -34,7 +34,7 @@ export default function NewAccountPage() {
             setLoginId(account.email || "");
             setName(account.name || "");
             setPassword("");
-            setRole(account.role || "ADMIN");
+            setRoles(account.roles || ['ADMIN']);
           } else {
             setError("Account not found");
           }
@@ -55,8 +55,8 @@ export default function NewAccountPage() {
     try {
       const method = editId ? "PUT" : "POST";
       const payload = editId
-        ? { id: editId, loginId, password, role }
-        : { loginId, password, name, role };
+        ? { id: editId, loginId, password, roles }
+        : { loginId, password, name, roles };
 
       const res = await fetch("/api/admin/accounts", {
         method,
@@ -148,18 +148,37 @@ export default function NewAccountPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">System Role *</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm"
-            >
-              <option value="ADMIN">Superadmin</option>
-              <option value="CLUB_ADMIN">Club Admin</option>
-              <option value="FINANCE_ADMIN">Finance Admin</option>
-              <option value="FINANCE_VIEWER">Finance Viewer</option>
-              <option value="MEMBER">Standard Member</option>
-            </select>
+            <label className="block text-sm font-medium text-gray-700 mb-2">System Roles *</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { id: "ADMIN", label: "Superadmin" },
+                { id: "CLUB_ADMIN", label: "Club Admin" },
+                { id: "FINANCE_ADMIN", label: "Finance Admin" },
+                { id: "FINANCE_VIEWER", label: "Finance Viewer" },
+                { id: "MEMBER", label: "Standard Member" }
+              ].map((r) => (
+                <label key={r.id} className="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                  <input
+                    type="checkbox"
+                    checked={roles.includes(r.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setRoles([...roles, r.id]);
+                      } else {
+                        if (roles.length > 1) { // Ensure at least one role
+                          setRoles(roles.filter(id => id !== r.id));
+                        } else {
+                          toast.error("Account must have at least one role");
+                        }
+                      }
+                    }}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-900">{r.label}</span>
+                </label>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-gray-500">Accounts can have multiple roles to combine permissions.</p>
           </div>
 
           <button

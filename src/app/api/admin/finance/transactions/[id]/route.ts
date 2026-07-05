@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 
 function adminOnly(session: any) {
-  return session && (session.role === "ADMIN" || session.role === "CLUB_ADMIN");
+  return session && session.roles?.some((r: string) => ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {

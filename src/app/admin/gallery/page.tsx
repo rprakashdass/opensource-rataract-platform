@@ -165,7 +165,7 @@ export default function GalleryAdmin() {
                       <Pencil className="h-3.5 w-3.5" />
                       <span>Edit</span>
                     </Link>
-                    {(currentUser?.role === "ADMIN" || currentUser?.role === "CLUB_ADMIN") && (
+                    {((currentUser?.roles?.includes('ADMIN') || currentUser?.roles?.includes('CLUB_ADMIN'))) && (
                       <button
                         onClick={() => handleDelete(item.id)}
                         className="text-red-600 hover:text-red-800 cursor-pointer text-xs flex items-center gap-1 font-semibold"

@@ -20,7 +20,8 @@ export async function proxy(request: NextRequest) {
 
   if (request.nextUrl.pathname.startsWith("/admin")) {
     const allowedRoles = ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER"];
-    if (!allowedRoles.includes(payload.role)) {
+    const hasRole = payload.roles && payload.roles.some((r: string) => allowedRoles.includes(r));
+    if (!hasRole) {
       const url = request.nextUrl.clone();
       url.pathname = "/auth/login";
       return NextResponse.redirect(url);

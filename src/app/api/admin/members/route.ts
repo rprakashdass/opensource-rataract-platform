@@ -46,7 +46,7 @@ export async function POST(req: Request) {
           email: payload.email,
           name: payload.name,
           password: defaultPassword, // Standard default password
-          role: "MEMBER"
+          roles: ["MEMBER"]
         }
       });
     }
@@ -100,7 +100,7 @@ export async function GET() {
 export async function DELETE(req: Request) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "CLUB_ADMIN")) {
+    if (!session || (!(session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')))) {
       return NextResponse.json({ error: "Access Denied: Only Admins can delete members" }, { status: 403 });
     }
 

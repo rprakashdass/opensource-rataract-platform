@@ -68,7 +68,7 @@ export async function verifyJWT(token: string) {
   }
 }
 
-export async function setSession(user: { id: string; email: string; name: string; role: string }) {
+export async function setSession(user: { id: string; email: string; name: string; roles: string[] }) {
   const token = await signJWT(user);
   const cookieStore = await cookies();
   cookieStore.set("session", token, {
@@ -90,4 +90,17 @@ export async function getSession() {
 export async function clearSession() {
   const cookieStore = await cookies();
   cookieStore.delete("session");
+}
+
+export function hasRole(session: any, roles: string[]) {
+  if (!session || !session.roles || !Array.isArray(session.roles)) return false;
+  return session.roles.some((r: string) => roles.includes(r));
+}
+
+export function adminOnly(session: any) {
+  return hasRole(session, ["ADMIN", "CLUB_ADMIN"]);
+}
+
+export function financeAdminOnly(session: any) {
+  return hasRole(session, ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"]);
 }

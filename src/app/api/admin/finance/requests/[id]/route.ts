@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 
 function adminOnly(session: any) {
-  return session && (session.role === "ADMIN" || session.role === "CLUB_ADMIN");
+  return session && session.roles?.some((r: string) => ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 
 function adminOnly(session: any) {
-  return session && (session.role === "ADMIN" || session.role === "CLUB_ADMIN");
+  return session && ((session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')));
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

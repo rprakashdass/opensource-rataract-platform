@@ -19,16 +19,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid Login ID or password" }, { status: 401 });
     }
 
-    const role = user.role || "MEMBER";
+    const roles = user.roles && user.roles.length > 0 ? user.roles : ["MEMBER"];
 
     await setSession({
       id: user.id,
       email: user.email,
-      name: user.name || "User",
-      role,
+      name: user.name || "",
+      roles,
     });
 
-    return NextResponse.json({ success: true, role });
+    return NextResponse.json({ success: true, roles });
   } catch (error: any) {
     console.error("Login API error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
