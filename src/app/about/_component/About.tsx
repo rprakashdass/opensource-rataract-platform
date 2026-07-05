@@ -163,6 +163,49 @@ export default function AboutUs() {
   const [activeDomain, setActiveDomain] = useState<Domain>(domains[0]);
 
   return (
+    <div className="min-h-screen bg-background pt-24 sm:pt-32 pb-16">
+      <MaxWidthWrapper className="py-2 space-y-10 lg:py-6 lg:space-y-14">
+        <motion.div variants={fadeIn}>
+          <div className="max-w-2xl space-y-4 mb-8">
+            <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
+              Who We Are
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
+              About Us
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              At our Rotaract Club, we strive to create a better world through volunteerism, community service, and professional development.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Mission — image on top on mobile, side by side on lg */}
+        <motion.div
+          variants={fadeIn}
+          className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:items-center"
+        >
+          <motion.div
+            className="flex justify-center"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800"
+              alt="Rotaract Club volunteers"
+              width={400}
+              height={400}
+              className="h-auto w-full max-w-md rounded-lg object-cover"
+              priority
+            />
+          </motion.div>
+          <Card className="border-none bg-background/50 shadow-none">
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight sm:text-3xl">
+                Our Mission
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm sm:text-base">
     <div className="min-h-screen bg-gradient-to-b from-purple-50/50 to-background pt-32 pb-16">
       <MaxWidthWrapper className="py-2 space-y-20 lg:py-6">
         
@@ -221,6 +264,20 @@ export default function AboutUs() {
             </div>
           </motion.div>
 
+        {/* Parent Club — reverse order on mobile so text comes first */}
+        <motion.div
+          variants={fadeIn}
+          className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:items-center"
+        >
+          <Card className="border-none bg-background/50 shadow-none order-1 lg:order-none">
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight sm:text-3xl">
+                Parent Club
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Our Rotaract Club is proudly sponsored by our parent Rotary Club.
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -239,6 +296,20 @@ export default function AboutUs() {
                 social responsibility, making a meaningful difference in the
                 lives of those we touch.
               </p>
+            </CardContent>
+          </Card>
+          <motion.div
+            className="flex justify-center order-2 lg:order-none"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800"
+              alt="Rotary Partnership Logo"
+              width={400}
+              height={400}
+              className="h-auto w-full max-w-md rounded-lg object-cover"
+            />
             </div>
             <div className="relative group overflow-hidden rounded-3xl aspect-[4/3] shadow-2xl order-1 lg:order-2">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
@@ -256,6 +327,11 @@ export default function AboutUs() {
           </motion.div>
         </div>
 
+        {/* Domains grid */}
+        <section className="space-y-6 sm:space-y-8">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <h2 className="text-xl sm:text-2xl font-semibold">Our Domains</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
         {/* INTERACTIVE DOMAINS SECTION */}
         <section className="space-y-10 pt-10">
           <div className="text-center space-y-4">
@@ -266,6 +342,31 @@ export default function AboutUs() {
               humanitarian aid.
             </p>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {domains.map((domain, index) => (
+              <Card key={index} className="hover:shadow-lg transition-all">
+                <CardHeader className="flex flex-row items-center space-x-3 sm:space-x-4 pb-2">
+                  <div className="p-2 rounded-full bg-primary/10 text-primary flex-shrink-0">
+                    <domain.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </div>
+                  <CardTitle className="text-base sm:text-xl">{domain.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-muted-foreground text-sm">{domain.description}</p>
+                  <ul className="list-disc list-inside text-xs sm:text-sm text-muted-foreground">
+                    {domain.activities.map((activity, i) => (
+                      <li key={i}>{activity}</li>
+                    ))}
+                  </ul>
+                  <Link href={`/about/domains/${domain.title.toLowerCase().replace(/\s+/g, "-")}`} prefetch>
+                    <Button variant="link" className="p-0 h-auto text-primary hover:underline text-sm">
+                      Learn More
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
 
           <div className="flex flex-col lg:flex-row gap-8 bg-white border border-gray-100 shadow-xl shadow-gray-200/50 rounded-3xl p-4 lg:p-8 overflow-hidden relative">
             {/* Left: Tab List */}
