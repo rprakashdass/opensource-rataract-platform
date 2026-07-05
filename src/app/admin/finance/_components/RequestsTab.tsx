@@ -5,10 +5,13 @@ import { Plus, Users, Globe, Clock, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useLoadingToast } from "@/hooks/useLoadingToast";
+import DeleteButton from "@/components/admin/DeleteButton";
+import RequestEditDialog from "./RequestEditDialog";
 
 export default function RequestsTab() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingRequest, setEditingRequest] = useState<any | null>(null);
 
   useLoadingToast(loading, "Loading requests...");
 
@@ -56,8 +59,24 @@ export default function RequestsTab() {
                   <h3 className="font-bold text-gray-900 text-lg">{req.title}</h3>
                   <p className="text-xs text-gray-500 line-clamp-1">{req.description || "No description"}</p>
                 </div>
-                <div className="bg-purple-50 text-purple-700 font-bold px-2 py-1 rounded text-sm whitespace-nowrap">
-                  ₹{req.amount}
+                <div className="flex flex-col items-end gap-2">
+                  <div className="bg-purple-50 text-purple-700 font-bold px-2 py-1 rounded text-sm whitespace-nowrap">
+                    ₹{req.amount}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setEditingRequest(req)}
+                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded transition"
+                    >
+                      Edit
+                    </button>
+                    <DeleteButton
+                      endpoint="/api/admin/finance/requests"
+                      id={req.id}
+                      confirmMessage="Are you sure you want to delete this payment request?"
+                      onSuccess={fetchRequests}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -82,6 +101,14 @@ export default function RequestsTab() {
             </div>
           ))}
         </div>
+      )}
+
+      {editingRequest && (
+        <RequestEditDialog
+          request={editingRequest}
+          onClose={() => setEditingRequest(null)}
+          onSave={fetchRequests}
+        />
       )}
     </div>
   );

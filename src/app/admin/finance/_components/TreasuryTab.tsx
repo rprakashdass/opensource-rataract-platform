@@ -5,10 +5,13 @@ import { Banknote, CheckCircle, XCircle, TrendingUp, TrendingDown, Wallet } from
 import { toast } from "sonner";
 import { useLoadingToast } from "@/hooks/useLoadingToast";
 import Link from "next/link";
+import DeleteButton from "@/components/admin/DeleteButton";
+import TransactionEditDialog from "./TransactionEditDialog";
 
 export default function TreasuryTab() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingTransaction, setEditingTransaction] = useState<any | null>(null);
 
   useLoadingToast(loading, "Loading treasury data...");
 
@@ -164,6 +167,7 @@ export default function TreasuryTab() {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
                   <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
                   <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100 text-sm">
@@ -193,6 +197,20 @@ export default function TreasuryTab() {
                         {tx.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => setEditingTransaction(tx)}
+                        className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md transition"
+                      >
+                        Edit
+                      </button>
+                      <DeleteButton
+                        endpoint="/api/admin/finance/transactions"
+                        id={tx.id}
+                        confirmMessage="Are you sure you want to delete this transaction?"
+                        onSuccess={fetchTransactions}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -200,6 +218,14 @@ export default function TreasuryTab() {
           </div>
         )}
       </div>
+
+      {editingTransaction && (
+        <TransactionEditDialog
+          transaction={editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onSave={fetchTransactions}
+        />
+      )}
     </div>
   );
 }

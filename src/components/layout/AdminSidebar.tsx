@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
-import { LayoutDashboard, Users, Calendar, Image as ImageIcon, Settings, UserCircle, Banknote, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, Image as ImageIcon, Settings, UserCircle, Banknote, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Users2, Calendar, Image as ImageIcon, Settings, UserCircle, Banknote, Bell } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: ROUTES.ADMIN, icon: LayoutDashboard },
@@ -13,7 +12,7 @@ const navItems = [
   { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
   { label: "Finance & Treasury", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
   { label: "Events & Initiatives", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
-  { label: "Meetings & Minutes", href: `${ROUTES.ADMIN}/meetings`, icon: BookOpen },
+  { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
   { label: "Gallery", href: `${ROUTES.ADMIN}/gallery`, icon: ImageIcon },
   { label: "Club Settings", href: `${ROUTES.ADMIN}/settings`, icon: Settings },
 ];
@@ -52,16 +51,6 @@ export function AdminNavItems({ onClose }: { onClose?: () => void }) {
     </nav>
   );
 }
-  const navItems = [
-    { label: "Dashboard", href: ROUTES.ADMIN, icon: LayoutDashboard },
-    { label: "Accounts", href: `${ROUTES.ADMIN}/accounts`, icon: UserCircle },
-    { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
-    { label: "Finance & Treasury", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
-    { label: "Events & Initiatives", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
-    { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
-    { label: "Gallery", href: `${ROUTES.ADMIN}/gallery`, icon: ImageIcon },
-    { label: "Club Settings", href: `${ROUTES.ADMIN}/settings`, icon: Settings },
-  ];
 
 export default function AdminSidebar() {
   return (

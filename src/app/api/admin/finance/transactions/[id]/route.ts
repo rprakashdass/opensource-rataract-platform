@@ -58,3 +58,47 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const session = await getSession();
+    if (!adminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const { amount, description, date, category } = await req.json();
+
+    const transaction = await prisma.transaction.update({
+      where: { id },
+      data: {
+        amount: parseFloat(amount),
+        description,
+        date: date ? new Date(date) : undefined,
+        category,
+      }
+    });
+
+    return NextResponse.json(transaction);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const session = await getSession();
+    if (!adminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    await prisma.transaction.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

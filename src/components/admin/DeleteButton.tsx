@@ -7,9 +7,10 @@ interface DeleteButtonProps {
   endpoint: string;
   id: string;
   confirmMessage?: string;
+  onSuccess?: () => void;
 }
 
-export default function DeleteButton({ endpoint, id, confirmMessage = "Are you sure you want to delete this?" }: DeleteButtonProps) {
+export default function DeleteButton({ endpoint, id, confirmMessage = "Are you sure you want to delete this?", onSuccess }: DeleteButtonProps) {
   const router = useRouter();
 
   const handleDelete = async () => {
@@ -20,6 +21,7 @@ export default function DeleteButton({ endpoint, id, confirmMessage = "Are you s
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       toast.success("Deleted", { id: loadingToast });
+      if (onSuccess) onSuccess();
       router.refresh();
     } catch (err: any) {
       toast.error(err.message, { id: loadingToast });
