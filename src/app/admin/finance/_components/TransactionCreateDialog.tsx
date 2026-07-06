@@ -99,8 +99,9 @@ export function TransactionCreateDialog() {
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   >
-                    <option value="PENDING">Pending</option>
-                    <option value="COMPLETED">Completed</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="PENDING_APPROVAL">Pending Approval</option>
+                    <option value="APPROVED">Approved</option>
                   </select>
                 </div>
               </div>

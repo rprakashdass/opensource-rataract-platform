@@ -27,7 +27,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Check if already registered
-    const existingRegistration = await prisma.eventAttendee.findUnique({
+    const existingRegistration = await prisma.registration.findUnique({
       where: {
         eventId_memberId: {
           eventId,
@@ -41,7 +41,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Register
-    const registration = await prisma.eventAttendee.create({
+    const registration = await prisma.registration.create({
       data: {
         eventId,
         memberId: member.id

@@ -61,6 +61,7 @@ export default function NewPaymentRequestPage() {
       if (data.error) throw new Error(data.error);
 
       toast.success("Payment request raised successfully!", { id: toastId });
+      toast.success("Request submitted!");
       router.push("/admin/finance");
       router.refresh();
     } catch (err: any) {

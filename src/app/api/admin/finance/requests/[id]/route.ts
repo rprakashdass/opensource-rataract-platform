@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 
-function adminOnly(session: any) {
-  return session && session.roles?.some((r: string) => ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
+function financeAdminOnly(session: any) {
+  return session && session.roles?.some((r: string) => ["ADMIN", "FINANCE_ADMIN"].includes(r));
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const session = await getSession();
-    if (!adminOnly(session)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!financeAdminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
     const { title, description, amount, dueDate, category, isGlobal } = await req.json();
@@ -38,8 +38,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   try {
     const { id } = await params;
     const session = await getSession();
-    if (!adminOnly(session)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!financeAdminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
     await prisma.paymentRequest.delete({

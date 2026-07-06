@@ -9,13 +9,6 @@ export default async function AnnouncementDetailsPage({ params }: { params: { id
   
   const announcement = await prisma.announcement.findUnique({
     where: { id },
-    include: {
-      attendees: {
-        include: {
-          member: true
-        }
-      }
-    }
   });
 
   if (!announcement) {
@@ -149,49 +142,6 @@ export default async function AnnouncementDetailsPage({ params }: { params: { id
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Attendees ({announcement.attendees.length})</h2>
-            <p className="text-sm text-gray-500">Members automatically assigned to this announcement.</p>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attended At</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {announcement.attendees.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                    No members assigned to this announcement.
-                  </td>
-                </tr>
-              ) : (
-                announcement.attendees.map((attendance) => (
-                  <tr key={attendance.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{attendance.member.name || "Unnamed Member"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{attendance.member.email || "No email"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {attendance.attendedAt ? format(new Date(attendance.attendedAt), "MMM d, yyyy h:mm a") : "-"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }

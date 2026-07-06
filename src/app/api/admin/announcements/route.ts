@@ -9,9 +9,6 @@ export async function GET() {
       orderBy: { startDate: "desc" },
       include: {
         club: true,
-        _count: {
-          select: { attendees: true }
-        }
       }
     });
     return NextResponse.json(announcements);
@@ -74,14 +71,6 @@ export async function POST(req: Request) {
     });
 
     if (members.length > 0) {
-      await prisma.announcementAttendance.createMany({
-        data: members.map((member) => ({
-          announcementId: announcement.id,
-          memberId: member.id,
-        })),
-        skipDuplicates: true,
-      });
-
       // Send email invites if requested
       if (sendInvite) {
         const emails = members

@@ -88,8 +88,9 @@ export default function NewGalleryPage() {
       const result = await res.json();
       if (result.error) throw new Error(result.error);
 
-      toast.success("Saved successfully", { id: loadingToast });
+      toast.success(editId ? "Image updated!" : "Image added!", { id: loadingToast });
       router.push("/admin/gallery");
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message, { id: loadingToast });

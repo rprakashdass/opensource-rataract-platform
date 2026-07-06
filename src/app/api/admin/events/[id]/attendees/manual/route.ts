@@ -20,41 +20,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     }
 
-    // Check if member already registered
-    const existing = await prisma.eventAttendee.findUnique({
+    // Create or find attendance record
+    const attendance = await prisma.attendance.upsert({
       where: {
         eventId_memberId: {
           eventId,
           memberId
         }
-      }
-    });
-
-    if (existing) {
-      // Just mark attended if already registered
-      const updated = await prisma.eventAttendee.update({
-        where: { id: existing.id },
-        data: { attendedAt: new Date() }
-      });
-      return NextResponse.json(updated);
-    }
-
-    // Create registration and mark attended
-    const newAttendee = await prisma.eventAttendee.create({
-      data: {
+      },
+      update: {},
+      create: {
         eventId,
         memberId,
-        attendedAt: new Date()
+        method: "MANUAL"
       }
     });
 
-    // Update registered count
-    await prisma.event.update({
-      where: { id: eventId },
-      data: { registeredCount: { increment: 1 } }
-    });
-
-    return NextResponse.json(newAttendee);
+    return NextResponse.json(attendance);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

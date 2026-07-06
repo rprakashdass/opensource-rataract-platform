@@ -15,7 +15,7 @@ export default async function MemberEventsPage() {
   const member = await prisma.member.findUnique({
     where: { userId: session.id },
     include: {
-      eventAttendees: {
+      registrations: {
         include: { event: true },
         orderBy: { registeredAt: "desc" }
       }
@@ -26,7 +26,7 @@ export default async function MemberEventsPage() {
     return <div className="p-8">Member profile not found.</div>;
   }
 
-  const registrations = member.eventAttendees;
+  const registrations = member.registrations;
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -56,13 +56,13 @@ export default async function MemberEventsPage() {
             <p className="text-gray-500">You haven't registered for any events yet.</p>
           </div>
         ) : (
-          registrations.map((reg) => (
+          registrations.map((reg: any) => (
             <div key={reg.id} className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 overflow-hidden flex flex-col hover:border-purple-200 transition-colors">
               <div className="p-6 flex-1">
                 <div className="flex justify-between items-start mb-4">
                   <span className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded-md
-                    ${reg.attendedAt ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {reg.attendedAt ? 'Attended' : 'Registered'}
+                    ${reg.status === 'ATTENDED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {reg.status === 'ATTENDED' ? 'Attended' : 'Registered'}
                   </span>
                   <span className="text-xs text-gray-500 font-medium">
                     {new Date(reg.registeredAt).toLocaleDateString()}

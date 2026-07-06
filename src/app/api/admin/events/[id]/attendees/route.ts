@@ -20,10 +20,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Attendee ID required" }, { status: 400 });
     }
 
-    const updatedAttendee = await prisma.eventAttendee.update({
+    const updatedAttendee = await prisma.registration.update({
       where: { id: attendeeId },
       data: {
-        attendedAt: attended ? new Date() : null
+        status: attended ? "ATTENDED" : "REGISTERED"
       }
     });
 

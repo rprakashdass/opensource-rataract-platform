@@ -1,60 +1,131 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
-import { LayoutDashboard, Users, Calendar, Image as ImageIcon, Settings, UserCircle, Banknote, Bell } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Users, 
+  Calendar, 
+  Image as ImageIcon, 
+  Settings, 
+  UserCircle, 
+  Banknote, 
+  Bell,
+  Briefcase,
+  ClipboardCheck,
+  ArrowLeftRight,
+  PieChart,
+  FileSpreadsheet
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { label: "Dashboard", href: ROUTES.ADMIN, icon: LayoutDashboard },
-  { label: "Accounts", href: `${ROUTES.ADMIN}/accounts`, icon: UserCircle },
-  { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
-  { label: "Finance & Treasury", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
-  { label: "Events & Initiatives", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
-  { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
-  { label: "Gallery", href: `${ROUTES.ADMIN}/gallery`, icon: ImageIcon },
-  { label: "Club Settings", href: `${ROUTES.ADMIN}/settings`, icon: Settings },
+const navGroups = [
+  {
+    group: "",
+    items: [
+      { label: "Dashboard", href: ROUTES.ADMIN, icon: LayoutDashboard }
+    ]
+  },
+  {
+    group: "Operations",
+    items: [
+      { label: "Projects", href: `${ROUTES.ADMIN}/projects`, icon: Briefcase },
+      { label: "Events", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
+      { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
+      { label: "Attendance", href: `${ROUTES.ADMIN}/attendance`, icon: ClipboardCheck },
+    ]
+  },
+  {
+    group: "Finance",
+    items: [
+      { label: "Overview", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
+      { label: "Transactions", href: `${ROUTES.ADMIN}/finance/transactions`, icon: ArrowLeftRight },
+      { label: "Budgets", href: `${ROUTES.ADMIN}/finance/budgets`, icon: PieChart },
+      { label: "Reports", href: `${ROUTES.ADMIN}/finance/reports`, icon: FileSpreadsheet },
+    ]
+  },
+  {
+    group: "Content",
+    items: [
+      { label: "Gallery", href: `${ROUTES.ADMIN}/gallery`, icon: ImageIcon },
+      { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
+    ]
+  },
+  {
+    group: "Settings",
+    items: [
+      { label: "Club Settings", href: `${ROUTES.ADMIN}/settings`, icon: Settings },
+      { label: "Users & Roles", href: `${ROUTES.ADMIN}/accounts`, icon: UserCircle },
+    ]
+  }
 ];
 
 export function AdminNavItems({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const hasProjectContext = searchParams.get("project");
+
+  // Collect all nav hrefs to detect when a more-specific sibling is active
+  const allNavHrefs = navGroups.flatMap(g => g.items.map(i => i.href));
 
   const isActive = (path: string) => {
-    if (path === ROUTES.ADMIN && pathname === ROUTES.ADMIN) return true;
-    if (path !== ROUTES.ADMIN && pathname.startsWith(path)) return true;
+    if (hasProjectContext) {
+      if (path === `${ROUTES.ADMIN}/projects`) return true;
+      if (path === `${ROUTES.ADMIN}/events`) return false;
+    }
+    // Exact match always wins
+    if (pathname === path) return true;
+    // Prefix match: only activate if no other nav item is a MORE specific match for the current path
+    if (pathname.startsWith(path + "/")) {
+      const moreSpecificMatch = allNavHrefs.some(
+        href => href !== path && href.startsWith(path) && pathname.startsWith(href)
+      );
+      return !moreSpecificMatch;
+    }
     return false;
   };
 
   return (
-    <nav className="space-y-1 p-4">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const active = isActive(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onClose}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all text-sm",
-              active
-                ? "bg-purple-50 text-purple-700"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            )}
-          >
-            <Icon className={cn("h-5 w-5 flex-shrink-0", active ? "text-purple-700" : "text-gray-400")} />
-            <span className="truncate">{item.label}</span>
-          </Link>
-        );
-      })}
+    <nav className="space-y-6 p-4">
+      {navGroups.map((group, gIdx) => (
+        <div key={gIdx} className="space-y-1">
+          {group.group && (
+            <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              {group.group}
+            </h3>
+          )}
+          <div className="space-y-0.5">
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all text-sm",
+                    active
+                      ? "bg-slate-100 text-slate-900 font-semibold"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4 flex-shrink-0", active ? "text-slate-900" : "text-slate-400")} />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 }
 
 export default function AdminSidebar() {
   return (
-    <aside className="hidden md:flex w-56 lg:w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-57px)] flex-col flex-shrink-0">
+    <aside className="hidden md:flex w-60 bg-white border-r border-slate-200 min-h-[calc(100vh-57px)] flex-col flex-shrink-0">
       <AdminNavItems />
     </aside>
   );

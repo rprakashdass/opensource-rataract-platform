@@ -2,16 +2,43 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Pencil } from "lucide-react";
 import DeleteButton from "@/components/admin/DeleteButton";
+import FilterBar from "@/components/admin/FilterBar";
 
-export default async function MembersAdmin() {
-  const members = await prisma.member.findMany({
-    include: {
-      boardMembership: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+export default async function MembersAdmin(props: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const search = searchParams.search || "";
+  const status = searchParams.status || "";
+
+  let where: any = {};
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+  }
+  
+  if (status === "board") {
+    where.boardMembership = { isNot: null };
+  } else if (status === "regular") {
+    where.boardMembership = { is: null };
+  }
+
+  const [members, totalCount, boardCount] = await Promise.all([
+    prisma.member.findMany({
+      where,
+      include: { boardMembership: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.member.count(),
+    prisma.member.count({ where: { boardMembership: { isNot: null } } })
+  ]);
+
+  const statusOptions = [
+    { label: "Board Members", value: "board" },
+    { label: "Regular Members", value: "regular" }
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -31,19 +58,25 @@ export default async function MembersAdmin() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-gray-500">Total Members</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{members.length}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{totalCount}</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-gray-500">Board Members</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{members.filter((member) => member.boardMembership).length}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{boardCount}</p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-gray-500">Regular Members</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{members.filter((member) => !member.boardMembership).length}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{totalCount - boardCount}</p>
         </div>
       </div>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <FilterBar 
+        placeholder="Search by name or email..." 
+        showStatusFilter 
+        statusOptions={statusOptions} 
+      />
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Created members</h2>
@@ -56,7 +89,7 @@ export default async function MembersAdmin() {
 
         {members.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500">
-            No members have been created yet.
+            No members found matching your criteria.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -71,7 +104,7 @@ export default async function MembersAdmin() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {members.map((member) => (
-                  <tr key={member.id}>
+                  <tr key={member.id} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-semibold text-gray-900">{member.name || "No Name"}</div>
                       <div className="text-xs text-gray-500 mt-1">{member.profession || "Member"}</div>

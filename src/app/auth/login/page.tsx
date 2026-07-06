@@ -31,7 +31,7 @@ export default function LoginPage() {
       }
 
       // Redirect based on role
-      if (data.roles?.some(r => ['ADMIN', 'CLUB_ADMIN', 'FINANCE_ADMIN'].includes(r))) {
+      if (data.roles?.some((r: string) => ['ADMIN', 'CLUB_ADMIN', 'FINANCE_ADMIN'].includes(r))) {
         router.push(ROUTES.ADMIN);
       } else {
         router.push("/");

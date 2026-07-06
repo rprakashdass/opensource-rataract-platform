@@ -3,16 +3,53 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Bell, Calendar, MapPin, Video, Users } from "lucide-react";
 import DeleteAnnouncementButton from "./DeleteAnnouncementButton";
+import FilterBar from "@/components/admin/FilterBar";
 
-export default async function AnnouncementsPage() {
+export default async function AnnouncementsPage(props: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const search = searchParams.search || "";
+  const month = searchParams.month ? parseInt(searchParams.month) : undefined;
+  const year = searchParams.year ? parseInt(searchParams.year) : undefined;
+  const status = searchParams.status || "";
+
+  let where: any = {};
+  
+  if (search) {
+    where.title = { contains: search, mode: "insensitive" };
+  }
+
+  if (month && year) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+    where.startDate = { gte: startDate, lt: endDate };
+  } else if (year) {
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year + 1, 0, 1);
+    where.startDate = { gte: startDate, lt: endDate };
+  } else if (month) {
+    const currentYear = new Date().getFullYear();
+    const startDate = new Date(currentYear, month - 1, 1);
+    const endDate = new Date(currentYear, month, 1);
+    where.startDate = { gte: startDate, lt: endDate };
+  }
+
+  if (status) {
+    where.type = status;
+  }
+
   const announcements = await prisma.announcement.findMany({
+    where,
     orderBy: { startDate: "desc" },
-    include: {
-      _count: {
-        select: { attendees: true }
-      }
-    }
   });
+
+  const typeOptions = [
+    { label: "Meeting", value: "MEETING" },
+    { label: "Event", value: "EVENT" },
+    { label: "Update", value: "UPDATE" },
+    { label: "Notice", value: "NOTICE" },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -35,13 +72,21 @@ export default async function AnnouncementsPage() {
         </Link>
       </div>
 
+      <FilterBar 
+        placeholder="Search announcements..." 
+        showMonthFilter 
+        showYearFilter
+        showStatusFilter
+        statusOptions={typeOptions}
+      />
+
       {/* List */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {announcements.length === 0 ? (
           <div className="p-12 text-center text-gray-500">
             <Bell className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-            <p className="text-lg font-medium text-gray-900">No Announcements Yet</p>
-            <p className="mt-1">Create your first announcement to get started.</p>
+            <p className="text-lg font-medium text-gray-900">No Announcements Found</p>
+            <p className="mt-1">Adjust your filters or create a new announcement.</p>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
@@ -84,10 +129,6 @@ export default async function AnnouncementsPage() {
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 w-fit">
                         {announcement.type}
                       </span>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Users className="h-4 w-4 mr-1 text-gray-400" />
-                        {announcement._count.attendees}
-                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right text-sm font-medium">

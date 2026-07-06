@@ -44,16 +44,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Amount and description are required" }, { status: 400 });
     }
 
+    if (category) {
+      await prisma.financeCategory.upsert({
+        where: { id: category },
+        update: {},
+        create: {
+          id: category,
+          name: category.replace(/_/g, ' '),
+          type: "INCOME" // Member contributions are usually income
+        }
+      });
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         clubId: club.id,
         userId: user.id,
         memberId: user.member?.id || null,
+        title: payload.title || description.substring(0, 50),
         type: "INCOME", // Member payments are INCOME for the club
-        status: "PENDING", // Needs treasury approval
+        status: "PENDING_APPROVAL", // Needs treasury approval
         amount: parseFloat(amount),
         description,
-        category: category || "OTHER",
+        categoryId: category || null,
         receiptUrl: receiptUrl || null,
         eventId: eventId || null,
         paymentRequestId: paymentRequestId || null,

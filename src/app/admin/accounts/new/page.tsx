@@ -2,6 +2,7 @@
 import { toast } from "sonner";
 import { useLoadingToast } from "@/hooks/useLoadingToast";
 import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -15,7 +16,7 @@ export default function NewAccountPage() {
   const [loading, setLoading] = useState(true);
   useLoadingToast(loading, "Loading account details...");
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   // Form State
   const [loginId, setLoginId] = useState("");
@@ -46,36 +47,42 @@ export default function NewAccountPage() {
     }
   }, [editId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const loadingToast = toast.loading("Saving...");
-    setSubmitting(true);
-    setError("");
-
-    try {
+  const saveMutation = useMutation({
+    mutationFn: async (payload: any) => {
       const method = editId ? "PUT" : "POST";
-      const payload = editId
-        ? { id: editId, loginId, password, roles }
-        : { loginId, password, name, roles };
-
       const res = await fetch("/api/admin/accounts", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-
-      toast.success("Saved successfully", { id: loadingToast });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-accounts"] });
+      toast.success(editId ? "Account updated!" : "Account created!");
       router.push(`${ROUTES.ADMIN}/accounts`);
-    } catch (err: any) {
+      router.refresh();
+    },
+    onError: (err: any) => {
       setError(err.message);
-      toast.error(err.message, { id: loadingToast });
-    } finally {
-      setSubmitting(false);
-      toast.dismiss(loadingToast);
+      toast.error(err.message || "An error occurred");
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const payload = editId
+      ? { id: editId, loginId, password, roles }
+      : { loginId, password, name, roles };
+
+    const loadingToast = toast.loading("Saving...");
+    saveMutation.mutate(payload, {
+      onSettled: () => toast.dismiss(loadingToast)
+    });
   };
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
@@ -183,10 +190,10 @@ export default function NewAccountPage() {
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={saveMutation.isPending}
             className="w-full bg-purple-600 text-white py-2.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition cursor-pointer font-medium flex justify-center items-center gap-2"
           >
-            {submitting ? "Saving..." : editId ? "Update Credentials" : (
+            {saveMutation.isPending ? "Saving..." : editId ? "Update Credentials" : (
               <><Plus className="h-4 w-4" /> Create Account</>
             )}
           </button>

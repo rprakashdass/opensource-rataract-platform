@@ -18,10 +18,11 @@ export default async function DashboardPage() {
   const member = await prisma.member.findUnique({
     where: { userId: session.id },
     include: {
-      eventAttendees: {
+      registrations: {
         include: { event: true },
         orderBy: { registeredAt: "desc" }
       },
+      attendance: true,
       transactions: {
         orderBy: { createdAt: "desc" },
         take: 3
@@ -55,11 +56,11 @@ export default async function DashboardPage() {
     );
   }
 
-  const eventsAttended = member?.eventAttendees?.filter(a => a.attendedAt).length || 0;
+  const eventsAttended = member?.attendance?.length || 0;
   
   const totalPaid = member?.transactions
     ?.filter(t => t.type === "INCOME" && (t.status === "COMPLETED" || t.status === "APPROVED"))
-    .reduce((acc, curr) => acc + curr.amount, 0) || 0;
+    .reduce((acc: number, curr) => acc + Number(curr.amount), 0) || 0;
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -145,11 +146,11 @@ export default async function DashboardPage() {
             Recent Registrations
           </div>
           <div className="p-0">
-            {member?.eventAttendees.length === 0 ? (
+            {member?.registrations.length === 0 ? (
               <p className="p-6 text-sm text-gray-500">You haven't registered for any events yet.</p>
             ) : (
               <ul className="divide-y divide-gray-100">
-                {member?.eventAttendees.slice(0, 3).map((reg) => (
+                {member?.registrations.slice(0, 3).map((reg: any) => (
                   <li key={reg.id} className="p-4 hover:bg-gray-50 transition">
                     <p className="text-sm font-medium text-gray-900">{reg.event.title}</p>
                     <p className="text-xs text-gray-500">
@@ -171,7 +172,7 @@ export default async function DashboardPage() {
               <p className="p-6 text-sm text-gray-500">No payment history.</p>
             ) : (
               <ul className="divide-y divide-gray-100">
-                {member?.transactions.map((tx) => (
+                {member?.transactions.map((tx: any) => (
                   <li key={tx.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{tx.description}</p>

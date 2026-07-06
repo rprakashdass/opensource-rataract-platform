@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { getConfig } from "@/lib/config";
 import LayoutProvider from "@/components/providers/LayoutProvider";
+import { Providers } from "@/app/providers";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import TopLoader from "@/components/loaders/TopLoader";
@@ -42,7 +43,9 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-full flex flex-col bg-white text-gray-950`}>
         <Suspense>
           <TopLoader />
-          <LayoutProvider>{children}</LayoutProvider>
+          <Providers>
+            <LayoutProvider>{children}</LayoutProvider>
+          </Providers>
           <Toaster position="top-right" />
         </Suspense>
       </body>

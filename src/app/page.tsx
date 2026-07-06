@@ -33,7 +33,7 @@ export default async function Home() {
         updatedAt: m.updatedAt
       }));
     }
-    const dbInitiatives = await prisma.initiative.findMany({
+    const dbProjects = await prisma.project.findMany({
       include: {
         events: {
           select: {
@@ -47,14 +47,14 @@ export default async function Home() {
       take: 4,
     });
 
-    initiatives = dbInitiatives.map((initiative: any) => ({
-      id: initiative.id,
-      title: initiative.title,
-      slug: initiative.slug,
-      description: initiative.description || "",
-      coverImage: initiative.imageUrl || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
-      frequency: initiative.frequency.toLowerCase(),
-      instanceCount: initiative.events.length,
+    initiatives = dbProjects.map((project: any) => ({
+      id: project.id,
+      title: project.title,
+      slug: project.slug,
+      description: project.description || "",
+      coverImage: project.coverImage || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800",
+      frequency: project.category?.toLowerCase() || "community",
+      instanceCount: project.events.length,
     }));
   } catch (error) {
     console.error("Prisma query failed on Home page:", error);

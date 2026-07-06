@@ -17,6 +17,7 @@ export default async function MemberFinancePage() {
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.id },
     orderBy: { createdAt: "desc" },
+    include: { category: true }
   });
 
   const member = await prisma.member.findUnique({
@@ -53,9 +54,9 @@ export default async function MemberFinancePage() {
 
   const totalPaid = transactions
     .filter(t => t.type === "INCOME" && (t.status === "COMPLETED" || t.status === "APPROVED"))
-    .reduce((acc, curr) => acc + curr.amount, 0);
+    .reduce((acc: number, curr) => acc + Number(curr.amount), 0);
 
-  const totalPending = pendingRequests.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalPending = pendingRequests.reduce((acc: number, curr) => acc + Number(curr.amount), 0);
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -120,15 +121,15 @@ export default async function MemberFinancePage() {
               </div>
             ) : (
                 <ul className="divide-y divide-gray-100">
-                  {transactions.map((tx) => (
+                  {transactions.map((tx: any) => (
                     <li key={tx.id} className="p-4 hover:bg-gray-50 transition">
                       <div className="flex justify-between items-start mb-1">
                         <div>
                           <p className="text-sm font-medium text-gray-900">{tx.description}</p>
-                          <p className="text-xs text-gray-500">{new Date(tx.createdAt).toLocaleDateString()} • {tx.category}</p>
+                          <p className="text-xs text-gray-500">{new Date(tx.createdAt).toLocaleDateString()} • {tx.category?.name || "Other"}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-emerald-700">₹{tx.amount.toLocaleString()}</p>
+                          <p className="text-sm font-bold text-emerald-700">₹{Number(tx.amount).toLocaleString()}</p>
                           <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mt-1
                             ${tx.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : 
                               tx.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 

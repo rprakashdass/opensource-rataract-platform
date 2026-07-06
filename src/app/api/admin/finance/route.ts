@@ -9,7 +9,15 @@ async function verifyAdmin() {
   if (!session) return false;
   
   // Checking for admin/treasury roles
-  return session.roles?.some(r => ['ADMIN', 'CLUB_ADMIN', 'TREASURER'].includes(r));
+  return session.roles?.some((r: string) => ['ADMIN', 'CLUB_ADMIN', 'TREASURER'].includes(r));
+}
+
+async function verifyFinanceAdmin() {
+  const session = await getSession();
+  if (!session) return false;
+  
+  // Strict finance admin check for edits/deletes
+  return session.roles?.some((r: string) => ['ADMIN', 'FINANCE_ADMIN'].includes(r));
 }
 
 export async function GET() {
@@ -40,19 +48,32 @@ export async function POST(req: Request) {
     const club = await getOrCreateDefaultClub();
     const payload = await req.json();
 
-    const { type, amount, description, category, status, receiptUrl, eventId } = payload;
+    const { title, type, amount, description, category, status, receiptUrl, eventId } = payload;
 
     if (!amount || !description || !type) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (category) {
+      await prisma.financeCategory.upsert({
+        where: { id: category },
+        update: {},
+        create: {
+          id: category,
+          name: category.replace(/_/g, ' '),
+          type: type as any || "EXPENSE"
+        }
+      });
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         clubId: club.id,
+        title: title || description.substring(0, 50),
         type: type as TransactionType,
         amount: parseFloat(amount),
         description,
-        category: category || "OTHER",
+        categoryId: category || null,
         status: (status as TransactionStatus) || "COMPLETED",
         receiptUrl: receiptUrl || null,
         eventId: eventId || null,
@@ -67,8 +88,8 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const isAdmin = await verifyAdmin();
-    if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const isFinanceAdmin = await verifyFinanceAdmin();
+    if (!isFinanceAdmin) return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
 
     const { id, status } = await req.json();
     if (!id || !status) return NextResponse.json({ error: "Missing ID or status" }, { status: 400 });

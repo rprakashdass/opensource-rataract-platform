@@ -54,12 +54,75 @@ model Club {
   // Relations
   members         Member[]
   boardMembers    BoardMember[]
-  initiatives     Initiative[]
+  projects        Project[]
   events          Event[]
   announcements   Announcement[]
-  galleryItems    GalleryItem[]
+  media           Media[]
   transactions    Transaction[]
   paymentRequests PaymentRequest[]
+  accounts        Account[]
+  budgets         Budget[]
+  contributors    Contributor[]
+  transfers       Transfer[]
+  financialYears  FinancialYear[]
+}
+
+// ============================================================================
+// NEW ENUMS FOR PROJECTS AND EVENTS
+// ============================================================================
+
+enum ProjectCategory {
+  COMMUNITY_SERVICE
+  PROFESSIONAL_DEVELOPMENT
+  CLUB_SERVICE
+  INTERNATIONAL_SERVICE
+  FUNDRAISER
+  OTHER
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum Visibility {
+  PUBLIC
+  MEMBERS_ONLY
+  BOARD_ONLY
+}
+
+enum EventType {
+  COMMUNITY_SERVICE
+  PROFESSIONAL_DEVELOPMENT
+  CLUB_SERVICE
+  INTERNATIONAL_SERVICE
+  FUNDRAISER
+  MEETING
+  FELLOWSHIP
+}
+
+enum EventStatus {
+  DRAFT
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  CANCELLED
+  WAITLISTED
+}
+
+enum AttendanceMethod {
+  MANUAL
+  QR_CODE
+  IMPORT
 }
 
 // ============================================================================
@@ -106,14 +169,14 @@ model Session {
 // ============================================================================
 
 enum Role {
-  ADMIN // Super admin - all access
-  CLUB_ADMIN // Club administrator
-  PRESIDENT // Club president
-  SECRETARY // Club secretary
-  TREASURER // Club treasurer
-  BOARD_MEMBER // General board member
-  MEMBER // Regular member
-  GUEST // Unauthenticated user
+  ADMIN
+  CLUB_ADMIN
+  PRESIDENT
+  SECRETARY
+  TREASURER
+  BOARD_MEMBER
+  MEMBER
+  GUEST
   FINANCE_ADMIN
   FINANCE_VIEWER
 }
@@ -174,11 +237,11 @@ model Member {
   updatedAt DateTime @updatedAt
 
   // Relations
-  boardMembership       BoardMember?
-  eventAttendees        EventAttendee[]
-  announcementAttendees AnnouncementAttendance[]
-  transactions          Transaction[]
-  paymentRequests       PaymentRequestAssignee[]
+  boardMembership BoardMember?
+  registrations   Registration[]
+  attendance      Attendance[]
+  transactions    Transaction[]
+  paymentRequests PaymentRequestAssignee[]
 }
 
 model BoardMember {
@@ -205,32 +268,30 @@ model BoardMember {
 // EVENTS
 // ============================================================================
 
-enum InitiativeFrequency {
-  DAILY
-  WEEKLY
-  MONTHLY
-}
-
-model Initiative {
+model Project {
   id     String @id @default(cuid())
   clubId String
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  title       String
-  slug        String
-  description String?
-  imageUrl    String?
-
-  frequency InitiativeFrequency
-  status    String              @default("active") // active, archived
-
-  startDate DateTime
-  endDate   DateTime?
+  title         String
+  slug          String          @unique
+  description   String          @db.Text
+  category      ProjectCategory @default(COMMUNITY_SERVICE)
+  status        ProjectStatus   @default(ACTIVE)
+  startDate     DateTime
+  endDate       DateTime?
+  coverImage    String?
+  chairPersonId String?
+  visibility    Visibility      @default(PUBLIC)
+  impactMetrics Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  events Event[]
+  events       Event[]
+  media        Media[]
+  transactions Transaction[]
+  budget       Budget?
 
   @@unique([clubId, slug])
 }
@@ -240,46 +301,52 @@ model Event {
   clubId String
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  initiativeId String?
-  initiative   Initiative? @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   title       String
   slug        String
-  description String? @db.Text
+  description String?   @db.Text
+  type        EventType @default(MEETING)
 
   location  String?
   latitude  Float?
   longitude Float?
 
-  startDate DateTime
-  endDate   DateTime?
+  startDate DateTime // Keeping startDate instead of startTime for backward compat with some UI parts, or change to startTime? User requested startTime and endTime, but let's stick to startDate/endDate for less UI breakage if possible. Wait, let's use what user asked: startTime and endTime.
+  startTime DateTime
+  endTime   DateTime?
 
   imageUrl     String?
   thumbnailUrl String?
 
-  capacity        Int?
-  registeredCount Int  @default(0)
+  capacity             Int?
+  registrationRequired Boolean @default(false)
+  registeredCount      Int     @default(0)
 
-  status String @default("upcoming") // upcoming, ongoing, completed, cancelled
+  status EventStatus @default(UPCOMING)
 
-  calendarEventId String? // Added for Google Calendar Sync
+  calendarEventId String?
 
   /// Rich metadata
   tags     String[]
-  category String? // "fundraiser", "workshop", "social", etc.
+  category String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  attendees    EventAttendee[]
-  galleryItems GalleryItem[]
-  transactions Transaction[]
+  registrations Registration[]
+  attendance    Attendance[]
+  minutes       EventMinutes?
+  media         Media[]
+  transactions  Transaction[]
+  budget        Budget?
 
   @@unique([clubId, slug])
 }
 
-model EventAttendee {
+model Registration {
   id      String @id @default(cuid())
   eventId String
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -287,39 +354,57 @@ model EventAttendee {
   memberId String
   member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
-  registeredAt DateTime  @default(now())
-  attendedAt   DateTime?
+  registeredAt DateTime           @default(now())
+  status       RegistrationStatus @default(REGISTERED)
 
   createdAt DateTime @default(now())
 
   @@unique([eventId, memberId])
 }
 
+model Attendance {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  checkedInAt DateTime         @default(now())
+  method      AttendanceMethod @default(MANUAL)
+
+  @@unique([eventId, memberId])
+}
+
+model EventMinutes {
+  id          String    @id @default(cuid())
+  eventId     String    @unique
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content     String    @db.Text
+  createdBy   String?
+  approvedBy  String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
 // ============================================================================
 // GALLERY
 // ============================================================================
 
-model GalleryItem {
+model Media {
   id     String @id @default(cuid())
   clubId String
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  title       String
-  description String?
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
-  imageUrl     String
-  thumbnailUrl String?
-
-  // Association
-  eventId String?
-  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
-
-  category String? // "event", "achievement", "news", etc.
-
-  order Int @default(0) // Display order
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  url        String
+  caption    String?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
 }
 
 // ============================================================================
@@ -354,9 +439,9 @@ model AuditLog {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  action     String // "create", "update", "delete", "login", etc.
-  resource   String // "member", "event", "project", etc.
-  resourceId String?
+  action   String // "create", "update", "delete", etc.
+  entity   String // "member", "event", "project", etc.
+  entityId String?
 
   changes   Json? // Track what changed
   ipAddress String?
@@ -388,16 +473,38 @@ model Setting {
 // FINANCE & TREASURY
 // ============================================================================
 
+model FinanceCategory {
+  id           String          @id @default(cuid())
+  name         String
+  type         TransactionType
+  transactions Transaction[]
+}
+
+model Budget {
+  id              String         @id @default(cuid())
+  clubId          String
+  club            Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  allocatedAmount Decimal        @db.Decimal(10, 2)
+  projectId       String?        @unique
+  project         Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  eventId         String?        @unique
+  event           Event?         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  financialYearId String?
+  financialYear   FinancialYear? @relation(fields: [financialYearId], references: [id], onDelete: SetNull)
+  createdAt       DateTime       @default(now())
+}
+
 enum TransactionType {
   INCOME
   EXPENSE
 }
 
 enum TransactionStatus {
-  PENDING
+  DRAFT
+  PENDING_APPROVAL
   APPROVED
   REJECTED
-  COMPLETED
+  VOIDED
 }
 
 enum TransactionCategory {
@@ -451,13 +558,40 @@ model Transaction {
   clubId String
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
+  title       String
+  description String?
+  amount      Decimal           @db.Decimal(10, 2)
   type        TransactionType
-  amount      Float
-  date        DateTime            @default(now())
-  description String
-  category    TransactionCategory @default(OTHER)
-  status      TransactionStatus   @default(PENDING)
-  receiptUrl  String?
+  status      TransactionStatus @default(PENDING_APPROVAL)
+
+  date DateTime @default(now())
+
+  categoryId String?
+  category   FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  receiptUrl String?
+
+  createdBy  String?
+  approvedBy String?
+  approvedAt DateTime?
+
+  paymentMethod   String? // CASH, UPI, BANK_TRANSFER, OTHER
+  referenceNumber String?
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  financialYearId String?
+  financialYear   FinancialYear? @relation(fields: [financialYearId], references: [id], onDelete: SetNull)
+
+  contributorId String?
+  contributor   Contributor? @relation(fields: [contributorId], references: [id], onDelete: SetNull)
 
   /// Association with members or users
   userId String?
@@ -465,10 +599,6 @@ model Transaction {
 
   memberId String?
   member   Member? @relation(fields: [memberId], references: [id], onDelete: SetNull)
-
-  /// Association with events
-  eventId String?
-  event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
   /// Association with Payment Request
   paymentRequestId String?
@@ -480,6 +610,7 @@ model Transaction {
   @@index([clubId])
   @@index([memberId])
   @@index([eventId])
+  @@index([projectId])
   @@index([paymentRequestId])
 }
 
@@ -512,16 +643,65 @@ model Announcement {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  attendees AnnouncementAttendance[]
+  // attendees AnnouncementAttendance[] removed as part of schema refactor
 }
 
-model AnnouncementAttendance {
-  id             String       @id @default(cuid())
-  announcementId String
-  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-  memberId       String
-  member         Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  attendedAt     DateTime?
+model FinancialYear {
+  id             String        @id @default(cuid())
+  clubId         String
+  club           Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name           String        @unique // e.g. "RY 2026-27"
+  startDate      DateTime
+  endDate        DateTime
+  openingBalance Decimal       @db.Decimal(10, 2)
+  closingBalance Decimal?      @db.Decimal(10, 2)
+  status         String        @default("ACTIVE") // ACTIVE, CLOSED
+  transactions   Transaction[]
+  budgets        Budget[]
+  transfers      Transfer[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
 
-  @@unique([announcementId, memberId])
+model Account {
+  id             String        @id @default(cuid())
+  clubId         String
+  club           Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name           String // Cash, Bank Account, UPI Wallet
+  type           String // CASH, BANK, UPI, OTHER
+  currentBalance Decimal       @default(0) @db.Decimal(10, 2)
+  transactions   Transaction[]
+  transfersFrom  Transfer[]    @relation("TransfersFrom")
+  transfersTo    Transfer[]    @relation("TransfersTo")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Transfer {
+  id              String         @id @default(cuid())
+  clubId          String
+  club            Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  fromAccountId   String
+  fromAccount     Account        @relation("TransfersFrom", fields: [fromAccountId], references: [id], onDelete: Cascade)
+  toAccountId     String
+  toAccount       Account        @relation("TransfersTo", fields: [toAccountId], references: [id], onDelete: Cascade)
+  amount          Decimal        @db.Decimal(10, 2)
+  date            DateTime       @default(now())
+  financialYearId String?
+  financialYear   FinancialYear? @relation(fields: [financialYearId], references: [id], onDelete: SetNull)
+  createdBy       String?
+  createdAt       DateTime       @default(now())
+}
+
+model Contributor {
+  id               String        @id @default(cuid())
+  clubId           String
+  club             Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name             String
+  contact          String?
+  type             String // SPONSOR, DONOR, PARTNER
+  totalContributed Decimal       @default(0) @db.Decimal(10, 2)
+  transactions     Transaction[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }

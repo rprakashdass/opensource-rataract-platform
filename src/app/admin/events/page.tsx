@@ -1,152 +1,225 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Calendar, Trash2, Pencil, Users } from "lucide-react";
+import { 
+  Calendar, 
+  MapPin, 
+  Users, 
+  IndianRupee, 
+  Plus,
+  FolderOpen,
+  MoreVertical,
+  SlidersHorizontal
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import FilterBar from "@/components/admin/FilterBar";
 import DeleteButton from "@/components/admin/DeleteButton";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
-export default async function EventsAdmin() {
-  const [initiatives, events, initiativeCount, eventCount, upcomingEventsCount] = await Promise.all([
-    prisma.initiative.findMany({
-      include: {
-        events: {
-          select: { id: true },
-        },
-      },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.event.findMany({
-      include: {
-        initiative: {
-          select: { title: true, slug: true },
-        },
-      },
-      orderBy: { startDate: "desc" },
-    }),
-    prisma.initiative.count(),
-    prisma.event.count(),
-    prisma.event.count({
-      where: {
-        startDate: { gte: new Date() }
-      }
-    })
-  ]);
+export default async function EventsAdmin(props: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const searchParams = await props.searchParams;
+  const search = searchParams.search || "";
+  const tab = searchParams.tab || "upcoming";
+
+  // Filter events based on active tab
+  let eventWhere: any = {};
+  if (tab === "upcoming") {
+    eventWhere.status = "UPCOMING";
+  } else if (tab === "completed") {
+    eventWhere.status = "COMPLETED";
+  } else if (tab === "drafts") {
+    eventWhere.status = "DRAFT";
+  }
+
+  if (search) {
+    eventWhere.title = { contains: search, mode: "insensitive" };
+  }
+
+  const events = await prisma.event.findMany({
+    where: eventWhere,
+    include: {
+      project: { select: { title: true } },
+      _count: { select: { registrations: true } }
+    },
+    orderBy: { startTime: "asc" }
+  });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-pink-700">Events</span>
-          <h1 className="text-3xl font-bold text-gray-900">Events & Series</h1>
-          <p className="text-sm text-gray-500 max-w-2xl">
-            The overview stays clean and readable. Use the creation page when you want to add a new event or recurring series.
-          </p>
+    <div className="max-w-6xl mx-auto space-y-6 py-2">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Events</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Plan and manage club activities.</p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/admin/events/new" className="inline-flex items-center justify-center rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white hover:bg-pink-700 transition">
-            Create Event
+        <Button asChild size="sm">
+          <Link href="/admin/events/create" className="flex items-center gap-1.5">
+            <Plus className="w-4 h-4" /> Create Event
           </Link>
+        </Button>
+      </div>
+
+      {/* Tabs list */}
+      <div className="border-b border-slate-200 flex items-center justify-between">
+        <div className="flex gap-4 text-sm">
+          {[
+            { id: "upcoming", label: "Upcoming" },
+            { id: "completed", label: "Completed" },
+            { id: "drafts", label: "Drafts" },
+            { id: "all", label: "All" }
+          ].map(t => {
+            const active = tab === t.id;
+            // Build tab link
+            const url = `/admin/events?tab=${t.id}${search ? `&search=${search}` : ""}`;
+            return (
+              <Link 
+                key={t.id} 
+                href={url}
+                className={`pb-3 font-medium border-b-2 transition-all ${
+                  active 
+                    ? "border-slate-900 text-slate-900 font-semibold" 
+                    : "border-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                {t.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="pb-2">
+          <FilterBar placeholder="Search events..." />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">Recurring Series</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{initiativeCount}</p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">All Event Occurrences</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{eventCount}</p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-500">Upcoming events</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{upcomingEventsCount}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Recurring Event Series</h2>
-              <p className="text-sm text-gray-500">One card per series, with all linked event occurrences underneath.</p>
-            </div>
-            <Link href="/admin/events/new" className="text-sm font-medium text-pink-700 hover:underline">
-              Add new
-            </Link>
+      {/* Grid listing */}
+      {events.length === 0 ? (
+        <div className="border border-dashed border-slate-300 rounded-xl p-16 text-center max-w-xl mx-auto mt-8 space-y-4">
+          <Calendar className="w-10 h-10 text-slate-300 mx-auto" />
+          <div className="space-y-1">
+            <h3 className="font-semibold text-slate-800">No events yet</h3>
+            <p className="text-sm text-slate-400">
+              Create your first event and start managing registrations, attendance and reports.
+            </p>
           </div>
-
-          {initiatives.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500">
-              No initiatives yet.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {initiatives.map((initiative) => (
-                <div key={initiative.id} className="rounded-xl border border-gray-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-semibold text-gray-900">{initiative.title}</div>
-                      <div className="text-xs text-gray-500 mt-1">{initiative.events.length} linked instances</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-pink-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-pink-700">
-                        {initiative.frequency}
-                      </span>
-                      <Link href={`/admin/events/new?initiativeEdit=${initiative.id}`} className="text-gray-400 hover:text-indigo-600 transition" title="Edit Initiative">
-                        <Pencil className="h-4 w-4" />
-                      </Link>
-                      <DeleteButton endpoint="/api/admin/initiatives" id={initiative.id} confirmMessage="Delete this initiative?" />
-                    </div>
-                  </div>
-                  <div className="mt-3 text-sm text-gray-600 line-clamp-2">{initiative.description || "No description set."}</div>
+          <Button asChild size="sm" className="mt-2">
+            <Link href="/admin/events/create">Create Event</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event) => (
+            <div key={event.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col group hover:shadow-md transition-all">
+              {/* Event Cover Image Placeholder / Color Block */}
+              <div className="h-32 bg-slate-100 relative overflow-hidden flex items-center justify-center border-b border-slate-100">
+                {event.imageUrl ? (
+                  <img 
+                    src={event.imageUrl} 
+                    alt={event.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  />
+                ) : (
+                  <Calendar className="w-8 h-8 text-slate-300" />
+                )}
+                <div className="absolute top-3 left-3 flex gap-1">
+                  <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-slate-900 shadow-sm border-none">
+                    {event.type.replace(/_/g, " ")}
+                  </Badge>
+                  <Badge className={`shadow-sm border-none ${
+                    event.status === "UPCOMING" 
+                      ? "bg-sky-500 text-white" 
+                      : event.status === "COMPLETED" 
+                      ? "bg-emerald-500 text-white" 
+                      : "bg-slate-500 text-white"
+                  }`}>
+                    {event.status}
+                  </Badge>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
+              </div>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">All Event Occurrences</h2>
-              <p className="text-sm text-gray-500">Manual entries that belong to a series or stand alone.</p>
-            </div>
-            <Link href="/admin/events/new" className="text-sm font-medium text-pink-700 hover:underline">
-              Add new
-            </Link>
-          </div>
-
-          {events.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500">
-              No event instances yet.
-            </div>
-          ) : (
-            <div className="space-y-4 max-h-[620px] overflow-auto pr-1">
-              {events.map((event) => (
-                <div key={event.id} className="rounded-xl border border-gray-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-semibold text-gray-900">{event.title}</div>
-                      <div className="text-xs text-gray-500 mt-1">{new Date(event.startDate).toLocaleString()}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-gray-700">
-                        {event.status}
-                      </span>
-                      <Link href={`/admin/events/${event.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition" title="Manage Event">
-                        Manage Event
-                      </Link>
-                      <DeleteButton endpoint="/api/admin/events" id={event.id} confirmMessage="Delete this event?" />
-                    </div>
+              {/* Event Body */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                      {event.title}
+                    </h3>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2">
+                          <MoreVertical className="w-4 h-4 text-slate-400" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/events/${event.id}`}>Manage</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/events/edit/${event.id}`}>Edit</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-rose-600 focus:text-rose-600">
+                          <DeleteButton endpoint="/api/admin/events" id={event.id} confirmMessage="Delete this event?" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <div className="mt-3 text-sm text-gray-600">
-                    {event.initiative?.title || "Standalone"}
+                  {event.project && (
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <FolderOpen className="w-3.5 h-3.5" />
+                      <span>{event.project.title}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>
+                      {new Date(event.startTime).toLocaleDateString("en-US", { 
+                        weekday: "short", 
+                        month: "short", 
+                        day: "numeric", 
+                        hour: "2-digit", 
+                        minute: "2-digit" 
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="truncate">{event.location || "Online / TBD"}</span>
                   </div>
                 </div>
-              ))}
+
+                <div className="flex items-center justify-between pt-2 text-xs text-slate-500 border-t border-slate-100">
+                  <span className="flex items-center gap-1 font-medium">
+                    <Users className="w-3.5 h-3.5 text-slate-400" />
+                    {event._count.registrations} registrations
+                  </span>
+                  {event.capacity && (
+                    <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-bold">
+                      Cap: {event.capacity}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Card Footer Actions */}
+              <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/admin/events/${event.id}`}>Manage</Link>
+                </Button>
+              </div>
+
             </div>
-          )}
-        </section>
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -89,6 +89,7 @@ export default function NewMemberPage() {
       
       toast.success(editId ? "Member updated successfully!" : "Member created successfully!", { id: loadingToast });
       router.push("/admin/members");
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message, { id: loadingToast });

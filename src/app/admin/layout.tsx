@@ -13,9 +13,10 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div className="min-h-screen bg-slate-50 text-slate-900 relative selection:bg-slate-200 selection:text-slate-900">
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <header className="bg-white/70 backdrop-blur-xl border-b border-white/40 sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
@@ -63,9 +64,10 @@ export default function AdminLayout({
         <AdminSidebar />
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8 overflow-x-hidden">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8 overflow-x-hidden animate-in fade-in duration-700 slide-in-from-bottom-4">
           {children}
         </main>
+      </div>
       </div>
     </div>
   );

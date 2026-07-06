@@ -3,16 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { updateCalendarEvent, deleteCalendarEvent } from "@/lib/calendar";
 import { sendEmail } from "@/lib/email";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const announcement = await prisma.announcement.findUnique({
       where: { id },
       include: {
         club: true,
-        attendees: {
-          include: { member: true }
-        }
       }
     });
 
@@ -27,12 +24,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const data = await req.json();
     
-    const existing = await prisma.announcement.findUnique({ where: { id }, include: { attendees: { include: { member: true } } } });
+    const existing = await prisma.announcement.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: "Announcement not found" }, { status: 404 });
     }
@@ -79,8 +76,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     // If sendInvite transitioned from false to true, send emails
     if (sendInvite && !existing.sendInvite) {
-      const emails = existing.attendees
-        .map((a) => a.member.email)
+      const members = await prisma.member.findMany({
+        where: { clubId: announcement.clubId, isActive: true },
+        select: { email: true }
+      });
+      const emails = members
+        .map((m) => m.email)
         .filter((email): email is string => !!email);
         
       if (emails.length > 0) {
@@ -118,7 +119,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const existing = await prisma.announcement.findUnique({ where: { id } });

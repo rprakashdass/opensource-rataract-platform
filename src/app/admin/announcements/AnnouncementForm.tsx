@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnnouncementType, Announcement } from "@prisma/client";
+import { toast } from "sonner";
 
 interface AnnouncementFormProps {
   initialData?: Announcement;
@@ -50,6 +51,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
         throw new Error(result.error || "Failed to save announcement");
       }
 
+      toast.success(initialData ? "Announcement updated" : "Announcement created");
       router.push("/admin/announcements");
       router.refresh();
     } catch (err: any) {

@@ -4,15 +4,19 @@ import { getSession } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 
 function adminOnly(session: any) {
-  return session && session.roles?.some((r: string) => ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
+  return session && session.roles?.some((r: string) => ["ADMIN", "CLUB_ADMIN", "TREASURER"].includes(r));
+}
+
+function financeAdminOnly(session: any) {
+  return session && session.roles?.some((r: string) => ["ADMIN", "FINANCE_ADMIN"].includes(r));
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const session = await getSession();
-    if (!adminOnly(session)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!financeAdminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
     const { status } = await req.json();
@@ -63,8 +67,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const { id } = await params;
     const session = await getSession();
-    if (!adminOnly(session)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!financeAdminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
     const { amount, description, date, category } = await req.json();
@@ -89,8 +93,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   try {
     const { id } = await params;
     const session = await getSession();
-    if (!adminOnly(session)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!financeAdminOnly(session)) {
+      return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
     await prisma.transaction.delete({

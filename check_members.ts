@@ -11,7 +11,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const members = await prisma.member.findMany({ include: { user: true } });
-  console.log(members.map(m => ({ id: m.id, email: m.email, userEmail: m.user?.email, status: m.status })));
+  console.log(members.map(m => ({ id: m.id, email: m.email, userEmail: m.user?.email, isActive: m.isActive })));
 }
 main().finally(() => {
   prisma.$disconnect();
