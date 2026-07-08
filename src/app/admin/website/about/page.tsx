@@ -9,15 +9,11 @@ export default async function AboutEditorPage() {
   const club = await getCurrentClub();
   if (!club) redirect("/setup");
 
-  let settings = await prisma.websiteSettings.findUnique({
-    where: { clubId: club.id }
+  const settings = await prisma.websiteSettings.upsert({
+    where: { clubId: club.id },
+    create: { clubId: club.id },
+    update: {},
   });
-
-  if (!settings) {
-    settings = await prisma.websiteSettings.create({
-      data: { clubId: club.id }
-    });
-  }
 
   return (
     <div className="max-w-4xl mx-auto py-8 space-y-6">
