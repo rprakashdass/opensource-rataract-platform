@@ -3,35 +3,69 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { eventSchema, EventFormData } from "../schemas/event.schema";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { dispatchNotification } from "@/features/notifications/service";
+import { getCurrentClub } from "@/lib/club";
+import { setupEventDriveFolder } from "@/features/storage/googleDrive";
 
 export async function createEvent(data: EventFormData) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
+    if (!session || (!session.roles?.includes("SUPER_ADMIN") || session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
       return { error: "Unauthorized" };
     }
 
     const parsed = eventSchema.parse(data);
 
-    const club = await prisma.club.findFirst();
+    const club = await getCurrentClub();
     if (!club) {
       return { error: "Club not found in database" };
     }
 
     const slug = parsed.slug || parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
+    const { team, coverMediaId, ...eventData } = parsed;
+
     const event = await prisma.event.create({
       data: {
-        ...parsed,
+        ...eventData,
         slug,
-        tags: parsed.tags ? parsed.tags.split(',').map(t => t.trim()) : [],
-        startDate: new Date(parsed.startTime),
-        startTime: new Date(parsed.startTime),
-        endTime: parsed.endTime ? new Date(parsed.endTime) : null,
+        tags: eventData.tags ? eventData.tags.split(',').map(t => t.trim()) : [],
+        startDate: new Date(eventData.startTime),
+        startTime: new Date(eventData.startTime),
+        endTime: eventData.endTime ? new Date(eventData.endTime) : null,
+        publishAt: eventData.publishAt ? new Date(eventData.publishAt) : null,
+        publishedAt: eventData.publishedAt ? new Date(eventData.publishedAt) : null,
         clubId: club.id,
+        members: team && team.length > 0 ? {
+          create: team.map(t => ({
+            memberId: t.memberId,
+            role: t.role as any
+          }))
+        } : undefined
       }
     });
+
+    // Create Drive Folder if env is configured
+    try {
+      const year = new Date(event.startDate).getFullYear();
+      const driveFolderId = await setupEventDriveFolder(club.name, event.title, year.toString());
+      if (driveFolderId) {
+        await prisma.event.update({
+          where: { id: event.id },
+          data: { driveFolderId }
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to create Google Drive folder for event:", err);
+    }
+
+    if (coverMediaId) {
+      await prisma.media.update({
+        where: { id: coverMediaId },
+        data: { eventId: event.id, isCover: true }
+      });
+    }
 
     // Log the audit
     await prisma.auditLog.create({
@@ -44,7 +78,9 @@ export async function createEvent(data: EventFormData) {
     });
 
     revalidatePath("/admin");
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
     revalidatePath("/events");
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
 
     return { success: true, event };
   } catch (error: any) {

@@ -1,4 +1,5 @@
 import { prisma } from "./src/lib/prisma";
+import { SystemRole } from "@prisma/client";
 
 async function main() {
   console.log("Applying User.role column migration...");
@@ -17,14 +18,14 @@ async function main() {
     update: {
       password: superAdminPassword,
       name: "Rotaract Super Admin",
-      roles: ["ADMIN"]
+      roles: [SystemRole.SUPER_ADMIN]
     },
     create: {
       email: superAdminEmail,
       password: superAdminPassword,
       name: "Rotaract Super Admin",
       avatar: "/user.png",
-      roles: ["ADMIN"]
+      roles: [SystemRole.SUPER_ADMIN]
     },
   });
 

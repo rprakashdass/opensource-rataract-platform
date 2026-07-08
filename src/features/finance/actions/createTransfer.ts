@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { transferSchema } from "../schemas/transaction.schema";
 import { revalidatePath } from "next/cache";
+import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 
 export async function createTransfer(data: any) {
   try {
@@ -30,8 +31,11 @@ export async function createTransfer(data: any) {
     const member = await prisma.member.findUnique({
       where: { id: session.member?.id || "" }
     });
-    const clubId = member?.clubId;
-    if (!clubId) return { error: "Club association not found" };
+    let clubId = member?.clubId;
+    if (!clubId) {
+        const defaultClub = await getOrCreateDefaultClub();
+        clubId = defaultClub?.id;
+    }
 
     // Resolve active Financial Year
     const fy = await prisma.financialYear.findFirst({

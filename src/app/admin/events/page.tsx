@@ -46,7 +46,12 @@ export default async function EventsAdmin(props: {
     where: eventWhere,
     include: {
       project: { select: { title: true } },
-      _count: { select: { registrations: true } }
+      _count: { select: { registrations: true } },
+      media: {
+        where: { isCover: true, usage: "COVER" },
+        take: 1,
+        select: { url: true }
+      }
     },
     orderBy: { startTime: "asc" }
   });
@@ -118,9 +123,9 @@ export default async function EventsAdmin(props: {
             <div key={event.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col group hover:shadow-md transition-all">
               {/* Event Cover Image Placeholder / Color Block */}
               <div className="h-32 bg-slate-100 relative overflow-hidden flex items-center justify-center border-b border-slate-100">
-                {event.imageUrl ? (
+                {event.media?.[0]?.url ? (
                   <img 
-                    src={event.imageUrl} 
+                    src={event.media[0].url} 
                     alt={event.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
@@ -159,9 +164,6 @@ export default async function EventsAdmin(props: {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                           <Link href={`/admin/events/${event.id}`}>Manage</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/events/edit/${event.id}`}>Edit</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-rose-600 focus:text-rose-600">
                           <DeleteButton endpoint="/api/admin/events" id={event.id} confirmMessage="Delete this event?" />

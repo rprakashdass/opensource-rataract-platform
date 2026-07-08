@@ -12,13 +12,23 @@ export const projectSchema = z.object({
     "FUNDRAISER",
     "OTHER"
   ]),
-  status: z.enum(["PLANNING", "ACTIVE", "COMPLETED", "ON_HOLD", "CANCELLED"]),
+  status: z.enum(["PLANNING", "ACTIVE", "COMPLETED", "CANCELLED"]).default("PLANNING"),
+  publishStatus: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
+  publishAt: z.string().optional().nullable(),
+  publishedAt: z.string().optional().nullable(),
   startDate: z.string(),
   endDate: z.string().optional().nullable(),
-  coverImage: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  chairPersonId: z.string().optional().nullable(),
-  visibility: z.enum(["PUBLIC", "MEMBERS_ONLY", "BOARD_ONLY"]),
+  coverMediaId: z.string().optional(),
+  isFeatured: z.boolean().default(false),
+  impactSummary: z.string().optional(),
+  visibility: z.enum(["PUBLIC", "INTERNAL", "MEMBERS_ONLY", "BOARD_ONLY"]).default("PUBLIC"),
   impactMetrics: z.string().optional().nullable(),
+  team: z.array(
+    z.object({
+      memberId: z.string(),
+      role: z.enum(["CHAIR", "CO_CHAIR", "ORGANIZER", "VOLUNTEER"])
+    })
+  ).optional()
 });
 
 export type ProjectFormData = z.infer<typeof projectSchema>;

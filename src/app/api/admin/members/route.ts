@@ -28,6 +28,11 @@ function validateMemberPayload(data: any) {
 
 export async function POST(req: Request) {
   try {
+    const session = await getSession();
+    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN"].includes(role))) {
+      return NextResponse.json({ error: "Access Denied: Only Admins can create members" }, { status: 403 });
+    }
+
     const data = await req.json();
     const payload = validateMemberPayload(data);
     const club = await getOrCreateDefaultClub();
@@ -71,6 +76,7 @@ export async function POST(req: Request) {
           clubId: club.id,
           position: payload.position,
           order: payload.order,
+          financialYearId: (await prisma.financialYear.findFirst({ where: { status: "ACTIVE" } }))?.id || ""
         },
       });
     }
@@ -84,10 +90,15 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN", "FINANCE_ADMIN"].includes(role))) {
+      return NextResponse.json({ error: "Access Denied" }, { status: 403 });
+    }
+
     const members = await prisma.member.findMany({
       include: {
         user: true,
-        boardMembership: true,
+        boardMemberships: true,
       },
     });
     return NextResponse.json(members);
@@ -100,7 +111,7 @@ export async function GET() {
 export async function DELETE(req: Request) {
   try {
     const session = await getSession();
-    if (!session || (!(session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')))) {
+    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN"].includes(role))) {
       return NextResponse.json({ error: "Access Denied: Only Admins can delete members" }, { status: 403 });
     }
 
@@ -122,6 +133,11 @@ export async function DELETE(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const session = await getSession();
+    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN"].includes(role))) {
+      return NextResponse.json({ error: "Access Denied: Only Admins can update members" }, { status: 403 });
+    }
+
     const data = await req.json();
     const { id } = data;
     if (!id) {

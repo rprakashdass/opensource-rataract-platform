@@ -3,12 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { EventStatus } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function transitionEvent(eventId: string, newStatus: EventStatus) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
+    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "BOARD_MEMBER"].includes(role))) {
       return { error: "Unauthorized" };
     }
 
@@ -48,9 +48,15 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
       return { error: `Cannot transition event from ${currentStatus} to ${newStatus}` };
     }
 
+    const updateData: any = { status: newStatus };
+    if (currentStatus === "DRAFT" && newStatus !== "CANCELLED") {
+      updateData.publishStatus = "PUBLISHED";
+      updateData.publishedAt = new Date();
+    }
+
     const updatedEvent = await prisma.event.update({
       where: { id: eventId },
-      data: { status: newStatus }
+      data: updateData
     });
 
     // Log the audit
@@ -64,8 +70,11 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
     });
 
     revalidatePath(`/admin/events/${eventId}`);
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
     revalidatePath("/admin/events");
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
     revalidatePath("/events");
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
 
     return { success: true, event: updatedEvent };
   } catch (error: any) {

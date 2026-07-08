@@ -1,117 +1,128 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Linkedin } from "lucide-react";
+import { Instagram, Linkedin, Youtube, Mail, MapPin } from "lucide-react";
 import MaxWidthWrapper from "../wrappers/MaxWidthWrapper";
-
-const footerLinks = {
-  about: [
-    { name: "Rotaract", href: "https://www.rotary.org/en" },
-    { name: "Rotary", href: "https://www.rotary.org/en" },
-    { name: "Our Events", href: "/events" },
-  ],
-  team: [
-    { name: "Team Page", href: "/team" },
-    { name: "Board Council", href: "/team/#boardCouncil" },
-    { name: "Board of Directors", href: "/team/#boardOfDirectors" },
-  ],
-};
+import React, { useState, useEffect } from "react";
+import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
 
 export default function Footer() {
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
-  const orgSubName = process.env.NEXT_PUBLIC_ORG_SUB_NAME || "District & Club Platform";
-  const orgDescription = process.env.NEXT_PUBLIC_ORG_DESCRIPTION || "We function as a service-oriented organization that strives to create a better world through volunteerism, community service, and professional development.";
-  const orgInstagram = process.env.NEXT_PUBLIC_ORG_INSTAGRAM || "https://instagram.com/rotaract";
-  const orgLinkedin = process.env.NEXT_PUBLIC_ORG_LINKEDIN || "https://linkedin.com/company/rotaract";
+  const [club, setClub] = useState<any>(null);
 
-  const socialLinks = [
-    { icon: Instagram, href: orgInstagram, name: "Instagram" },
-    { icon: Linkedin, href: orgLinkedin, name: "LinkedIn" },
-  ];
+  useEffect(() => {
+    getPublicLayoutData().then(data => {
+      if (data) setClub(data.club);
+    });
+  }, []);
+
+  const appName = club?.shortName || club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
+  const logoUrl = club?.logoUrl || "/logo.png";
+  const orgDescription = club?.missionStatement || process.env.NEXT_PUBLIC_ORG_DESCRIPTION || "We function as a service-oriented organization that strives to create a better world through volunteerism, community service, and professional development.";
+  
+  const socialMedia = club?.socialMedia || {};
+  const orgInstagram = socialMedia.instagram || process.env.NEXT_PUBLIC_ORG_INSTAGRAM;
+  const orgLinkedin = socialMedia.linkedin || process.env.NEXT_PUBLIC_ORG_LINKEDIN;
+  const orgYoutube = socialMedia.youtube;
 
   return (
-    <footer className="border-t border-primary/10 bg-white dark:bg-black">
+    <footer className="bg-slate-950 text-slate-300 pt-20 pb-10 border-t-4 border-amber-500">
       <MaxWidthWrapper>
-        <div className="w-full py-12 sm:py-16 md:py-24">
-          {/* Main footer grid — single col on mobile, 6-col on lg */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-12 items-start">
-            {/* Brand block — full width on mobile, 2-col span on lg */}
-            <div className="sm:col-span-2 lg:col-span-2 space-y-5">
-              <Link href="/" className="inline-flex items-center gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
+          
+          {/* Brand & About */}
+          <div className="lg:col-span-5 space-y-6">
+            <Link href="/" className="inline-flex items-center gap-4 group">
+              <div className="bg-white rounded-full p-1.5 overflow-hidden shadow-lg group-hover:shadow-amber-500/20 transition-all">
                 <Image
-                  src="/favicon.ico"
+                  src={logoUrl}
                   alt="Rotaract Club Logo"
-                  width={52}
-                  height={52}
-                  className="hover:rotate-12 transition-transform duration-300 flex-shrink-0"
+                  width={56}
+                  height={56}
+                  className="object-contain"
                 />
-                <div>
-                  <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-zinc-950 to-zinc-700 dark:from-zinc-50 dark:to-zinc-300 bg-clip-text text-transparent">
-                    {appName}
-                  </h2>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
-                    {orgSubName}
-                  </p>
-                </div>
-              </Link>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-                {orgDescription}
-              </p>
-              <div className="flex gap-3">
-                {socialLinks.map((social, index) => {
-                  const Icon = social.icon;
-                  return (
-                    <Link
-                      key={index}
-                      href={social.href}
-                      className="text-muted-foreground hover:text-primary hover:border-primary transition-all p-2.5 rounded-full border border-primary/10"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="sr-only">{social.name}</span>
-                    </Link>
-                  );
-                })}
               </div>
-            </div>
-
-            {/* Links — each takes 1 col on sm (within the 2-col sm grid), 2-col span on lg */}
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">About</h3>
-              <ul className="space-y-3">
-                {footerLinks.about.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="lg:col-span-2 space-y-4">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Team</h3>
-              <ul className="space-y-3">
-                {footerLinks.team.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+              <div>
+                <h2 className="text-2xl font-black text-white tracking-tight">
+                  {appName}
+                </h2>
+                <p className="text-[11px] text-amber-400 uppercase tracking-widest font-bold mt-1">
+                  Rotary International
+                </p>
+              </div>
+            </Link>
+            <p className="text-slate-400 leading-relaxed max-w-md">
+              {orgDescription}
+            </p>
+            <div className="flex gap-4 pt-2">
+              {orgInstagram && (
+                <a href={orgInstagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-amber-500 hover:text-white transition-colors">
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {orgLinkedin && (
+                <a href={orgLinkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-amber-500 hover:text-white transition-colors">
+                  <Linkedin className="w-5 h-5" />
+                </a>
+              )}
+              {orgYoutube && (
+                <a href={orgYoutube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-amber-500 hover:text-white transition-colors">
+                  <Youtube className="w-5 h-5" />
+                </a>
+              )}
             </div>
           </div>
 
-          {/* Bottom bar */}
-          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground text-center sm:text-left">
-              &copy; {new Date().getFullYear()} {appName}. All rights reserved.
-            </p>
-            <div className="flex gap-4 sm:gap-6 text-xs text-muted-foreground">
-              <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
-            </div>
+          {/* Quick Links */}
+          <div className="lg:col-span-2 lg:col-start-7 space-y-6">
+            <h3 className="text-sm font-black text-white uppercase tracking-widest">Explore</h3>
+            <ul className="space-y-4">
+              <li><Link href="/about" className="hover:text-amber-400 transition-colors">About Us</Link></li>
+              <li><Link href="/projects" className="hover:text-amber-400 transition-colors">Initiatives</Link></li>
+              <li><Link href="/events" className="hover:text-amber-400 transition-colors">Events</Link></li>
+              <li><Link href="/gallery" className="hover:text-amber-400 transition-colors">Gallery</Link></li>
+              <li><Link href="/announcements" className="hover:text-amber-400 transition-colors">Announcements</Link></li>
+            </ul>
+          </div>
+
+          {/* Get Involved */}
+          <div className="lg:col-span-2 space-y-6">
+            <h3 className="text-sm font-black text-white uppercase tracking-widest">Involve</h3>
+            <ul className="space-y-4">
+              <li><Link href="/join" className="hover:text-amber-400 transition-colors">Become a Member</Link></li>
+              <li><Link href="/partner" className="hover:text-amber-400 transition-colors">Partner With Us</Link></li>
+              <li><Link href="/auth/login" className="hover:text-amber-400 transition-colors">Member Portal</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="lg:col-span-2 space-y-6">
+            <h3 className="text-sm font-black text-white uppercase tracking-widest">Contact</h3>
+            <ul className="space-y-4">
+              {club?.email && (
+                <li>
+                  <a href={`mailto:${club.email}`} className="flex items-center gap-3 hover:text-amber-400 transition-colors group">
+                    <Mail className="w-4 h-4 text-slate-500 group-hover:text-amber-400" />
+                    <span className="truncate text-sm">{club.email}</span>
+                  </a>
+                </li>
+              )}
+              {club?.meetingVenue && (
+                <li className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-slate-500 mt-1 shrink-0" />
+                  <span className="text-sm leading-relaxed">{club.meetingVenue}</span>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
+          <p>&copy; {new Date().getFullYear()} {appName}. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </MaxWidthWrapper>

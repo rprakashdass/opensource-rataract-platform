@@ -2,7 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import LogTransactionForm from "./_components/LogTransactionForm";
+import TransactionForm from "@/features/finance/components/TransactionForm";
+import { createTransaction } from "@/features/finance/actions/createTransaction";
+import { redirect } from "next/navigation";
 
 export default async function LogTransactionPage() {
   const club = await getOrCreateDefaultClub();
@@ -36,6 +38,15 @@ export default async function LogTransactionPage() {
     currentBalance: Number(a.currentBalance)
   }));
 
+  async function handleCreate(data: any) {
+    "use server";
+    const res = await createTransaction(data);
+    if (res.success) {
+      redirect("/admin/finance");
+    }
+    return res;
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-6 py-6 animate-in fade-in duration-300">
       <div className="space-y-2">
@@ -48,12 +59,15 @@ export default async function LogTransactionPage() {
         </p>
       </div>
 
-      <LogTransactionForm 
-        accounts={accountsSerialized}
-        categories={categories}
-        projects={projects}
-        events={events}
-      />
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+        <TransactionForm 
+          accounts={accountsSerialized}
+          categories={categories}
+          projects={projects}
+          events={events}
+          onSubmitAction={handleCreate}
+        />
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { FileUpload } from "@/components/ui/file-upload";
 
 export default function ProfileForm({ member }: { member: any }) {
   const [loading, setLoading] = useState(false);
@@ -12,6 +13,8 @@ export default function ProfileForm({ member }: { member: any }) {
     companyName: member.companyName || "",
     location: member.location || "",
     bio: member.bio || "",
+    avatar: member.avatar || "",
+    showOnWebsite: member.showOnWebsite || false,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -39,6 +42,15 @@ export default function ProfileForm({ member }: { member: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+        <FileUpload 
+          value={formData.avatar}
+          onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
+          accept="image/*"
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
@@ -114,6 +126,20 @@ export default function ProfileForm({ member }: { member: any }) {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
           placeholder="Tell us a little bit about yourself..."
         />
+      </div>
+
+      <div className="flex items-center space-x-2 border p-4 rounded-md border-gray-300">
+        <input 
+          type="checkbox" 
+          id="showOnWebsite" 
+          name="showOnWebsite" 
+          checked={formData.showOnWebsite}
+          onChange={(e) => setFormData(prev => ({ ...prev, showOnWebsite: e.target.checked }))}
+          className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600" 
+        />
+        <label htmlFor="showOnWebsite" className="text-sm font-medium text-gray-700 cursor-pointer">
+          Show my profile on the public website (Club Directory / Project Teams)
+        </label>
       </div>
 
       <div className="flex justify-end">

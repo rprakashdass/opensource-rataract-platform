@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { IndianRupee, ChevronRight, Check } from "lucide-react";
 import Image from "next/image";
+import { PublicHero } from "@/components/ui/public/PublicHero";
+import { PublicSection } from "@/components/ui/public/PublicSection";
 
 interface Project {
   id: string;
@@ -36,26 +38,18 @@ export default function SponsorPage() {
   const impact = getImpact(donationAmount);
 
   return (
-    <div className="min-h-screen bg-background pt-24 sm:pt-32 pb-16">
-      <MaxWidthWrapper>
-        <div className="space-y-12 sm:space-y-16">
-          {/* Header Hero */}
-          <div className="max-w-2xl space-y-4">
-            <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
-              Sponsor Our Campaigns
-            </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground">
-              Fuel Community Change
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Every contribution helps fund local education drives, support relief efforts, and plant municipal forest blocks. Partner with us to maximize your CSR goals.
-            </p>
-          </div>
-
+    <div className="min-h-screen bg-background pb-16">
+      <PublicHero 
+        badge="Sponsor Our Campaigns"
+        title="Fuel Community Change"
+        description="Every contribution helps fund local education drives, support relief efforts, and plant municipal forest blocks. Partner with us to maximize your CSR goals."
+      />
+      <PublicSection background="white">
+        <div className="space-y-12 sm:space-y-16 mt-8">
           {/* Calculator + Tier — stack on mobile, side-by-side on lg */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-8 items-start">
             {/* Impact Calculator */}
-            <div className="lg:col-span-3 bg-card border border-primary/10 p-6 sm:p-8 rounded-3xl space-y-6">
+            <div className="lg:col-span-3 bg-white border border-slate-100 p-6 sm:p-8 rounded-3xl shadow-sm space-y-6">
               <div className="space-y-2">
                 <h3 className="text-lg sm:text-xl font-bold text-foreground">Impact Calculator</h3>
                 <p className="text-xs text-muted-foreground">Adjust the slider to see how your funds will directly allocate to families</p>
@@ -102,7 +96,7 @@ export default function SponsorPage() {
             </div>
 
             {/* Patron Tier Card */}
-            <div className="lg:col-span-2 bg-gradient-to-br from-primary to-purple-600 text-primary-foreground p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col justify-between space-y-6">
+            <div className="lg:col-span-2 bg-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl flex flex-col justify-between space-y-6">
               <div className="space-y-4">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full w-fit block">Corporate CSR Tier</span>
                 <h3 className="text-xl sm:text-2xl font-black leading-tight">Become an Official Club Patron</h3>
@@ -162,7 +156,7 @@ export default function SponsorPage() {
             )}
           </div>
         </div>
-      </MaxWidthWrapper>
+      </PublicSection>
     </div>
   );
 }

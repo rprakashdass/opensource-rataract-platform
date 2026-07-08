@@ -109,10 +109,12 @@ export default async function AnnouncementsPage(props: {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2 text-indigo-400" />
-                        {format(new Date(announcement.startDate), "MMM d, yyyy h:mm a")}
-                      </div>
+                      {announcement.startDate && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Calendar className="h-4 w-4 mr-2 text-indigo-400" />
+                          {format(new Date(announcement.startDate), "MMM d, yyyy h:mm a")}
+                        </div>
+                      )}
                       {(announcement.location || announcement.meetingLink) && (
                         <div className="flex items-center text-sm text-gray-500">
                           {announcement.location ? (

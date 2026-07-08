@@ -77,7 +77,7 @@ export default async function ProjectsAdminPage() {
             const volunteersCount = volunteerSet.size;
 
             // Budget calculations
-            const budgetAllocated = project.budget?.amount ? Number(project.budget.amount) : 25000; // Fallback for visual mock
+            const budgetAllocated = project.budget?.allocatedAmount ? Number(project.budget.allocatedAmount) : 25000; // Fallback for visual mock
             const budgetSpent = project.transactions.reduce((acc, curr) => acc + Number(curr.amount), 0);
             const budgetProgress = Math.min((budgetSpent / budgetAllocated) * 100, 100);
 

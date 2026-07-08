@@ -48,12 +48,12 @@ export default async function MemberFinancePage() {
     // or requests that the user has explicitly dismissed
     pendingRequests = allRequests.filter(req => 
       !req.dismissedBy.includes(member.id) &&
-      !req.transactions.some((t: any) => t.status === "APPROVED" || t.status === "COMPLETED")
+      !req.transactions.some((t: any) => t.status === "APPROVED")
     );
   }
 
   const totalPaid = transactions
-    .filter(t => t.type === "INCOME" && (t.status === "COMPLETED" || t.status === "APPROVED"))
+    .filter(t => t.type === "INCOME" && t.status === "APPROVED")
     .reduce((acc: number, curr) => acc + Number(curr.amount), 0);
 
   const totalPending = pendingRequests.reduce((acc: number, curr) => acc + Number(curr.amount), 0);

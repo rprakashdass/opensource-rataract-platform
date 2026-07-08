@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ProjectFormData, projectSchema } from "../schemas/project.schema";
-
-// We'll use native forms for simplicity if hook-form imports are not fully set up.
-// Wait, I will use regular React state for simplicity and safety, and parse it with Zod.
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +14,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { createProject } from "../actions/createProject";
+import { MediaUpload } from "@/components/ui/media-upload";
 
 export default function ProjectForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState<{id: string, name: string}[]>([]);
+  const [team, setTeam] = useState<{memberId: string, role: string}[]>([]);
+  const [coverMediaId, setCoverMediaId] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/admin/members")
+      .then(r => r.json())
+      .then(data => {
+        if(Array.isArray(data)) setMembers(data);
+      })
+      .catch(console.error);
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,9 +45,15 @@ export default function ProjectForm() {
       status: formData.get("status"),
       startDate: formData.get("startDate") ? new Date(formData.get("startDate") as string).toISOString() : "",
       endDate: formData.get("endDate") ? new Date(formData.get("endDate") as string).toISOString() : null,
-      coverImage: formData.get("coverImage") || undefined,
+      coverMediaId: formData.get("coverMediaId") || undefined,
+      isFeatured: formData.get("isFeatured") === "on",
+      impactSummary: formData.get("impactSummary") || undefined,
       visibility: formData.get("visibility"),
+      publishStatus: (e.nativeEvent as any).submitter?.getAttribute("value") || "DRAFT",
+      publishAt: formData.get("publishAt") ? new Date(formData.get("publishAt") as string).toISOString() : null,
+      publishedAt: ((e.nativeEvent as any).submitter?.getAttribute("value") === "PUBLISHED") ? new Date().toISOString() : null,
       impactMetrics: formData.get("impactMetrics") || null,
+      team: team,
     };
 
     try {
@@ -127,8 +143,16 @@ export default function ProjectForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="coverImage">Cover Image URL</Label>
-            <Input type="url" id="coverImage" name="coverImage" placeholder="https://..." />
+            <Label htmlFor="coverImage">Cover Image</Label>
+            <MediaUpload 
+              value={coverMediaId} 
+              onChange={setCoverMediaId} 
+              type="IMAGE"
+              usage="COVER"
+              accept="image/*"
+              isCover={true}
+            />
+            <input type="hidden" name="coverMediaId" value={coverMediaId} />
           </div>
 
           <div className="space-y-2">
@@ -139,6 +163,7 @@ export default function ProjectForm() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="PUBLIC">Public (Visible on website)</SelectItem>
+                <SelectItem value="INTERNAL">Internal</SelectItem>
                 <SelectItem value="MEMBERS_ONLY">Members Only</SelectItem>
                 <SelectItem value="BOARD_ONLY">Board Only</SelectItem>
               </SelectContent>
@@ -146,16 +171,84 @@ export default function ProjectForm() {
           </div>
           
           <div className="space-y-2">
+            <Label htmlFor="impactSummary">Impact Summary (Short)</Label>
+            <Input id="impactSummary" name="impactSummary" placeholder="Short punchy summary for the public card" />
+          </div>
+
+          <div className="flex items-center space-x-2 border p-4 rounded-lg bg-slate-50">
+            <input type="checkbox" id="isFeatured" name="isFeatured" className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600" />
+            <Label htmlFor="isFeatured" className="font-medium cursor-pointer">
+              Feature on Homepage
+            </Label>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="impactMetrics">Impact Metrics (JSON)</Label>
             <Input id="impactMetrics" name="impactMetrics" placeholder='e.g., {"studentsReached": 500}' />
           </div>
 
+          <div className="border-t border-gray-100 pt-6 mt-6 space-y-4">
+            <h3 className="text-lg font-bold">Team Assignments</h3>
+            <p className="text-sm text-slate-500">Assign members to leadership and operational roles for this project.</p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Project Chair</Label>
+                <Select onValueChange={(val) => {
+                  setTeam(prev => {
+                    const filtered = prev.filter(t => t.role !== "CHAIR");
+                    return val && val !== "none" ? [...filtered, { memberId: val, role: "CHAIR" }] : filtered;
+                  });
+                }}>
+                  <SelectTrigger><SelectValue placeholder="Select Chair" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {members.map(m => (
+                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Co-Chair</Label>
+                <Select onValueChange={(val) => {
+                  setTeam(prev => {
+                    const filtered = prev.filter(t => t.role !== "CO_CHAIR");
+                    return val && val !== "none" ? [...filtered, { memberId: val, role: "CO_CHAIR" }] : filtered;
+                  });
+                }}>
+                  <SelectTrigger><SelectValue placeholder="Select Co-Chair" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {members.map(m => (
+                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-100 pt-6 mt-6">
+            <h3 className="font-bold text-gray-900 mb-4">Publishing & Scheduling</h3>
+            <div className="space-y-2 w-full sm:w-1/2">
+               <Label htmlFor="publishAt">Schedule Date & Time (Optional)</Label>
+               <Input type="datetime-local" id="publishAt" name="publishAt" />
+               <p className="text-xs text-gray-500">If set, the project will be automatically published at this time. Use the "Schedule" button below to save.</p>
+            </div>
+          </div>
+
         </CardContent>
         <CardFooter className="flex justify-end gap-2 bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
-          <Button variant="outline" type="button" onClick={() => router.back()}>Cancel</Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? "Creating..." : "Create Project"}
-          </Button>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full justify-end">
+            <div className="flex gap-2">
+              <Button variant="outline" type="button" onClick={() => router.back()}>Cancel</Button>
+              <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading}>Save Draft</Button>
+              <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600">Schedule</Button>
+              <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading}>Publish Now</Button>
+            </div>
+          </div>
         </CardFooter>
       </form>
     </Card>

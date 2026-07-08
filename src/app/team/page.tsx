@@ -1,73 +1,56 @@
+import { getPublicTeam } from "@/features/public/queries/getPublicTeam";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
-import { prisma } from "@/lib/prisma";
-import { Metadata } from "next";
-import TeamDirectory from "./_components/TeamDirectory";
-
-export const metadata: Metadata = {
-  title: "Team Directory",
-  openGraph: {
-    description: "Meet the executive board council and directors of our Rotaract organization.",
-  },
-};
+import { PersonCard } from "@/components/ui/public/PersonCard";
+import { PublicHero } from "@/components/ui/public/PublicHero";
+import { PublicSection } from "@/components/ui/public/PublicSection";
 
 export default async function TeamPage() {
-  let dbMembers: any[] = [];
-  try {
-    const membersList = await prisma.member.findMany({
-      include: {
-        user: true,
-        boardMembership: true
-      }
-    });
+  const data = await getPublicTeam();
 
-    if (membersList.length > 0) {
-      dbMembers = membersList.map((member) => ({
-        id: member.id,
-        name: member.name || "Member",
-        imageUrl: member.avatar || "/user.png",
-        roles: [{
-          id: member.id,
-          memberType: member.boardMembership ? "COUNCIL" : "DIRECTOR",
-          position: member.boardMembership?.position?.replaceAll("_", " ") || "Member",
-          yearId: "y1"
-        }]
-      }));
-    }
-  } catch (error) {
-    console.error("Prisma query failed on Team Page:", error);
+  if (data.error) {
+    return <div className="p-20 text-center text-slate-500 font-medium">Failed to load team data.</div>;
   }
 
-  let tenureYear: string | null = null;
-  try {
-    const club = await prisma.club.findFirst();
-    if (club?.tenureYear) tenureYear = club.tenureYear;
-  } catch (error) {
-    console.error("Unable to load club tenure year:", error);
-  }
-
-  const finalMembers = dbMembers;
+  const board = data.board || [];
+  const members = data.members || [];
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-16">
-      <MaxWidthWrapper>
-        <div className="space-y-12">
-          {/* Header section */}
-          <div className="max-w-2xl space-y-4">
-            <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
-              Club Directory
-            </span>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
-              Meet the Leaders of {tenureYear ? `Team ${tenureYear}` : "the Current Team"}
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              We structure our organization with a Board of Directors leading operational domains, and active members executing our community service projects.
-            </p>
-          </div>
+    <main className="min-h-screen bg-background pb-16">
+      <PublicHero 
+        badge="Meet The Team"
+        title="Members Directory"
+        description="We are a dedicated community of volunteers, professionals, and students united by a shared passion for service and leadership."
+      />
+      <PublicSection background="white">
+        
+        {/* Unified Club Members */}
+        <section>
+          {members.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
+              {members.map((member: any) => {
+                const activeBoard = member.boardMemberships?.find((b: any) => b.financialYear?.status === "ACTIVE" || !b.leftAt);
+                const boardRole = activeBoard?.position;
+                
+                return (
+                  <PersonCard
+                    key={member.id}
+                    name={member.name}
+                    avatarUrl={member.avatar}
+                    professionOrYear={member.profession}
+                    boardRole={boardRole}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-32 bg-white rounded-3xl border border-dashed border-slate-200 max-w-3xl mx-auto">
+              <h3 className="text-2xl font-black text-slate-900 mb-2">No Members Found</h3>
+              <p className="text-slate-500 font-medium">The club roster is currently empty.</p>
+            </div>
+          )}
+        </section>
 
-          {/* Interactive team search & filters dashboard */}
-          <TeamDirectory initialMembers={finalMembers} />
-        </div>
-      </MaxWidthWrapper>
-    </div>
+      </PublicSection>
+    </main>
   );
 }

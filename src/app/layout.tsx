@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { getConfig } from "@/lib/config";
 import LayoutProvider from "@/components/providers/LayoutProvider";
 import { Providers } from "@/app/providers";
 import { Suspense } from "react";
@@ -13,18 +12,19 @@ const inter = Inter({
   display: "swap",
 });
 
-const config = getConfig();
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   title: {
-    default: config.appName,
-    template: `%s | ${config.appName}`,
+    default: appName,
+    template: `%s | ${appName}`,
   },
   description: "A modern platform for Rotaract clubs and districts",
   icons: {
     icon: "/favicon.ico",
   },
-  metadataBase: new URL(config.appUrl),
+  metadataBase: new URL(appUrl),
 };
 
 export default function RootLayout({

@@ -13,13 +13,24 @@ datasource db {
 
 /// Club/Organization Configuration
 model Club {
-  id         String  @id @default(cuid())
-  name       String
-  district   String?
-  country    String  @default("India")
-  logoUrl    String?
-  bannerUrl  String?
-  tenureYear String  @default("2026-27")
+  id        String  @id @default(cuid())
+  name      String
+  shortName String?
+
+  district    String?
+  country     String  @default("India")
+  logoUrl     String?
+  bannerUrl   String?
+  tenureYear  String  @default("2026-27")
+  foundedYear Int?
+
+  /// Messaging
+  presidentMessage String? @db.Text
+
+  /// Logistics
+  meetingDay   String?
+  meetingTime  String?
+  meetingVenue String?
 
   /// Contact Information
   email      String?
@@ -52,19 +63,71 @@ model Club {
   isActive  Boolean  @default(true)
 
   // Relations
-  members         Member[]
-  boardMembers    BoardMember[]
-  projects        Project[]
-  events          Event[]
-  announcements   Announcement[]
-  media           Media[]
-  transactions    Transaction[]
-  paymentRequests PaymentRequest[]
-  accounts        Account[]
-  budgets         Budget[]
-  contributors    Contributor[]
-  transfers       Transfer[]
-  financialYears  FinancialYear[]
+  members                 Member[]
+  boardMembers            BoardMember[]
+  projects                Project[]
+  events                  Event[]
+  announcements           Announcement[]
+  albums                  Album[]
+  media                   Media[]
+  inquiries               MembershipInquiry[]
+  sponsors                Sponsor[]
+  transactions            Transaction[]
+  paymentRequests         PaymentRequest[]
+  accounts                Account[]
+  budgets                 Budget[]
+  contributors            Contributor[]
+  transfers               Transfer[]
+  financialYears          FinancialYear[]
+  documents               Document[]
+  emailTemplates          EmailTemplate[]
+  scheduledCommunications ScheduledCommunication[]
+  websiteSettings         WebsiteSettings?
+  milestones              Milestone[]
+}
+
+// ============================================================================
+// WEBSITE CMS
+// ============================================================================
+
+model WebsiteSettings {
+  id     String @id @default(cuid())
+  clubId String @unique
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  heroHeadline String?
+  heroSubtitle String?
+  heroCTA      String?
+  heroImages   Json? // Optional: Store array of URLs if needed separately from Media
+
+  aboutStory     String? @db.Text
+  seoTitle       String?
+  seoDescription String?
+
+  enableHero             Boolean @default(true)
+  enableImpact           Boolean @default(true)
+  enableFeaturedProjects Boolean @default(true)
+  enableEvents           Boolean @default(true)
+  enableGallery          Boolean @default(true)
+  enableLeadership       Boolean @default(true)
+  enableAnnouncements    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Milestone {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  year         String
+  title        String
+  description  String? @db.Text
+  displayOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================================
@@ -88,8 +151,30 @@ enum ProjectStatus {
   CANCELLED
 }
 
+enum PublishStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProjectRole {
+  CHAIR
+  CO_CHAIR
+  ORGANIZER
+  VOLUNTEER
+}
+
+enum EventRole {
+  CHAIR
+  CO_CHAIR
+  ORGANIZER
+  VOLUNTEER
+}
+
 enum Visibility {
   PUBLIC
+  INTERNAL
   MEMBERS_ONLY
   BOARD_ONLY
 }
@@ -110,6 +195,7 @@ enum EventStatus {
   ONGOING
   COMPLETED
   CANCELLED
+  PLANNING
 }
 
 enum RegistrationStatus {
@@ -119,10 +205,98 @@ enum RegistrationStatus {
   WAITLISTED
 }
 
+enum InquiryStatus {
+  PENDING
+  REVIEWING
+  CONTACTED
+  CONVERTED
+  REJECTED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
 enum AttendanceMethod {
   MANUAL
   QR_CODE
   IMPORT
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO_LINK
+  DOCUMENT
+}
+
+enum MediaUsage {
+  COVER
+  BANNER
+  POSTER
+  GALLERY
+  ATTACHMENT
+  DOCUMENT_REPORT
+  DOCUMENT_MINUTES
+}
+
+// ============================================================================
+// PUBLISHING & COMMUNICATIONS
+// ============================================================================
+
+enum EmailTemplateType {
+  EVENT_PUBLISHED
+  EVENT_UPDATED
+  EVENT_REMINDER
+  PROJECT_PUBLISHED
+  ANNOUNCEMENT_PUBLISHED
+  ATTENDANCE_CONFIRMED
+}
+
+model EmailTemplate {
+  id              String            @id @default(cuid())
+  clubId          String
+  type            EmailTemplateType
+  subjectTemplate String
+  bodyTemplate    String            @db.Text
+  enabled         Boolean           @default(true)
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clubId, type])
+}
+
+enum CommunicationStatus {
+  PENDING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model ScheduledCommunication {
+  id             String              @id @default(cuid())
+  clubId         String
+  subject        String
+  body           String              @db.Text
+  recipientRules Json // { type: "ALL" | "BOARD" | "SPECIFIC", ids?: string[] }
+  sendAt         DateTime
+  status         CommunicationStatus @default(PENDING)
+
+  eventId        String?
+  projectId      String?
+  announcementId String?
+
+  errorLog String? @db.Text
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================================
@@ -130,13 +304,13 @@ enum AttendanceMethod {
 // ============================================================================
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String       @id @default(cuid())
+  email         String       @unique
   emailVerified DateTime?
   password      String // Should be hashed
   name          String?
   avatar        String?
-  roles         Role[]    @default([MEMBER]) // System access roles
+  roles         SystemRole[] @default([MEMBER]) // System access roles
 
   /// Account status
   isActive  Boolean   @default(true)
@@ -151,6 +325,10 @@ model User {
   sessions     Session[]
   auditLogs    AuditLog[]
   transactions Transaction[]
+
+  markedAttendances  Attendance[]        @relation("AttendanceMarker")
+  attendanceSessions AttendanceSession[] @relation("AttendanceSessionCreator")
+  uploadedMedia      Media[]             @relation("MediaUploader")
 }
 
 model Session {
@@ -168,39 +346,14 @@ model Session {
 // ROLES & PERMISSIONS
 // ============================================================================
 
-enum Role {
-  ADMIN
+enum SystemRole {
+  SUPER_ADMIN
   CLUB_ADMIN
-  PRESIDENT
-  SECRETARY
-  TREASURER
-  BOARD_MEMBER
-  MEMBER
-  GUEST
   FINANCE_ADMIN
   FINANCE_VIEWER
-}
-
-model Permission {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  description String?
-  resource    String // e.g., "events", "members", "projects"
-  action      String // e.g., "create", "read", "update", "delete"
-
-  createdAt DateTime @default(now())
-
-  // Relations
-  rolePermissions RolePermission[]
-}
-
-model RolePermission {
-  id          String       @id @default(cuid())
-  role        Role         @unique
-  permissions Permission[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  EVENTS_ADMIN
+  CONTENT_ADMIN
+  MEMBER
 }
 
 // ============================================================================
@@ -221,27 +374,33 @@ model Member {
   joinedAt DateTime @default(now())
 
   // Member Profile
-  phone       String?
-  profession  String?
-  companyName String?
-  location    String?
-  bio         String?
+  phone            String?
+  profession       String?
+  companyName      String?
+  location         String?
+  bio              String?
+  emergencyContact String?
+  skills           String[]
+  membershipStatus String   @default("ACTIVE") // ACTIVE, ALUMNI, HONORARY, SUSPENDED
 
   // Blood Donation (for future)
   bloodGroup   String?
   canDonate    Boolean   @default(false)
   lastDonation DateTime?
 
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActive      Boolean  @default(true)
+  showOnWebsite Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
-  boardMembership BoardMember?
-  registrations   Registration[]
-  attendance      Attendance[]
-  transactions    Transaction[]
-  paymentRequests PaymentRequestAssignee[]
+  boardMemberships BoardMember[]
+  projectRoles     ProjectMember[]
+  eventRoles       EventMember[]
+  registrations    Registration[]
+  attendance       Attendance[]
+  transactions     Transaction[]
+  paymentRequests  PaymentRequestAssignee[]
 }
 
 model BoardMember {
@@ -255,13 +414,40 @@ model BoardMember {
   position String // President, Secretary, Treasurer, etc.
   order    Int // Display order
 
+  financialYearId String
+  financialYear   FinancialYear @relation(fields: [financialYearId], references: [id], onDelete: Cascade)
+
   joinedAt DateTime  @default(now())
   leftAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([clubId, memberId])
+  @@unique([clubId, memberId, position, financialYearId])
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  role      ProjectRole @default(VOLUNTEER)
+  joinedAt  DateTime    @default(now())
+
+  @@unique([projectId, memberId])
+}
+
+model EventMember {
+  id       String    @id @default(cuid())
+  eventId  String
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  memberId String
+  member   Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  role     EventRole @default(VOLUNTEER)
+  joinedAt DateTime  @default(now())
+
+  @@unique([eventId, memberId])
 }
 
 // ============================================================================
@@ -278,17 +464,23 @@ model Project {
   description   String          @db.Text
   category      ProjectCategory @default(COMMUNITY_SERVICE)
   status        ProjectStatus   @default(ACTIVE)
+  driveFolderId String?
   startDate     DateTime
   endDate       DateTime?
-  coverImage    String?
-  chairPersonId String?
+  isFeatured    Boolean         @default(false)
+  impactSummary String?         @db.Text
   visibility    Visibility      @default(PUBLIC)
+  publishStatus PublishStatus   @default(DRAFT)
+  publishAt     DateTime?
+  publishedAt   DateTime?
   impactMetrics Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   events       Event[]
+  members      ProjectMember[]
+  albums       Album[]
   media        Media[]
   transactions Transaction[]
   budget       Budget?
@@ -304,27 +496,44 @@ model Event {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
+  driveFolderId String?
+
   title       String
   slug        String
   description String?   @db.Text
   type        EventType @default(MEETING)
 
-  location  String?
-  latitude  Float?
-  longitude Float?
+  location    String?
+  meetingLink String?
+  latitude    Float?
+  longitude   Float?
 
-  startDate DateTime // Keeping startDate instead of startTime for backward compat with some UI parts, or change to startTime? User requested startTime and endTime, but let's stick to startDate/endDate for less UI breakage if possible. Wait, let's use what user asked: startTime and endTime.
+  startDate DateTime
   startTime DateTime
   endTime   DateTime?
 
-  imageUrl     String?
-  thumbnailUrl String?
-
   capacity             Int?
   registrationRequired Boolean @default(false)
+  registrationEnabled  Boolean @default(false)
   registeredCount      Int     @default(0)
 
-  status EventStatus @default(UPCOMING)
+  // Media
+  bannerMediaId String?
+  posterMediaId String?
+
+  // Impact
+  volunteerHours Int?
+  fundsRaised    Float?
+  impactMetrics  Json?
+
+  visibility    Visibility    @default(PUBLIC)
+  publishStatus PublishStatus @default(DRAFT)
+  publishAt     DateTime?
+  publishedAt   DateTime?
+  isFeatured    Boolean       @default(false)
+
+  status             EventStatus @default(UPCOMING)
+  isAttendanceLocked Boolean     @default(false)
 
   calendarEventId String?
 
@@ -336,12 +545,15 @@ model Event {
   updatedAt DateTime @updatedAt
 
   // Relations
-  registrations Registration[]
-  attendance    Attendance[]
-  minutes       EventMinutes?
-  media         Media[]
-  transactions  Transaction[]
-  budget        Budget?
+  members            EventMember[]
+  registrations      Registration[]
+  attendance         Attendance[]
+  attendanceSessions AttendanceSession[]
+  minutes            EventMinutes?
+  albums             Album[]
+  media              Media[]
+  transactions       Transaction[]
+  budget             Budget?
 
   @@unique([clubId, slug])
 }
@@ -362,6 +574,21 @@ model Registration {
   @@unique([eventId, memberId])
 }
 
+model MembershipInquiry {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name            String
+  email           String
+  phone           String?
+  interestMessage String?       @db.Text
+  status          InquiryStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Attendance {
   id      String @id @default(cuid())
   eventId String
@@ -372,8 +599,30 @@ model Attendance {
 
   checkedInAt DateTime         @default(now())
   method      AttendanceMethod @default(MANUAL)
+  status      AttendanceStatus @default(PRESENT)
+
+  volunteerHours Decimal? @db.Decimal(10, 2)
+
+  markedById String?
+  markedBy   User?   @relation("AttendanceMarker", fields: [markedById], references: [id], onDelete: SetNull)
 
   @@unique([eventId, memberId])
+}
+
+model AttendanceSession {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  active    Boolean  @default(true)
+
+  createdById String?
+  createdBy   User?   @relation("AttendanceSessionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  checkInCodeHash String? // Optional for backward compatibility, stores the hashed 6-digit code
+  startsAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
 }
 
 model EventMinutes {
@@ -388,8 +637,30 @@ model EventMinutes {
 }
 
 // ============================================================================
-// GALLERY
+// GALLERY & MEDIA
 // ============================================================================
+
+model Album {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  coverMediaId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  media Media[]
+}
 
 model Media {
   id     String @id @default(cuid())
@@ -397,14 +668,32 @@ model Media {
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   eventId   String?
-  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   projectId String?
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  url        String
-  caption    String?
-  uploadedBy String?
-  createdAt  DateTime @default(now())
+  albumId String?
+  album   Album?  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  driveFileId String?
+
+  url     String
+  title   String?
+  caption String?
+  altText String?
+
+  type  MediaType  @default(IMAGE)
+  usage MediaUsage @default(GALLERY)
+
+  displayOrder Int     @default(0)
+  isCover      Boolean @default(false)
+  isFeatured   Boolean @default(false)
+
+  uploadedById String?
+  uploadedBy   User?   @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================================
@@ -619,31 +908,137 @@ model Transaction {
 // ============================================================================
 
 enum AnnouncementType {
-  MEETING
-  GATHERING
-  DISCUSSION
-  OTHER
+  GENERAL
+  BOARD_MEETING
+  CLUB_MEETING
+  EVENT_UPDATE
+  FINANCE_NOTICE
+  IMPORTANT_NOTICE
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
 }
 
 model Announcement {
-  id              String           @id @default(cuid())
-  clubId          String
-  club            Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  title           String
-  description     String?
-  startDate       DateTime
-  endDate         DateTime?
-  location        String?
-  meetingLink     String?
-  agendaUrl       String?
-  minutesUrl      String?
-  calendarEventId String?
-  type            AnnouncementType @default(MEETING)
-  sendInvite      Boolean          @default(false)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id          String  @id @default(cuid())
+  clubId      String
+  club        Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  title       String
+  description String? // Raw text or summary
 
-  // attendees AnnouncementAttendance[] removed as part of schema refactor
+  publishStatus PublishStatus @default(DRAFT)
+  publishAt     DateTime?
+  publishedAt   DateTime?
+  startDate     DateTime?
+  endDate       DateTime?
+  location      String?
+  meetingLink   String?
+
+  // Content fields
+  emailSubject   String?
+  emailBody      String? // Rich Text
+  agendaContent  String? // Rich Text
+  minutesContent String? // Rich Text
+
+  // Attachments (Storage URLs)
+  agendaUrl   String?
+  minutesUrl  String?
+  attachments String[] // List of URLs
+
+  // Integrations & Status
+  calendarEventId String?
+  type            AnnouncementType   @default(GENERAL)
+  status          AnnouncementStatus @default(DRAFT)
+  visibility      Visibility         @default(PUBLIC)
+
+  // Delivery Tracking
+  sendInvite      Boolean   @default(false)
+  sentAt          DateTime?
+  deliveryStatus  String?
+  recipientsCount Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sponsor {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name        String
+  logo        String?
+  website     String?
+  description String? @db.Text
+  year        String? // e.g. "2026-27"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// COMMUNICATIONS & NOTIFICATIONS
+// ============================================================================
+
+enum NotificationTrigger {
+  EVENT_CREATED
+  EVENT_UPDATED
+  EVENT_REMINDER
+  MEETING_CREATED
+  MINUTES_PUBLISHED
+  ATTENDANCE_CONFIRMED
+}
+
+model CommunicationLog {
+  id              String              @id @default(cuid())
+  trigger         NotificationTrigger
+  subject         String
+  body            String              @db.Text
+  recipientsCount Int                 @default(0)
+  status          String // SUCCESS, FAILED
+  error           String?             @db.Text
+
+  // Optional references back to what triggered it
+  eventId        String?
+  announcementId String?
+
+  createdAt DateTime @default(now())
+}
+
+// ============================================================================
+// DOCUMENT MANAGEMENT (Supabase Storage Integrations)
+// ============================================================================
+
+enum DocumentType {
+  EVENT_IMAGE
+  PROJECT_IMAGE
+  AGENDA
+  MINUTES
+  FINANCE_RECEIPT
+  REPORT
+  CERTIFICATE
+  CLUB_ASSET
+}
+
+model Document {
+  id          String       @id @default(cuid())
+  fileName    String
+  fileUrl     String
+  displayName String
+  type        DocumentType
+
+  uploadedBy String? // Reference to userId
+
+  linkedEntityType String? // e.g. "EVENT", "PROJECT", "FINANCE"
+  linkedEntityId   String? // ID of the linked entity
+
+  clubId String?
+  club   Club?   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model FinancialYear {
@@ -659,6 +1054,7 @@ model FinancialYear {
   transactions   Transaction[]
   budgets        Budget[]
   transfers      Transfer[]
+  boardMembers   BoardMember[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }

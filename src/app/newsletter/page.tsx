@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { BookOpen, Calendar, ArrowRight, Download, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { PublicHero } from "@/components/ui/public/PublicHero";
+import { PublicSection } from "@/components/ui/public/PublicSection";
 
 const NEWSLETTERS = [
   {
@@ -36,21 +38,14 @@ export default function NewsletterPage() {
   const [activeIssue, setActiveIssue] = useState<typeof NEWSLETTERS[0] | null>(null);
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
-      <MaxWidthWrapper>
-        <div className="space-y-16 max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs text-primary font-extrabold uppercase tracking-widest">
-              Club Publications
-            </span>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-foreground">
-              The Rotaract Chronicles
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Stay updated with our official monthly and quarterly magazines detailing our active campaigns, project impact summaries, and executive notes.
-            </p>
-          </div>
+    <div className="min-h-screen bg-background pb-16">
+      <PublicHero 
+        badge="Club Publications"
+        title="The Rotaract Chronicles"
+        description="Stay updated with our official monthly and quarterly magazines detailing our active campaigns, project impact summaries, and executive notes."
+      />
+      <PublicSection background="white">
+        <div className="space-y-16 max-w-5xl mx-auto mt-8">
 
           {/* Interactive Magazine Shelf Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -101,7 +96,7 @@ export default function NewsletterPage() {
             ))}
           </div>
         </div>
-      </MaxWidthWrapper>
+      </PublicSection>
 
       {/* Reader Modal Overlay */}
       {activeIssue && (
@@ -115,7 +110,7 @@ export default function NewsletterPage() {
             </button>
 
             {/* Simulated Magazine Header */}
-            <div className="bg-gradient-to-r from-primary to-purple-600 p-8 text-white space-y-3">
+            <div className="bg-slate-900 p-8 text-white space-y-3">
               <span className="text-[10px] font-extrabold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full w-fit">
                 {activeIssue.issue}
               </span>

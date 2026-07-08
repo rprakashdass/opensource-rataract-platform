@@ -9,8 +9,10 @@
     "baseColor": "slate"
   },
   "aliases": {
-    "@/components": "src/components",
-    "@/lib": "src/lib",
-    "@/ui": "src/components/ui"
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
   }
 }

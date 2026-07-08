@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 const SECRET_KEY = process.env.SESSION_SECRET || "default-session-secret-key-32-chars-long";
 
@@ -84,7 +85,22 @@ export async function getSession() {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("session")?.value;
   if (!sessionCookie) return null;
-  return verifyJWT(sessionCookie);
+  
+  const payload = await verifyJWT(sessionCookie) as any;
+  if (!payload || !payload.id) return null;
+
+  // Verify the user actually exists in the database
+  // This prevents foreign key errors if the database was reset but the cookie remains
+  const userExists = await prisma.user.findUnique({
+    where: { id: payload.id },
+    select: { id: true }
+  });
+
+  if (!userExists) {
+    return null;
+  }
+
+  return payload;
 }
 
 export async function clearSession() {

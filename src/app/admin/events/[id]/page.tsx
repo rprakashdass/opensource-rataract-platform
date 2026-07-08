@@ -1,15 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import EventDashboard from "./_components/EventDashboard";
+import EventSettingsButton from "./_components/EventSettingsButton";
+import EventPublishButton from "./_components/EventPublishButton";
+import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
 
 export default async function EventManagementPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const event = await prisma.event.findUnique({
     where: { id: params.id },
     include: {
+      club: true,
       project: { select: { title: true } },
       registrations: {
         orderBy: { registeredAt: "desc" },
@@ -20,10 +23,27 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
       minutes: { select: { content: true } },
       attendance: { select: { id: true, memberId: true } },
       transactions: { select: { id: true, title: true, amount: true, type: true, status: true } },
+      media: { orderBy: { createdAt: "desc" } }
     }
   });
 
   if (!event) notFound();
+
+  const templateObj = await getTemplate(event.clubId, "EVENT_PUBLISHED");
+  const renderedSubject = renderTemplate(templateObj.subjectTemplate, {
+    clubName: event.club.name,
+    eventName: event.title,
+    eventDate: event.startDate ? new Date(event.startDate).toLocaleDateString() : "",
+    venue: event.location || "TBA",
+    link: `https://yourdomain.com/events/${event.id}` // Ideally dynamic
+  });
+  const renderedBody = renderTemplate(templateObj.bodyTemplate, {
+    clubName: event.club.name,
+    eventName: event.title,
+    eventDate: event.startDate ? new Date(event.startDate).toLocaleDateString() : "",
+    venue: event.location || "TBA",
+    link: `https://yourdomain.com/events/${event.id}`
+  });
 
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-6">
@@ -32,11 +52,10 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
           <ArrowLeft className="w-4 h-4" />
           Back to Events
         </Link>
-        {/* Placeholder settings trigger or use ProjectSettings style menu */}
-        <Button variant="outline" size="sm" className="gap-2">
-          <Settings className="w-4 h-4" />
-          Event Settings
-        </Button>
+        <div className="flex items-center gap-3">
+          <EventSettingsButton event={event} />
+          <EventPublishButton event={event} template={{ subject: renderedSubject, body: renderedBody }} />
+        </div>
       </div>
 
       <div className="space-y-2">

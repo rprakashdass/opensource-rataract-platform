@@ -14,6 +14,7 @@ import {
   Bell,
   Briefcase,
   ClipboardCheck,
+  Globe,
   ArrowLeftRight,
   PieChart,
   FileSpreadsheet
@@ -48,6 +49,7 @@ const navGroups = [
   {
     group: "Content",
     items: [
+      { label: "Website Preview", href: `${ROUTES.ADMIN}/website`, icon: Globe },
       { label: "Gallery", href: `${ROUTES.ADMIN}/gallery`, icon: ImageIcon },
       { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
     ]
@@ -87,14 +89,14 @@ export function AdminNavItems({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <nav className="space-y-6 p-4">
+    <nav className="flex flex-col gap-6 p-4 pt-4">
       {navGroups.map((group, gIdx) => (
-        <div key={gIdx} className="space-y-1">
-          {group.group && (
+        <div key={gIdx} className={group.group ? "space-y-1" : ""}>
+          {group.group ? (
             <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               {group.group}
             </h3>
-          )}
+          ) : null}
           <div className="space-y-0.5">
             {group.items.map((item) => {
               const Icon = item.icon;
@@ -125,7 +127,7 @@ export function AdminNavItems({ onClose }: { onClose?: () => void }) {
 
 export default function AdminSidebar() {
   return (
-    <aside className="hidden md:flex w-60 bg-white border-r border-slate-200 min-h-[calc(100vh-57px)] flex-col flex-shrink-0">
+    <aside className="hidden md:flex w-60 bg-white border-r border-slate-200 sticky top-[61px] h-[calc(100vh-61px)] overflow-y-auto flex-col flex-shrink-0">
       <AdminNavItems />
     </aside>
   );

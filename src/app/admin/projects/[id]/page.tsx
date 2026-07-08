@@ -5,20 +5,44 @@ import { ArrowLeft, Calendar, Users, IndianRupee, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ProjectSettingsButton from "./_components/ProjectSettingsButton";
+import ProjectPublishButton from "./_components/ProjectPublishButton";
+import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
 
 export default async function ProjectManagementPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const project = await prisma.project.findUnique({
     where: { id: params.id },
     include: {
+      club: true,
       events: {
         orderBy: { startTime: 'asc' },
         include: { _count: { select: { registrations: true } } }
       },
+      media: {
+        where: { isCover: true, usage: "COVER" },
+        take: 1,
+        select: { url: true }
+      }
     }
   });
 
   if (!project) notFound();
+
+  const templateObj = await getTemplate(project.clubId, "PROJECT_PUBLISHED");
+  const renderedSubject = renderTemplate(templateObj.subjectTemplate, {
+    clubName: project.club.name,
+    eventName: project.title,
+    eventDate: project.startDate ? new Date(project.startDate).toLocaleDateString() : "",
+    venue: "TBA",
+    link: `https://yourdomain.com/projects/${project.id}` // Ideally dynamic
+  });
+  const renderedBody = renderTemplate(templateObj.bodyTemplate, {
+    clubName: project.club.name,
+    eventName: project.title,
+    eventDate: project.startDate ? new Date(project.startDate).toLocaleDateString() : "",
+    venue: "TBA",
+    link: `https://yourdomain.com/projects/${project.id}`
+  });
 
   // Basic stats aggregation
   const totalEvents = project.events.length;
@@ -31,7 +55,10 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
           <ArrowLeft className="w-4 h-4" />
           Back to Projects
         </Link>
-        <ProjectSettingsButton project={project} />
+        <div className="flex items-center gap-3">
+          <ProjectSettingsButton project={project} />
+          <ProjectPublishButton project={project} template={{ subject: renderedSubject, body: renderedBody }} />
+        </div>
       </div>
 
       <div>

@@ -1,9 +1,28 @@
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import TreasurerWorkspace from "./_components/TreasurerWorkspace";
+import { getSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 import { HandCoins } from "lucide-react";
 
 export default async function AdminFinancePage() {
+  const session = await getSession();
+  
+  if (!session || !session.roles) {
+    redirect("/login");
+  }
+
+  const canView = session.roles.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER"].includes(r));
+  
+  if (!canView) {
+    return (
+      <div className="p-20 text-center text-slate-500">
+        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+        <p>You do not have permission to view the Finance module.</p>
+      </div>
+    );
+  }
+
   const club = await getOrCreateDefaultClub();
 
   // 1. Seed default active Financial Year if none exists
@@ -19,7 +38,7 @@ export default async function AdminFinancePage() {
         name: "RY 2026-27",
         startDate: new Date("2026-07-01"),
         endDate: new Date("2027-06-30"),
-        openingBalance: 40000.00,
+        openingBalance: 0,
         status: "ACTIVE"
       }
     });
@@ -30,8 +49,8 @@ export default async function AdminFinancePage() {
   if (accountsCount === 0) {
     await prisma.account.createMany({
       data: [
-        { clubId: club.id, name: "Cash Account", type: "CASH", currentBalance: 10000.00 },
-        { clubId: club.id, name: "Rotaract Bank Account", type: "BANK", currentBalance: 25000.00 },
+        { clubId: club.id, name: "Cash Account", type: "CASH", currentBalance: 0 },
+        { clubId: club.id, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0 },
       ]
     });
   }

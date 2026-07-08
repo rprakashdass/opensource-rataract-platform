@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { transitionEvent } from "@/features/events/actions/transitionEvent";
 import { saveEventMinutes } from "@/features/events/actions/saveEventMinutes";
+import EventMediaModeration from "./EventMediaModeration";
 
 interface EventDashboardProps {
   event: {
@@ -65,6 +66,14 @@ interface EventDashboardProps {
       type: string;
       status: string;
     }>;
+    media: Array<{
+      id: string;
+      url: string;
+      title: string | null;
+      isFeatured: boolean;
+      driveFileId: string | null;
+    }>;
+    driveFolderId: string | null;
   };
 }
 
@@ -468,6 +477,8 @@ export default function EventDashboard({ event }: EventDashboardProps) {
                 <p className="text-xs text-gray-500 mt-1">Upload a poster via Event Settings to check this task off your readiness list.</p>
               </div>
             )}
+            
+            <EventMediaModeration eventId={event.id} media={event.media} driveFolderId={event.driveFolderId} />
           </CardContent>
         </Card>
       )}

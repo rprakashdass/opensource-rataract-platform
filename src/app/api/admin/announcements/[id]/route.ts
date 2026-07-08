@@ -44,7 +44,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       agendaUrl,
       minutesUrl,
       type,
-      sendInvite
+      status,
+      emailSubject,
+      emailBody,
+      agendaContent,
+      minutesContent,
+      visibility
     } = data;
 
     const announcement = await prisma.announcement.update({
@@ -52,18 +57,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: {
         title: title !== undefined ? title : existing.title,
         description: description !== undefined ? description : existing.description,
-        startDate: startDate ? new Date(startDate) : existing.startDate,
+        startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate,
         endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate,
         location: location !== undefined ? location : existing.location,
         meetingLink: meetingLink !== undefined ? meetingLink : existing.meetingLink,
         agendaUrl: agendaUrl !== undefined ? agendaUrl : existing.agendaUrl,
         minutesUrl: minutesUrl !== undefined ? minutesUrl : existing.minutesUrl,
         type: type !== undefined ? type : existing.type,
-        sendInvite: sendInvite !== undefined ? sendInvite : existing.sendInvite,
+        status: status !== undefined ? status : existing.status,
+        emailSubject: emailSubject !== undefined ? emailSubject : existing.emailSubject,
+        emailBody: emailBody !== undefined ? emailBody : existing.emailBody,
+        agendaContent: agendaContent !== undefined ? agendaContent : existing.agendaContent,
+        minutesContent: minutesContent !== undefined ? minutesContent : existing.minutesContent,
+        visibility: visibility !== undefined ? visibility : existing.visibility,
       },
     });
 
-    if (announcement.calendarEventId) {
+    if (announcement.calendarEventId && announcement.startDate) {
       await updateCalendarEvent(announcement.calendarEventId, {
         title: announcement.title,
         description: announcement.description,
@@ -72,44 +82,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         location: announcement.location,
         meetingLink: announcement.meetingLink,
       });
-    }
-
-    // If sendInvite transitioned from false to true, send emails
-    if (sendInvite && !existing.sendInvite) {
-      const members = await prisma.member.findMany({
-        where: { clubId: announcement.clubId, isActive: true },
-        select: { email: true }
-      });
-      const emails = members
-        .map((m) => m.email)
-        .filter((email): email is string => !!email);
-        
-      if (emails.length > 0) {
-        const mailOptions = {
-          to: emails,
-          subject: `Update: Announcement: ${announcement.title}`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <h2>${announcement.title}</h2>
-              <p>There is an update regarding this announcement.</p>
-              ${announcement.description ? `<p>${announcement.description}</p>` : ""}
-              <p><strong>Date:</strong> ${new Date(announcement.startDate).toLocaleString()}</p>
-              ${announcement.location ? `<p><strong>Location:</strong> ${announcement.location}</p>` : ""}
-              ${announcement.meetingLink ? `<p><strong>Meeting Link:</strong> <a href="${announcement.meetingLink}">${announcement.meetingLink}</a></p>` : ""}
-            </div>
-          `,
-          attachments: announcement.agendaUrl
-            ? [
-                {
-                  filename: "Agenda.pdf",
-                  path: announcement.agendaUrl,
-                },
-              ]
-            : undefined,
-        };
-        
-        sendEmail(mailOptions).catch(err => console.error("Failed to send update invites:", err));
-      }
     }
 
     return NextResponse.json(announcement);

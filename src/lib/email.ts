@@ -5,12 +5,13 @@ interface EmailOptions {
   subject: string;
   html: string;
   from?: string;
+  attachments?: { filename: string; content: string | Buffer; contentType?: string }[];
 }
 
 /**
  * Sends an email using Nodemailer and Gmail App Password.
  */
-export async function sendEmail({ to, subject, html, from }: EmailOptions) {
+export async function sendEmail({ to, subject, html, from, attachments }: EmailOptions) {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
 
@@ -35,6 +36,7 @@ export async function sendEmail({ to, subject, html, from }: EmailOptions) {
       to,
       subject,
       html,
+      attachments,
     });
 
     console.log(`Email sent: ${info.messageId}`);

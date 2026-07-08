@@ -29,7 +29,7 @@ interface ProjectSettingsButtonProps {
     status: string;
     startDate: Date;
     endDate: Date | null;
-    coverImage: string | null;
+    media: { url: string }[];
     visibility: string;
     impactMetrics: any;
   };
@@ -65,7 +65,7 @@ export default function ProjectSettingsButton({ project }: ProjectSettingsButton
       status: formData.get("status"),
       startDate: formData.get("startDate") ? new Date(formData.get("startDate") as string).toISOString() : "",
       endDate: formData.get("endDate") ? new Date(formData.get("endDate") as string).toISOString() : null,
-      coverImage: formData.get("coverImage") || undefined,
+      coverMediaId: formData.get("coverMediaId") || undefined,
       visibility: formData.get("visibility"),
       impactMetrics: rawMetrics || null,
     };
@@ -201,8 +201,8 @@ export default function ProjectSettingsButton({ project }: ProjectSettingsButton
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="coverImage">Cover Image URL</Label>
-              <Input type="url" id="coverImage" name="coverImage" defaultValue={project.coverImage || ""} placeholder="https://..." />
+              <Label htmlFor="coverMediaId">Cover Media ID (or upload via Gallery)</Label>
+              <Input type="text" id="coverMediaId" name="coverMediaId" defaultValue={project.media?.[0]?.url || ""} placeholder="Media URL (read only for now)" disabled />
             </div>
 
             <div className="space-y-1.5">

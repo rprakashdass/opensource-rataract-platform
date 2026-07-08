@@ -8,6 +8,7 @@ export async function proxy(request: NextRequest) {
   if (!sessionCookie) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
+    url.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
@@ -15,11 +16,12 @@ export async function proxy(request: NextRequest) {
   if (!payload) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
+    url.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
   if (request.nextUrl.pathname.startsWith("/admin")) {
-    const allowedRoles = ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER"];
+    const allowedRoles = ["SUPER_ADMIN", "ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER", "EVENTS_ADMIN", "CONTENT_ADMIN"];
     const hasRole = payload.roles && payload.roles.some((r: string) => allowedRoles.includes(r));
     if (!hasRole) {
       const url = request.nextUrl.clone();
@@ -32,5 +34,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/dashboard/:path*"],
 };

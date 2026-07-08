@@ -1,196 +1,184 @@
-import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
-import { Calendar, Banknote, UserCircle, AlertCircle, ArrowRight, Activity, Wallet } from "lucide-react";
+import { getMemberDashboard } from "@/features/members/queries/getMemberDashboard";
+import { notFound, redirect } from "next/navigation";
+import { 
+  Calendar, 
+  Clock, 
+  Briefcase, 
+  TrendingUp, 
+  ChevronRight, 
+  Bell, 
+  MapPin, 
+  CheckCircle2, 
+  XCircle,
+  FileText,
+  UserCircle,
+  ArrowRight
+} from "lucide-react";
 import Link from "next/link";
-import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
-import PendingRequests from "./finance/_components/PendingRequests";
+import { Button } from "@/components/ui/button";
 
-import { redirect } from "next/navigation";
+export default async function MemberDashboardPage() {
+  const { member, profileCompletion, stats, upcomingEvents, checkInEvents, timeline, error } = await getMemberDashboard();
 
-export default async function DashboardPage() {
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/auth/login");
-  }
-
-  // Fetch Member Details
-  const member = await prisma.member.findUnique({
-    where: { userId: session.id },
-    include: {
-      registrations: {
-        include: { event: true },
-        orderBy: { registeredAt: "desc" }
-      },
-      attendance: true,
-      transactions: {
-        orderBy: { createdAt: "desc" },
-        take: 3
+  if (error || !member) {
+      if (error === "Unauthorized") redirect("/auth/login");
+      if (error === "Member profile not found.") {
+          return (
+            <div className="flex flex-col items-center justify-center text-center py-20 text-slate-500 max-w-md mx-auto space-y-4 px-4">
+              <UserCircle className="w-16 h-16 text-slate-300" />
+              <h2 className="text-xl font-semibold text-slate-800">Member Profile Required</h2>
+              <p>Your account is not currently linked to a member profile.</p>
+              <p className="text-sm">If you are an administrator, please create a member profile for yourself in the Admin Dashboard and link it to your User account.</p>
+              <div className="pt-4">
+                <Link href="/admin/members/new">
+                  <Button>Create Member Profile</Button>
+                </Link>
+              </div>
+            </div>
+          );
       }
-    }
-  });
-
-  const club = await getOrCreateDefaultClub();
-
-  let pendingRequests: any[] = [];
-  if (member) {
-    const allRequests = await prisma.paymentRequest.findMany({
-      where: {
-        clubId: club.id,
-        OR: [
-          { isGlobal: true },
-          { assignees: { some: { memberId: member.id } } }
-        ]
-      },
-      include: {
-        transactions: {
-          where: { userId: session.id }
-        }
-      },
-      orderBy: { createdAt: "desc" }
-    });
-
-    pendingRequests = allRequests.filter(req => 
-      !req.dismissedBy.includes(member.id) &&
-      !req.transactions.some((t: any) => t.status === "APPROVED" || t.status === "COMPLETED")
-    );
+      return <div className="text-center py-20 text-slate-500">{error || "Error loading dashboard"}</div>;
   }
-
-  const eventsAttended = member?.attendance?.length || 0;
-  
-  const totalPaid = member?.transactions
-    ?.filter(t => t.type === "INCOME" && (t.status === "COMPLETED" || t.status === "APPROVED"))
-    .reduce((acc: number, curr) => acc + Number(curr.amount), 0) || 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-3">
-        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">
-          Hello, {session.name} 👋
-        </h1>
-        <p className="text-base text-gray-500 max-w-2xl">
-          Welcome to your member portal. Here is a quick overview of your activity.
-        </p>
-      </div>
-
-      {!member && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-8 text-center shadow-sm">
-          <UserCircle className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Complete Your Member Profile</h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">You need to set up your profile before you can register for events or track your payments.</p>
-          <Link href="/dashboard/profile" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-xl transition inline-flex items-center gap-2">
-            Create Profile <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      )}
-
-      {member && pendingRequests.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-amber-800">
-              <AlertCircle className="h-6 w-6" />
-              <h2 className="font-bold text-lg">Action Required: Pending Payments</h2>
+    <div className="space-y-6 pb-20 max-w-[390px] mx-auto md:max-w-6xl md:space-y-8 animate-in fade-in duration-300">
+      
+      {/* Welcome Header */}
+      <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+        <div className="flex items-center gap-4 relative z-10">
+            <img src={member.avatar || "/user.png"} alt={member.name || "Member"} className="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
+            <div>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Hello,</p>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
+                    {(member.name || "Member").split(" ")[0]} <span className="animate-wave inline-block origin-bottom-right">👋</span>
+                </h1>
             </div>
-            <Link href="/dashboard/finance" className="text-sm font-semibold text-amber-700 hover:text-amber-800 flex items-center gap-1">
-              View All <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <PendingRequests requests={pendingRequests.slice(0, 2)} />
         </div>
-      )}
+      </section>
 
-      {member && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 p-6 flex flex-col justify-between group hover:border-purple-200 transition">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3 text-purple-700">
-                  <Calendar className="h-6 w-6" />
-                  <h3 className="font-semibold text-gray-700">Events Attended</h3>
-                </div>
-                <Activity className="h-4 w-4 text-gray-300 group-hover:text-purple-300 transition" />
+      {/* Today Section (Urgent Actions) */}
+      <section className="space-y-3">
+          <h2 className="text-lg font-bold text-slate-900 px-1">Today</h2>
+          
+          {checkInEvents && checkInEvents.length > 0 ? (
+              checkInEvents.map((event: any) => (
+                  <div key={event.id} className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white shadow-md relative overflow-hidden flex flex-col gap-3 justify-between">
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                          <MapPin className="w-20 h-20" />
+                      </div>
+                      <div className="relative z-10">
+                          <p className="text-purple-100 font-semibold text-sm mb-1">Ongoing Right Now</p>
+                          <h3 className="text-xl font-bold leading-tight">{event.title}</h3>
+                      </div>
+                      <Link href={`/dashboard/events/${event.id}`} className="relative z-10 w-full mt-2">
+                          <Button className="w-full bg-white text-purple-700 hover:bg-slate-50 rounded-xl font-bold">I'm Here / Check In</Button>
+                      </Link>
+                  </div>
+              ))
+          ) : upcomingEvents && upcomingEvents.length > 0 ? (
+              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                  <div>
+                      <h3 className="font-bold text-slate-900">{upcomingEvents[0].title}</h3>
+                      <p className="text-xs text-slate-500 font-medium mt-1">Starts {new Date(upcomingEvents[0].startDate).toLocaleDateString()}</p>
+                  </div>
+                  <Link href={`/dashboard/events/${upcomingEvents[0].id}`}>
+                      <Button variant="secondary" size="sm" className="rounded-xl font-semibold">View</Button>
+                  </Link>
               </div>
-              <p className="text-4xl font-black text-gray-900">{eventsAttended}</p>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 p-6 flex flex-col justify-between group hover:border-emerald-200 transition">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3 text-emerald-600">
-                  <Banknote className="h-6 w-6" />
-                  <h3 className="font-semibold text-gray-700">Contributions</h3>
-                </div>
-                <Wallet className="h-4 w-4 text-gray-300 group-hover:text-emerald-300 transition" />
+          ) : (
+              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm text-center">
+                  <p className="text-slate-500 font-medium text-sm">No events happening today.</p>
+                  <Link href="/dashboard/events">
+                      <Button variant="link" className="text-purple-600 px-0">Explore Upcoming Events <ArrowRight className="w-3 h-3 ml-1" /></Button>
+                  </Link>
               </div>
-              <p className="text-4xl font-black text-gray-900">₹{totalPaid.toLocaleString()}</p>
-            </div>
-          </div>
+          )}
+      </section>
 
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <UserCircle className="h-24 w-24" />
-            </div>
-            <div className="bg-white/10 p-3 rounded-full mb-3 text-white backdrop-blur-sm z-10">
-              <UserCircle className="h-8 w-8" />
-            </div>
-            <p className="font-medium text-white mb-4 z-10">Profile Status</p>
-            <Link href="/dashboard/profile" className="w-full bg-white text-gray-900 font-bold py-2 px-4 rounded-xl text-sm hover:bg-gray-100 transition z-10">
-              Update Info
-            </Link>
-          </div>
-        </div>
-      )}
+      {/* Next Actions (Scrollable Pills) */}
+      <section className="space-y-3">
+          <h2 className="text-lg font-bold text-slate-900 px-1">Next Actions</h2>
+          <div className="flex gap-3 overflow-x-auto pb-4 pt-1 px-1 -mx-1 snap-x scrollbar-hide">
+              
+              {profileCompletion < 100 && (
+                  <Link href="/dashboard/profile" className="snap-start shrink-0">
+                      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 min-w-[200px]">
+                          <div className="bg-amber-100 p-2 rounded-full">
+                              <UserCircle className="w-5 h-5 text-amber-700" />
+                          </div>
+                          <div>
+                              <p className="font-bold text-amber-900 text-sm leading-tight">Complete Profile</p>
+                              <p className="text-xs text-amber-700 font-medium">{profileCompletion}% Done</p>
+                          </div>
+                      </div>
+                  </Link>
+              )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
-            Recent Registrations
-          </div>
-          <div className="p-0">
-            {member?.registrations.length === 0 ? (
-              <p className="p-6 text-sm text-gray-500">You haven't registered for any events yet.</p>
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {member?.registrations.slice(0, 3).map((reg: any) => (
-                  <li key={reg.id} className="p-4 hover:bg-gray-50 transition">
-                    <p className="text-sm font-medium text-gray-900">{reg.event.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(reg.registeredAt).toLocaleDateString()}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+              {upcomingEvents && upcomingEvents.length > 1 && (
+                  <Link href="/dashboard/events" className="snap-start shrink-0">
+                      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center gap-3 min-w-[200px]">
+                          <div className="bg-blue-100 p-2 rounded-full">
+                              <Calendar className="w-5 h-5 text-blue-700" />
+                          </div>
+                          <div>
+                              <p className="font-bold text-blue-900 text-sm leading-tight">Upcoming Registrations</p>
+                              <p className="text-xs text-blue-700 font-medium">{upcomingEvents.length - 1} more events</p>
+                          </div>
+                      </div>
+                  </Link>
+              )}
 
-        <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">
-            Recent Payments
+              {!stats.eventsAttended && !checkInEvents?.length && (
+                  <Link href="/dashboard/events" className="snap-start shrink-0">
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 min-w-[200px]">
+                          <div className="bg-slate-200 p-2 rounded-full">
+                              <TrendingUp className="w-5 h-5 text-slate-700" />
+                          </div>
+                          <div>
+                              <p className="font-bold text-slate-900 text-sm leading-tight">Join Your First Event</p>
+                              <p className="text-xs text-slate-600 font-medium">Earn volunteer hours</p>
+                          </div>
+                      </div>
+                  </Link>
+              )}
           </div>
-          <div className="p-0">
-            {member?.transactions.length === 0 ? (
-              <p className="p-6 text-sm text-gray-500">No payment history.</p>
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {member?.transactions.map((tx: any) => (
-                  <li key={tx.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{tx.description}</p>
-                      <p className="text-xs text-gray-500">{new Date(tx.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full
-                      ${tx.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : 
-                        tx.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 
-                        'bg-amber-100 text-amber-700'}`}>
-                      {tx.status}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
+      </section>
+
+      {/* Stats Grid */}
+      <section className="space-y-3">
+          <h2 className="text-lg font-bold text-slate-900 px-1">Your Impact</h2>
+          <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center items-start">
+                  <div className="p-2 rounded-xl bg-blue-50 mb-2">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900">{stats?.eventsAttended || 0}</h3>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Events</p>
+              </div>
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center items-start">
+                  <div className="p-2 rounded-xl bg-green-50 mb-2">
+                      <Clock className="w-4 h-4 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900">{stats?.volunteerHours || 0}</h3>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Hours</p>
+              </div>
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center items-start">
+                  <div className="p-2 rounded-xl bg-amber-50 mb-2">
+                      <Briefcase className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900">{stats?.projectsJoined || 0}</h3>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Projects</p>
+              </div>
+              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-2xl shadow-sm border border-indigo-100 flex flex-col justify-center items-start relative overflow-hidden">
+                  <Bell className="w-16 h-16 text-indigo-900/10 absolute -right-2 -bottom-2" />
+                  <div className="relative z-10">
+                      <h3 className="font-bold text-indigo-900 mb-1 text-sm">Updates</h3>
+                      <p className="text-xs text-indigo-700 font-medium">You're all caught up!</p>
+                  </div>
+              </div>
           </div>
-        </div>
-      </div>
+      </section>
+
     </div>
   );
 }

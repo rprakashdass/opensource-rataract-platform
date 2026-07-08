@@ -127,7 +127,7 @@ export default async function AdminPage() {
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/finance" className="flex items-center gap-1.5">
+            <Link href="/admin/finance/transactions/new" className="flex items-center gap-1.5">
               <Receipt className="w-4 h-4" /> Add Expense
             </Link>
           </Button>
@@ -238,7 +238,7 @@ export default async function AdminPage() {
                       </p>
                     </div>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/admin/projects`}>Open Project</Link>
+                      <Link href={`/admin/projects/${project.id}`}>Open Project</Link>
                     </Button>
                   </div>
                 ))

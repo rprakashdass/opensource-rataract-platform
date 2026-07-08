@@ -1,180 +1,208 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { UserPlus } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, UserPlus, Save, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useLoadingToast } from "@/hooks/useLoadingToast";
-
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { createMember } from "@/features/members/actions/createMember";
 
 export default function NewMemberPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const editId = searchParams.get("edit");
-
-  const [loading, setLoading] = useState(true);
-  useLoadingToast(loading, "Loading member details...");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const [name, setName] = useState("Rtr. ");
-  const [email, setEmail] = useState("");
-  const [isBoard, setIsBoard] = useState(false);
-  const [position, setPosition] = useState("");
-  const [order, setOrder] = useState("1");
-  const [phone, setPhone] = useState("");
-  const [profession, setProfession] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatar, setAvatar] = useState("");
-
-  useEffect(() => {
-    if (editId) {
-      fetch("/api/admin/members")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.error) throw new Error(data.error);
-          const member = data.find((m: any) => m.id === editId);
-          if (member) {
-            setName(member.name || "");
-            setEmail(member.email || "");
-            setPhone(member.phone || "");
-            setProfession(member.profession || "");
-            setBio(member.bio || "");
-            setAvatar(member.avatar || "");
-            if (member.boardMembership) {
-              setIsBoard(true);
-              setPosition(member.boardMembership.position || "");
-              setOrder(member.boardMembership.order?.toString() || "1");
-            }
-          } else {
-            setError("Member not found");
-          }
-        })
-        .catch((err) => setError(err.message))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [editId]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    bloodGroup: "",
+    emergencyContact: "",
+    profession: "",
+    boardRole: "",
+    boardOrder: "99",
+    location: "",
+    joinedAt: new Date().toISOString().split("T")[0]
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const loadingToast = toast.loading(editId ? "Updating member..." : "Creating member...");
-    setSubmitting(true);
-    setError("");
+    setLoading(true);
 
     try {
-      const method = editId ? "PUT" : "POST";
-      const payload = {
-        id: editId || undefined,
-        name,
-        email,
-        isBoard,
-        position,
-        order: Number(order) || 1,
-        phone,
-        profession,
-        bio,
-        avatar,
-      };
-
-      const res = await fetch("/api/admin/members", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      if (result.error) throw new Error(result.error);
+      const res = await createMember(formData);
+      if (res.error) throw new Error(res.error);
       
-      toast.success(editId ? "Member updated successfully!" : "Member created successfully!", { id: loadingToast });
+      toast.success("Member added successfully!");
       router.push("/admin/members");
-      router.refresh();
     } catch (err: any) {
-      setError(err.message);
-      toast.error(err.message, { id: loadingToast });
+      toast.error(err.message || "Failed to add member");
     } finally {
-      setSubmitting(false);
-      toast.dismiss(loadingToast);
+      setLoading(false);
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
-
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-700">{editId ? "Edit" : "Create"}</span>
-          <h1 className="text-3xl font-bold text-gray-900">{editId ? "Edit member details" : "Add a new member"}</h1>
-          <p className="text-sm text-gray-500 max-w-2xl">
-            {editId ? "Update the profile information below." : "The form is separated from the members overview so profile entry stays focused."}
-          </p>
-        </div>
-        <Link href="/admin/members" className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-          Back to overview
-        </Link>
+    <div className="max-w-4xl mx-auto space-y-6 py-6 animate-in fade-in duration-300">
+      <Link href="/admin/members" className="text-purple-600 hover:underline text-sm font-semibold flex items-center gap-1 w-fit">
+        <ArrowLeft className="h-4 w-4" /> Back to Directory
+      </Link>
+      
+      <div>
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+          <UserPlus className="w-8 h-8 text-purple-600" />
+          Add New Member
+        </h1>
+        <p className="text-sm text-slate-500 font-medium mt-1">
+          Create a member profile. A user account will automatically be created for them to access the portal.
+        </p>
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-slate-100 shadow-sm md:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-lg">Basic Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="e.g. Jane Doe"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="e.g. jane@example.com"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Phone Number</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={e => setFormData({...formData, phone: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="+91 98765 43210"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Date of Joining</label>
+                <input
+                  type="date"
+                  value={formData.joinedAt}
+                  onChange={e => setFormData({...formData, joinedAt: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. John Doe" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. john@example.com" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Profile Photo</label>
-          <input value={avatar} onChange={(e) => setAvatar(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="Paste an image URL or upload below" />
-          <input type="file" accept="image/*" className="mt-2 text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-purple-50 file:text-purple-700" onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onloadend = () => setAvatar(reader.result as string);
-              reader.readAsDataURL(file);
-            }
-          }} />
-        </div>
+          <Card className="border-slate-100 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Additional Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Club Designation (Board Role)</label>
+                <input
+                  type="text"
+                  value={formData.boardRole}
+                  onChange={e => setFormData({...formData, boardRole: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="e.g. President, Secretary"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Display Order</label>
+                <input
+                  type="number"
+                  value={formData.boardOrder}
+                  onChange={e => setFormData({...formData, boardOrder: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="1, 2, 3..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Profession / College</label>
+                <input
+                  type="text"
+                  value={formData.profession}
+                  onChange={e => setFormData({...formData, profession: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="e.g. Software Engineer at TechCorp"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Location</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={e => setFormData({...formData, location: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="e.g. Mumbai, India"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="flex items-center gap-2 py-2">
-          <input type="checkbox" id="isBoard" checked={isBoard} onChange={(e) => setIsBoard(e.target.checked)} className="h-4 w-4 text-purple-600 rounded border-gray-300" />
-          <label htmlFor="isBoard" className="text-sm font-medium text-gray-700 cursor-pointer">Is a Board Council Member?</label>
-        </div>
+          <Card className="border-slate-100 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg">Emergency & Medical</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Blood Group</label>
+                <select
+                  value={formData.bloodGroup}
+                  onChange={e => setFormData({...formData, bloodGroup: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                >
+                  <option value="">Select Blood Group...</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Emergency Contact (Phone/Name)</label>
+                <input
+                  type="text"
+                  value={formData.emergencyContact}
+                  onChange={e => setFormData({...formData, emergencyContact: e.target.value})}
+                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  placeholder="e.g. Mom: +91 98765 43211"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-        {isBoard && (
-          <div className="space-y-4 rounded-xl border border-purple-100 bg-purple-50 p-4">
-            <div>
-              <label className="block text-sm font-medium text-purple-900 mb-1">Board Position *</label>
-              <input value={position} onChange={(e) => setPosition(e.target.value)} required={isBoard} className="w-full rounded border border-purple-200 px-3 py-2 text-sm bg-white" placeholder="President, Secretary, Director" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-purple-900 mb-1">Display Sort Order</label>
-              <input type="number" value={order} onChange={(e) => setOrder(e.target.value)} className="w-full rounded border border-purple-200 px-3 py-2 text-sm bg-white" />
-            </div>
+          <div className="md:col-span-2 flex justify-end gap-4 mt-4">
+            <Link href="/admin/members">
+              <Button type="button" variant="ghost" disabled={loading}>Cancel</Button>
+            </Link>
+            <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white gap-2 px-8">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Member
+            </Button>
           </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. +91 99999 99999" />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Profession</label>
-          <input value={profession} onChange={(e) => setProfession(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="e.g. Student, Software Engineer" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Bio Description</label>
-          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="Short bio details..." />
-        </div>
-
-        <button type="submit" disabled={submitting} className="w-full rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition disabled:opacity-60 inline-flex items-center justify-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          {submitting ? "Processing..." : editId ? "Update Member" : "Save Member"}
-        </button>
       </form>
     </div>
   );

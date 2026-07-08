@@ -3,24 +3,37 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { projectSchema, ProjectFormData } from "../schemas/project.schema";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function updateProject(id: string, data: ProjectFormData) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
+    if (!session || (!session.roles?.includes("SUPER_ADMIN") || session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
       return { error: "Unauthorized" };
     }
 
     const parsed = projectSchema.parse(data);
 
+    const { team, ...projectData } = parsed;
+
     const project = await prisma.project.update({
       where: { id },
       data: {
-        ...parsed,
-        startDate: new Date(parsed.startDate),
-        endDate: parsed.endDate ? new Date(parsed.endDate) : null,
-        impactMetrics: parsed.impactMetrics ? JSON.parse(parsed.impactMetrics) : undefined,
+        ...projectData,
+        startDate: new Date(projectData.startDate),
+        endDate: projectData.endDate ? new Date(projectData.endDate) : null,
+        publishAt: projectData.publishAt ? new Date(projectData.publishAt) : null,
+        publishedAt: projectData.publishedAt ? new Date(projectData.publishedAt) : null,
+        impactMetrics: projectData.impactMetrics ? JSON.parse(projectData.impactMetrics) : undefined,
+        ...(team && {
+          members: {
+            deleteMany: {},
+            create: team.map(t => ({
+              memberId: t.memberId,
+              role: t.role as any
+            }))
+          }
+        })
       }
     });
 
@@ -35,8 +48,11 @@ export async function updateProject(id: string, data: ProjectFormData) {
     });
 
     revalidatePath("/admin");
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
     revalidatePath("/projects");
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
     revalidatePath(`/admin/projects/${id}`);
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
 
     return { success: true, project };
   } catch (error: any) {

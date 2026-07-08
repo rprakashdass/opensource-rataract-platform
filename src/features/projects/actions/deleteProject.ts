@@ -2,12 +2,12 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function deleteProject(id: string) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
+    if (!session || (!session.roles?.includes("SUPER_ADMIN") || session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
       return { error: "Unauthorized" };
     }
 
@@ -26,7 +26,9 @@ export async function deleteProject(id: string) {
     });
 
     revalidatePath("/admin");
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
     revalidatePath("/projects");
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
 
     return { success: true };
   } catch (error: any) {

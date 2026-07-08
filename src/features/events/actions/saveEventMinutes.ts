@@ -2,12 +2,12 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function saveEventMinutes(eventId: string, minutes: string) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
+    if (!session || (!session.roles?.includes("SUPER_ADMIN") || session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
       return { error: "Unauthorized" };
     }
 
@@ -18,6 +18,7 @@ export async function saveEventMinutes(eventId: string, minutes: string) {
     });
 
     revalidatePath(`/admin/events/${eventId}`);
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
     return { success: true, event: updated };
   } catch (error: any) {
     console.error("Save event minutes error:", error);

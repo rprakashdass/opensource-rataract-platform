@@ -1,142 +1,124 @@
+import { getMembers } from "@/features/members/queries/getMembers";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { Pencil } from "lucide-react";
-import DeleteButton from "@/components/admin/DeleteButton";
-import FilterBar from "@/components/admin/FilterBar";
+import { Plus, Users, Search, Activity, UserCheck, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MemberListView } from "./_components/MemberListView";
 
-export default async function MembersAdmin(props: {
-  searchParams: Promise<{ [key: string]: string | undefined }>;
+export default async function MembersPage({
+  searchParams,
+}: {
+  searchParams: { status?: string };
 }) {
-  const searchParams = await props.searchParams;
-  const search = searchParams.search || "";
-  const status = searchParams.status || "";
+  const statusFilter = searchParams.status || "ALL";
+  const { members, error } = await getMembers(statusFilter);
 
-  let where: any = {};
-  if (search) {
-    where.OR = [
-      { name: { contains: search, mode: "insensitive" } },
-      { email: { contains: search, mode: "insensitive" } },
-    ];
-  }
-  
-  if (status === "board") {
-    where.boardMembership = { isNot: null };
-  } else if (status === "regular") {
-    where.boardMembership = { is: null };
+  if (error) {
+    return <div className="p-8 text-rose-600 font-bold">{error}</div>;
   }
 
-  const [members, totalCount, boardCount] = await Promise.all([
-    prisma.member.findMany({
-      where,
-      include: { boardMembership: true },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.member.count(),
-    prisma.member.count({ where: { boardMembership: { isNot: null } } })
-  ]);
-
-  const statusOptions = [
-    { label: "Board Members", value: "board" },
-    { label: "Regular Members", value: "regular" }
-  ];
+  const activeCount = members?.length || 0;
+  const boardCount = members?.filter(m => m.boardMemberships?.length > 0).length || 0;
+  const totalCount = members?.length || 0;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-700">Members</span>
-          <h1 className="text-3xl font-bold text-gray-900">Members overview</h1>
-          <p className="text-sm text-gray-500 max-w-2xl">
-            Keep the member list readable here and use the creation page when you add or update profile data.
-          </p>
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Members & Directory</h1>
+          <p className="text-sm text-slate-500 font-medium mt-1">Manage club members, alumni, and board roles</p>
         </div>
-        <Link href="/admin/members/new" className="inline-flex items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition">
-          Add Member
+        <Link href="/admin/members/new">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-2">
+            <Plus className="w-4 h-4" /> Add Member
+          </Button>
         </Link>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-500">Total Members</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{totalCount}</p>
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white border-0 shadow-md">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-purple-100 text-sm font-semibold uppercase tracking-wider mb-1">Total Members</p>
+                <h3 className="text-3xl font-black">{totalCount}</h3>
+              </div>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white border-slate-100 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Members</p>
+                <h3 className="text-3xl font-black text-emerald-600">{activeCount}</h3>
+              </div>
+              <div className="p-2 bg-emerald-50 rounded-lg">
+                <Activity className="w-5 h-5 text-emerald-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white border-slate-100 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Leaders</p>
+                <h3 className="text-3xl font-black text-amber-600">{boardCount}</h3>
+              </div>
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <Shield className="w-5 h-5 text-amber-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <div className="flex gap-2">
+          <Link href="/admin/members">
+            <Badge variant="default" className="px-4 py-1.5 cursor-pointer bg-slate-900">
+              All Members
+            </Badge>
+          </Link>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-500">Board Members</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{boardCount}</p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-500">Regular Members</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{totalCount - boardCount}</p>
+        
+        <div className="relative max-w-sm w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input 
+            type="text"
+            placeholder="Search members..."
+            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+          />
         </div>
       </div>
 
-      <FilterBar 
-        placeholder="Search by name or email..." 
-        showStatusFilter 
-        statusOptions={statusOptions} 
-      />
-
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Created members</h2>
-            <p className="text-sm text-gray-500">All profiles are shown here without the form crowding the page.</p>
-          </div>
-          <Link href="/admin/members/new" className="text-sm font-medium text-purple-700 hover:underline">
-            Add new
-          </Link>
-        </div>
-
-        {members.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500">
-            No members found matching your criteria.
+      {/* Members List */}
+      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+        {members?.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center">
+            <UserCheck className="w-12 h-12 text-slate-200 mb-4" />
+            <h3 className="text-lg font-bold text-slate-900 mb-1">No members found</h3>
+            <p className="text-sm text-slate-500 mb-4">Start by adding members to your club directory.</p>
+            <Link href="/admin/members/new">
+              <Button variant="outline">Add First Member</Button>
+            </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {members.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-gray-900">{member.name || "No Name"}</div>
-                      <div className="text-xs text-gray-500 mt-1">{member.profession || "Member"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>{member.email || "N/A"}</div>
-                      <div className="text-xs text-gray-400 mt-1">{member.phone || "No phone"}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.boardMembership ? (
-                        <span className="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full bg-purple-100 text-purple-800 uppercase">
-                          {member.boardMembership.position}
-                        </span>
-                      ) : (
-                        <span className="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full bg-gray-100 text-gray-700 uppercase">
-                          Member
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                      <Link href={`/admin/members/new?edit=${member.id}`} className="text-indigo-600 hover:text-indigo-900 transition" title="Edit Member">
-                        <Pencil className="h-4 w-4 inline" />
-                      </Link>
-                      <DeleteButton endpoint="/api/admin/members" id={member.id} confirmMessage="Are you sure you want to delete this member?" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <MemberListView members={members || []} />
         )}
-      </section>
+      </div>
+
     </div>
   );
 }

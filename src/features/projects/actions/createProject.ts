@@ -3,12 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { projectSchema, ProjectFormData } from "../schemas/project.schema";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function createProject(data: ProjectFormData) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
+    if (!session || (!session.roles?.includes("SUPER_ADMIN") || session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
       return { error: "Unauthorized" };
     }
 
@@ -26,16 +26,33 @@ export async function createProject(data: ProjectFormData) {
       slug = parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     }
 
+    const { team, coverMediaId, ...projectData } = parsed;
+
     const project = await prisma.project.create({
       data: {
-        ...parsed,
+        ...projectData,
         slug,
-        startDate: new Date(parsed.startDate),
-        endDate: parsed.endDate ? new Date(parsed.endDate) : null,
-        impactMetrics: parsed.impactMetrics ? JSON.parse(parsed.impactMetrics) : undefined,
+        startDate: new Date(projectData.startDate),
+        endDate: projectData.endDate ? new Date(projectData.endDate) : null,
+        publishAt: projectData.publishAt ? new Date(projectData.publishAt) : null,
+        publishedAt: projectData.publishedAt ? new Date(projectData.publishedAt) : null,
+        impactMetrics: projectData.impactMetrics ? JSON.parse(projectData.impactMetrics) : undefined,
         clubId: club.id,
+        members: team && team.length > 0 ? {
+          create: team.map(t => ({
+            memberId: t.memberId,
+            role: t.role as any
+          }))
+        } : undefined
       }
     });
+
+    if (coverMediaId) {
+      await prisma.media.update({
+        where: { id: coverMediaId },
+        data: { projectId: project.id, isCover: true }
+      });
+    }
 
     // Log the audit
     await prisma.auditLog.create({
@@ -48,7 +65,9 @@ export async function createProject(data: ProjectFormData) {
     });
 
     revalidatePath("/admin");
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
     revalidatePath("/projects");
+    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
 
     return { success: true, project };
   } catch (error: any) {

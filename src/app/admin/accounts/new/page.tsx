@@ -22,7 +22,7 @@ export default function NewAccountPage() {
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [roles, setRoles] = useState<string[]>(["ADMIN"]);
+  const [roles, setRoles] = useState<string[]>(["SUPER_ADMIN"]);
 
   useEffect(() => {
     if (editId) {
@@ -35,7 +35,7 @@ export default function NewAccountPage() {
             setLoginId(account.email || "");
             setName(account.name || "");
             setPassword("");
-            setRoles(account.roles || ['ADMIN']);
+            setRoles(account.roles || ['SUPER_ADMIN']);
           } else {
             setError("Account not found");
           }
@@ -158,7 +158,7 @@ export default function NewAccountPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">System Roles *</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: "ADMIN", label: "Superadmin" },
+                { id: "SUPER_ADMIN", label: "Superadmin" },
                 { id: "CLUB_ADMIN", label: "Club Admin" },
                 { id: "FINANCE_ADMIN", label: "Finance Admin" },
                 { id: "FINANCE_VIEWER", label: "Finance Viewer" },

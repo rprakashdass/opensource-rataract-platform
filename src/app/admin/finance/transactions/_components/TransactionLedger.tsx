@@ -209,37 +209,78 @@ export default function TransactionLedger({
             No transactions found matching the selected filters.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50 text-gray-900 border-b border-gray-100 font-semibold">
-                <tr>
-                  <th className="px-5 py-3">Date</th>
-                  <th className="px-5 py-3">Title</th>
-                  <th className="px-5 py-3">Type</th>
-                  <th className="px-5 py-3">Account</th>
-                  <th className="px-5 py-3">Amount</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 bg-white">
-                {filtered.map(tx => (
-                  <tr key={tx.id} className="hover:bg-gray-50/50 transition">
-                    <td className="px-5 py-3.5 whitespace-nowrap" suppressHydrationWarning>{new Date(tx.date).toLocaleDateString()}</td>
-                    <td className="px-5 py-3.5">
+          <>
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm text-gray-600">
+                <thead className="bg-gray-50 text-gray-900 border-b border-gray-100 font-semibold">
+                  <tr>
+                    <th className="px-5 py-3">Date</th>
+                    <th className="px-5 py-3">Title</th>
+                    <th className="px-5 py-3">Type</th>
+                    <th className="px-5 py-3">Account</th>
+                    <th className="px-5 py-3">Amount</th>
+                    <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {filtered.map(tx => (
+                    <tr key={tx.id} className="hover:bg-gray-50/50 transition">
+                      <td className="px-5 py-3.5 whitespace-nowrap" suppressHydrationWarning>{new Date(tx.date).toLocaleDateString()}</td>
+                      <td className="px-5 py-3.5">
+                        <div className="font-semibold text-gray-900">{tx.title}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{tx.category?.name || "Other"}</div>
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                          tx.type === "INCOME" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                        }`}>
+                          {tx.type}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">{tx.account?.name || "-"}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap font-bold text-gray-900">₹{Number(tx.amount).toLocaleString()}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                          tx.status === "APPROVED" || tx.status === "PAID"
+                            ? "bg-green-100 text-green-700"
+                            : tx.status === "REJECTED"
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                        <Button onClick={() => setSelectedTx(tx)} variant="outline" size="sm" className="h-8 gap-1">
+                          <Eye className="w-3.5 h-3.5" /> Details
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="md:hidden flex flex-col divide-y divide-gray-100">
+              {filtered.map(tx => (
+                <div key={tx.id} className="p-4 space-y-3 bg-white hover:bg-gray-50/50 transition">
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
                       <div className="font-semibold text-gray-900">{tx.title}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">{tx.category?.name || "Other"}</div>
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                      <div className="text-xs text-gray-400 mt-0.5">{tx.category?.name || "Other"} • <span suppressHydrationWarning>{new Date(tx.date).toLocaleDateString()}</span></div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-gray-900">₹{Number(tx.amount).toLocaleString()}</div>
+                      <span className={`mt-1 inline-block px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
                         tx.type === "INCOME" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
                       }`}>
                         {tx.type}
                       </span>
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">{tx.account?.name || "-"}</td>
-                    <td className="px-5 py-3.5 whitespace-nowrap font-bold text-gray-900">₹{Number(tx.amount).toLocaleString()}</td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                    <div>
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
                         tx.status === "APPROVED" || tx.status === "PAID"
                           ? "bg-green-100 text-green-700"
@@ -249,17 +290,15 @@ export default function TransactionLedger({
                       }`}>
                         {tx.status}
                       </span>
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap text-right">
-                      <Button onClick={() => setSelectedTx(tx)} variant="outline" size="sm" className="h-8 gap-1">
-                        <Eye className="w-3.5 h-3.5" /> Details
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <Button onClick={() => setSelectedTx(tx)} variant="outline" size="sm" className="h-8 gap-1">
+                      <Eye className="w-3.5 h-3.5" /> Details
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </Card>
 

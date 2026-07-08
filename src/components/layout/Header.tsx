@@ -2,112 +2,142 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, Heart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Team", href: "/team" },
+  { label: "Initiatives", href: "/projects" },
   { label: "Events", href: "/events" },
-  { label: "Sponsor Us", href: "/sponsor-us" },
-  { label: "Member Portal", href: "/dashboard" },
+  { label: "Team", href: "/team" },
+  { label: "Updates", href: "/announcements" },
 ];
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const [club, setClub] = useState<any>(null);
 
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
-  const orgSubName = process.env.NEXT_PUBLIC_ORG_SUB_NAME || "District & Club Platform";
+  useEffect(() => {
+    getPublicLayoutData().then(data => {
+      if (data) setClub(data.club);
+    });
+  }, []);
+
+  const appName = club?.shortName || club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
+  const logoUrl = club?.logoUrl || "/logo.png";
 
   return (
-    <header className="fixed top-3 left-0 right-0 z-50 flex justify-center px-3 sm:px-4 pointer-events-none">
-      <div className="w-full max-w-5xl glass-pill px-4 sm:px-6 py-2.5 flex items-center justify-between pointer-events-auto border border-primary/10 gap-2">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-sm text-slate-900 transition-all duration-300">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 select-none min-w-0 flex-shrink-0">
-          <Image
-            src="/favicon.ico"
-            alt="Rotaract Club Logo"
-            width={36}
-            height={36}
-            className="hover:scale-105 transition-transform flex-shrink-0 sm:w-[44px] sm:h-[44px]"
-          />
-          <div className="flex flex-col -space-y-0.5 min-w-0">
-            <span className="text-sm sm:text-base font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent truncate max-w-[140px] sm:max-w-none">
+        <Link href="/" className="flex items-center space-x-3 select-none flex-shrink-0 group">
+          <div className="bg-white rounded-full p-1 overflow-hidden shadow-sm border border-slate-100 group-hover:border-amber-400 transition-colors">
+            <Image
+              src={logoUrl}
+              alt="Club Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="text-lg md:text-xl font-black tracking-tight leading-tight truncate text-slate-900">
               {appName}
             </span>
-            <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-widest font-semibold hidden xs:block">
-              {orgSubName}
+            <span className="text-[10px] text-amber-600 uppercase tracking-widest font-bold hidden xs:block">
+              Rotary International
             </span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="ml-auto hidden md:flex items-center space-x-0.5 bg-primary/5 p-1 rounded-full border border-primary/10 flex-shrink-0">
+        <nav className="hidden lg:flex items-center space-x-1">
           {NAV_LINKS.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Link key={item.label} prefetch href={item.href}>
-                <button
+              <Link key={item.label} href={item.href}>
+                <span
                   className={cn(
-                    "text-xs font-semibold px-3 lg:px-4 py-2 rounded-full transition-all duration-300 cursor-pointer select-none whitespace-nowrap",
+                    "text-sm font-bold px-4 py-2 rounded-xl transition-all duration-300",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm scale-105"
-                      : "text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                      ? "text-amber-600 bg-amber-50"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                   )}
                 >
                   {item.label}
-                </button>
+                </span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Mobile Navigation */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden cursor-pointer flex-shrink-0 h-9 w-9">
-              <MenuIcon className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
+        {/* CTA & Mobile */}
+        <div className="flex items-center gap-3">
+          <Link href="/join" className="hidden md:block">
+            <Button className="bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-full px-6 shadow-md shadow-amber-500/20 transition-all">
+              <Heart className="w-4 h-4 mr-2" /> Join Us
             </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[280px] border-l border-zinc-200/40 dark:border-zinc-800/40 glass-panel">
-            {/* Logo in sheet */}
-            <div className="flex items-center gap-3 mb-8 mt-2">
-              <Image src="/favicon.ico" alt="Logo" width={36} height={36} />
-              <div>
-                <p className="font-bold text-sm text-foreground">{appName}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{orgSubName}</p>
+          </Link>
+          <Link href="/auth/login" className="hidden md:block text-sm font-bold text-slate-500 hover:text-slate-900 ml-2 transition">
+            Member Login
+          </Link>
+
+          {/* Mobile Navigation */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10 text-slate-900 hover:bg-slate-100 rounded-full">
+                <MenuIcon className="h-6 w-6" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] border-l border-slate-100 bg-white text-slate-900">
+              <div className="flex items-center gap-3 mb-8 mt-4">
+                <Image src={logoUrl} alt="Logo" width={40} height={40} className="rounded-full bg-slate-50 p-1 border border-slate-100" />
+                <div>
+                  <p className="font-black text-lg text-slate-900">{appName}</p>
+                  <p className="text-[10px] text-amber-600 uppercase tracking-widest font-bold">Rotary International</p>
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col space-y-1">
-              {NAV_LINKS.map((item, index) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={index}
-                    prefetch
-                    href={item.href}
-                    className={cn(
-                      "text-base font-semibold px-4 py-3 rounded-lg transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary border border-primary/20"
-                        : "text-muted-foreground hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                    )}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </SheetContent>
-        </Sheet>
+              <div className="flex flex-col space-y-2">
+                {NAV_LINKS.map((item, index) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={index}
+                      href={item.href}
+                      className={cn(
+                        "text-base font-bold px-4 py-3 rounded-xl transition-colors",
+                        isActive
+                          ? "bg-amber-50 text-amber-600"
+                          : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      )}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="mt-8 pt-8 border-t border-slate-100 flex flex-col gap-4">
+                <Link href="/join" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-amber-500 hover:bg-amber-600 font-bold rounded-xl h-12 shadow-md shadow-amber-500/20">
+                    <Heart className="w-4 h-4 mr-2" /> Join The Club
+                  </Button>
+                </Link>
+                <Link href="/auth/login" onClick={() => setIsOpen(false)} className="w-full text-center text-sm font-bold text-slate-500 hover:text-slate-900 transition">
+                  Member Portal Login
+                </Link>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

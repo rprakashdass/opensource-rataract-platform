@@ -1,0 +1,26 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth/session";
+
+export async function updateMedia(mediaId: string, data: {
+  title?: string;
+  caption?: string | null;
+  altText?: string | null;
+  displayOrder?: number;
+}) {
+  try {
+    const session = await getSession();
+    if (!session) return { error: "Unauthorized" };
+
+    const media = await prisma.media.update({
+      where: { id: mediaId },
+      data
+    });
+
+    return { success: true, media };
+  } catch (error: any) {
+    console.error("Media update error:", error);
+    return { error: error.message || "Failed to process update" };
+  }
+}
