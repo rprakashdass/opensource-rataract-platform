@@ -1,6 +1,6 @@
 import { getCurrentClub } from "@/lib/club";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
@@ -8,7 +8,7 @@ import InitiativeForm from "../_components/InitiativeForm";
 
 export default async function NewInitiativePage() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
   const portfolios = await prisma.portfolio.findMany({
     where: { clubId: club.id, isActive: true },

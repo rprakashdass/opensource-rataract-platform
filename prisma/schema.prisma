@@ -1,3 +1,9 @@
+// After editing this file, run `npm run db:migrate -- --name <description>` (never `prisma db push`).
+// `db push` applies the schema directly without writing a migration file, which silently
+// diverges prisma/migrations from the live database and breaks `migrate deploy` on every
+// other environment (this has happened repeatedly — see migration history for the scar tissue).
+// Run `npm run db:status` any time you're unsure whether the migration history is in sync.
+
 generator client {
   provider   = "prisma-client-js"
   engineType = "library"

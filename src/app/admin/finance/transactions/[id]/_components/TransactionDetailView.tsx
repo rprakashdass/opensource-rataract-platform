@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Clock, FileText, CheckCircle2, Ban, Loader2, AlertTriangle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -277,9 +278,9 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
             <CardContent>
               {transaction.receiptUrl ? (
                 <div className="space-y-3">
-                  <div className="aspect-[3/4] w-full bg-slate-100 rounded-lg overflow-hidden border flex items-center justify-center">
+                  <div className="aspect-[3/4] w-full bg-slate-100 rounded-lg overflow-hidden border flex items-center justify-center relative">
                     {/* Assuming image. PDF would need an iframe or direct link */}
-                    <img src={transaction.receiptUrl} alt="Receipt" className="w-full h-full object-cover" />
+                    <Image src={transaction.receiptUrl} alt="Receipt" fill sizes="400px" className="object-cover" />
                   </div>
                   <Button variant="outline" className="w-full" asChild>
                     <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer">

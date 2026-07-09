@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import MilestoneList from "./_components/MilestoneList";
 
 export default async function MilestonesEditorPage() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
   const milestones = await prisma.milestone.findMany({
     where: { clubId: club.id },

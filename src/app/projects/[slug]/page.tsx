@@ -1,5 +1,6 @@
 import { getPublicProject } from "@/features/public/queries/getPublicProject";
 import { Metadata } from "next";
+import Image from "next/image";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -85,10 +86,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </div>
 
             <div className="relative aspect-[4/3] w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-slate-200/50">
-              <img 
-                src={coverImage} 
+              <Image
+                src={coverImage}
                 alt={project.title}
-                className="w-full h-full object-cover"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
             
@@ -189,8 +193,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                           {eventGallery.length > 0 && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                               {eventGallery.slice(0, 4).map((m: any) => (
-                                <div key={m.id} className="aspect-square rounded-xl overflow-hidden bg-slate-100">
-                                  <img src={m.url} alt="Instance photo" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                                <div key={m.id} className="aspect-square rounded-xl overflow-hidden bg-slate-100 relative">
+                                  <Image src={m.url} alt="Instance photo" fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover hover:scale-110 transition-transform duration-500" />
                                 </div>
                               ))}
                             </div>
@@ -217,11 +221,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {gallery.slice(0, 6).map((m: any) => (
-                    <div key={m.id} className="aspect-square rounded-2xl overflow-hidden bg-slate-100 shadow-sm group">
-                      <img 
-                        src={m.url} 
+                    <div key={m.id} className="aspect-square rounded-2xl overflow-hidden bg-slate-100 shadow-sm group relative">
+                      <Image
+                        src={m.url}
                         alt="Project activity"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   ))}

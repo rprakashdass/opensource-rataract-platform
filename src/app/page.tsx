@@ -1,8 +1,6 @@
 import { getHomeBaseData, getHomeImpact, getHomeNews, getHomePortfolios } from "@/features/public/queries/getHomeData";
 import { getPublicProjects } from "@/features/public/queries/getPublicProjects";
 import { getPublicEvents } from "@/features/public/queries/getPublicEvents";
-import { getPublicTeam } from "@/features/public/queries/getPublicTeam";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Award, Megaphone, Heart } from "lucide-react";
@@ -13,10 +11,8 @@ import { AvenuesOfService } from "@/components/ui/public/AvenuesOfService";
 import { PublicSection } from "@/components/ui/public/PublicSection";
 import { PublicCard } from "@/components/ui/public/PublicCard";
 import { Timeline } from "@/components/ui/public/Timeline";
-import { GalleryGrid } from "@/components/ui/public/GalleryGrid";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MemberAvatar } from "@/components/ui/member-avatar";
 
 function SectionSkeleton() {
   return (
@@ -31,9 +27,16 @@ function SectionSkeleton() {
 
 export default async function HomePage() {
   const data = await getHomeBaseData();
-  
+
   if (data?.error === "Club not initialized" || !data?.club) {
-    redirect("/setup");
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-md text-center space-y-3">
+          <h1 className="text-xl font-bold text-slate-900">Club not configured yet</h1>
+          <p className="text-sm text-slate-500">This platform doesn't have a club set up. Contact an administrator.</p>
+        </div>
+      </div>
+    );
   }
 
   const { club, settings } = data;
@@ -85,18 +88,6 @@ export default async function HomePage() {
             </div>
           </MaxWidthWrapper>
         </section>
-      )}
-
-      {settings.enableGallery !== false && (
-        <Suspense fallback={<SectionSkeleton />}>
-          <GalleryPreviewSection />
-        </Suspense>
-      )}
-
-      {settings.enableLeadership !== false && (
-        <Suspense fallback={<SectionSkeleton />}>
-          <LeadershipSection tenureYear={club.tenureYear} />
-        </Suspense>
       )}
 
       {/* Big Join CTA */}
@@ -233,74 +224,3 @@ async function NewsSection({ clubId }: { clubId: string }) {
   );
 }
 
-async function GalleryPreviewSection() {
-  const projectsData = await getPublicProjects();
-  const eventsData = await getPublicEvents();
-  
-  if (projectsData.error || eventsData.error) return null;
-  
-  const recentGallery = [...(projectsData.activeProjects || []), ...(eventsData.upcomingEvents || [])]
-    .flatMap((item: any) => item.media || [])
-    .filter((m: any) => m.usage === "GALLERY" || m.isCover || true) // Simplified for now since media schema might be different
-    .slice(0, 5);
-
-  if (recentGallery.length === 0) return null;
-
-  return (
-    <section className="py-24 bg-white">
-      <MaxWidthWrapper>
-        <div className="text-center mb-16 max-w-2xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Recent Memories</h2>
-          <p className="text-slate-500 font-medium text-lg">A glimpse into our community events, projects, and everyday fellowships.</p>
-        </div>
-        <GalleryGrid items={recentGallery} />
-        <div className="mt-12 text-center">
-          <Link href="/gallery">
-            <Button variant="outline" className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-8 py-6">
-              View Full Gallery
-            </Button>
-          </Link>
-        </div>
-      </MaxWidthWrapper>
-    </section>
-  );
-}
-
-async function LeadershipSection({ tenureYear }: { tenureYear: string }) {
-  const teamData = await getPublicTeam();
-  if (teamData.error) return null;
-  const leadership = teamData.board?.slice(0, 4) || [];
-
-  return (
-    <section className="py-24 bg-slate-50 relative overflow-hidden">
-      <MaxWidthWrapper className="relative z-10">
-        <div className="text-center mb-20 max-w-2xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Meet The Team</h2>
-          <p className="text-slate-500 font-medium text-lg">Driven by passion, guided by Rotary values. Meet the Rotaractors leading the charge for the {tenureYear} tenure.</p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-12 lg:gap-16">
-          {leadership.length > 0 ? leadership.map((leader: any) => (
-            <div key={leader.id} className="text-center group cursor-default">
-              <div className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full overflow-hidden mb-6 bg-slate-200 shadow-lg group-hover:shadow-xl group-hover:-translate-y-2 transition-all duration-300 relative">
-                <MemberAvatar name={leader.member.name} avatarUrl={leader.member.avatar} fill textClassName="text-3xl md:text-4xl" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">{leader.member.name}</h3>
-              <p className="text-slate-500 font-medium uppercase tracking-wider text-xs mt-2 bg-white px-3 py-1 rounded-full inline-block border border-slate-100">{leader.position.replace(/_/g, " ")}</p>
-            </div>
-          )) : (
-            <div className="text-slate-500 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm w-full max-w-lg text-center">Leadership board has not been formed yet.</div>
-          )}
-        </div>
-        
-        <div className="mt-20 text-center">
-          <Link href="/team">
-            <Button variant="outline" className="rounded-full bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 px-10 h-14 text-base font-bold shadow-sm">
-              View Full Members Directory
-            </Button>
-          </Link>
-        </div>
-      </MaxWidthWrapper>
-    </section>
-  );
-}

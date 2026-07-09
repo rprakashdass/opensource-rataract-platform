@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { BookOpen, Calendar, ArrowRight, Download, X } from "lucide-react";
 import { motion } from "framer-motion";
@@ -61,10 +62,12 @@ export default function NewsletterPage() {
               >
                 {/* Visual Cover */}
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-primary/5 border-b border-primary/10">
-                  <img
+                  <Image
                     src={item.coverImage}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover group-hover:scale-102 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-6">
                     <span className="text-[10px] font-extrabold text-white uppercase tracking-widest bg-primary px-2.5 py-1 rounded-full shadow">

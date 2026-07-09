@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { unstable_cache } from "next/cache";
 
-export const getPublicEvents = unstable_cache(
-  async () => {
+// Not wrapped in unstable_cache: uploaded media are stored as base64 data URLs and can
+// exceed the Next.js Data Cache's 2MB-per-entry limit, which throws an unhandled
+// rejection and breaks the request entirely. Caching isn't worth that failure mode here.
+export async function getPublicEvents() {
     try {
         const club = await getCurrentClub();
         if (!club) return { error: "Club not initialized" };
@@ -25,7 +26,8 @@ export const getPublicEvents = unstable_cache(
                 startTime: true,
                 location: true,
                 type: true,
-                media: { where: { isFeatured: true }, take: 1, select: { url: true } }
+                bannerMediaId: true,
+                media: { orderBy: { createdAt: "desc" }, take: 5, select: { id: true, url: true } }
             },
         });
         
@@ -46,7 +48,8 @@ export const getPublicEvents = unstable_cache(
                 startTime: true,
                 location: true,
                 type: true,
-                media: { where: { isFeatured: true }, take: 1, select: { url: true } }
+                bannerMediaId: true,
+                media: { orderBy: { createdAt: "desc" }, take: 5, select: { id: true, url: true } }
             },
             take: 20 // Limit to recent 20
         });
@@ -59,7 +62,4 @@ export const getPublicEvents = unstable_cache(
         console.error("Failed to fetch public events:", error);
         return { error: "Failed to load events" };
     }
-  },
-  ['public-events'],
-  { tags: ['events'], revalidate: 3600 }
-);
+}

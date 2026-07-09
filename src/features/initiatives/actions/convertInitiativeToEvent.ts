@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { setupEventDriveFolder } from "@/features/storage/googleDrive";
 
 function slugify(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
@@ -15,7 +16,7 @@ export async function convertInitiativeToEvent(id: string) {
       return { error: "Unauthorized" };
     }
 
-    const initiative = await prisma.initiative.findUnique({ where: { id } });
+    const initiative = await prisma.initiative.findUnique({ where: { id }, include: { club: true } });
     if (!initiative) return { error: "Proposal not found" };
     if (initiative.status !== "APPROVED") return { error: "Only approved proposals can be converted" };
 
@@ -47,6 +48,20 @@ export async function convertInitiativeToEvent(id: string) {
       where: { id },
       data: { status: "CONVERTED" },
     });
+
+    // Create Drive Folder if env is configured — same as direct event creation
+    try {
+      const year = new Date(event.startDate).getFullYear();
+      const driveFolderId = await setupEventDriveFolder(initiative.club.name, event.title, year.toString());
+      if (driveFolderId) {
+        await prisma.event.update({
+          where: { id: event.id },
+          data: { driveFolderId },
+        });
+      }
+    } catch (err) {
+      console.warn("Failed to create Google Drive folder for converted event:", err);
+    }
 
     revalidatePath(`/admin/proposals/${id}`);
     revalidatePath("/admin/proposals");

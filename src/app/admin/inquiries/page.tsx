@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import InquiryActions from "./_components/InquiryActions";
 
 export default async function InquiriesDashboard() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
   const inquiries = await prisma.membershipInquiry.findMany({
     where: { clubId: club.id },

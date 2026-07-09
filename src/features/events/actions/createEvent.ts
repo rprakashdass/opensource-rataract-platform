@@ -22,9 +22,14 @@ export async function createEvent(data: EventFormData) {
       return { error: "Club not found in database" };
     }
 
-    const slug = parsed.slug || parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const baseSlug = parsed.slug || parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    let slug = baseSlug;
+    let suffix = 1;
+    while (await prisma.event.findUnique({ where: { clubId_slug: { clubId: club.id, slug } } })) {
+      slug = `${baseSlug}-${++suffix}`;
+    }
 
-    const { team, coverMediaId, ...eventData } = parsed;
+    const { team, bannerMediaId, posterMediaId, ...eventData } = parsed;
 
     const event = await prisma.event.create({
       data: {
@@ -37,6 +42,8 @@ export async function createEvent(data: EventFormData) {
         publishAt: eventData.publishAt ? new Date(eventData.publishAt) : null,
         publishedAt: eventData.publishedAt ? new Date(eventData.publishedAt) : null,
         clubId: club.id,
+        bannerMediaId: bannerMediaId || null,
+        posterMediaId: posterMediaId || null,
         members: team && team.length > 0 ? {
           create: team.map(t => ({
             memberId: t.memberId,
@@ -45,6 +52,14 @@ export async function createEvent(data: EventFormData) {
         } : undefined
       }
     });
+
+    const linkedMediaIds = [bannerMediaId, posterMediaId].filter(Boolean) as string[];
+    if (linkedMediaIds.length > 0) {
+      await prisma.media.updateMany({
+        where: { id: { in: linkedMediaIds } },
+        data: { eventId: event.id }
+      });
+    }
 
     // Create Drive Folder if env is configured
     try {
@@ -58,13 +73,6 @@ export async function createEvent(data: EventFormData) {
       }
     } catch (err) {
       console.warn("Failed to create Google Drive folder for event:", err);
-    }
-
-    if (coverMediaId) {
-      await prisma.media.update({
-        where: { id: coverMediaId },
-        data: { eventId: event.id, isCover: true }
-      });
     }
 
     // Log the audit

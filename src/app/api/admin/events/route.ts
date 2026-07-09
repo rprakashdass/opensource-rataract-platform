@@ -10,7 +10,7 @@ export async function PUT(req: Request) {
     }
 
     const data = await req.json();
-    const { id, title, slug, description, location, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured } = data;
+    const { id, title, slug, description, location, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured, bannerMediaId, posterMediaId } = data;
 
     if (!id) {
       return NextResponse.json({ error: "Missing event ID" }, { status: 400 });
@@ -30,9 +30,19 @@ export async function PUT(req: Request) {
         projectId: initiativeId,
         visibility,
         registrationEnabled,
-        isFeatured
+        isFeatured,
+        bannerMediaId: bannerMediaId || null,
+        posterMediaId: posterMediaId || null,
       },
     });
+
+    const linkedMediaIds = [bannerMediaId, posterMediaId].filter(Boolean) as string[];
+    if (linkedMediaIds.length > 0) {
+      await prisma.media.updateMany({
+        where: { id: { in: linkedMediaIds } },
+        data: { eventId: event.id }
+      });
+    }
 
     return NextResponse.json({ success: true, event });
   } catch (error: any) {

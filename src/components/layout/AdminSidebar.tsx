@@ -18,7 +18,8 @@ import {
   ArrowLeftRight,
   PieChart,
   FileSpreadsheet,
-  Lightbulb
+  Lightbulb,
+  Receipt
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,7 @@ const navGroups = [
     group: "Finance",
     items: [
       { label: "Overview", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
+      { label: "Payment Requests", href: `${ROUTES.ADMIN}/finance/requests`, icon: Receipt },
       { label: "Transactions", href: `${ROUTES.ADMIN}/finance/transactions`, icon: ArrowLeftRight },
       { label: "Budgets", href: `${ROUTES.ADMIN}/finance/budgets`, icon: PieChart },
       { label: "Reports", href: `${ROUTES.ADMIN}/finance/reports`, icon: FileSpreadsheet },

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { 
   Calendar, 
@@ -48,9 +49,9 @@ export default async function EventsAdmin(props: {
       project: { select: { title: true } },
       _count: { select: { registrations: true } },
       media: {
-        where: { isCover: true, usage: "COVER" },
-        take: 1,
-        select: { url: true }
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: { id: true, url: true }
       }
     },
     orderBy: { startTime: "asc" }
@@ -119,15 +120,19 @@ export default async function EventsAdmin(props: {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
+          {events.map((event) => {
+            const thumb = event.media?.find((m) => m.id === event.bannerMediaId) || event.media?.[0];
+            return (
             <div key={event.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col group hover:shadow-md transition-all">
               {/* Event Cover Image Placeholder / Color Block */}
               <div className="h-32 bg-slate-100 relative overflow-hidden flex items-center justify-center border-b border-slate-100">
-                {event.media?.[0]?.url ? (
-                  <img 
-                    src={event.media[0].url} 
-                    alt={event.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                {thumb?.url ? (
+                  <Image
+                    src={thumb.url}
+                    alt={event.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <Calendar className="w-8 h-8 text-slate-300" />
@@ -219,7 +224,8 @@ export default async function EventsAdmin(props: {
               </div>
 
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

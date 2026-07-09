@@ -64,7 +64,7 @@ export async function createTransaction(data: any) {
 
     // Role-based Status Assignment
     const isTreasurerOrAdmin = session.roles?.some((r: string) => 
-      ["ADMIN", "CLUB_ADMIN", "TREASURER", "PRESIDENT"].includes(r)
+      ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r)
     );
     const initialStatus = (parsed.data.status || (isTreasurerOrAdmin ? "APPROVED" : "PENDING_APPROVAL")) as string;
 

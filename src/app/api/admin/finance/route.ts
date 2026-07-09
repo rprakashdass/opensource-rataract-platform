@@ -9,15 +9,15 @@ async function verifyAdmin() {
   if (!session) return false;
   
   // Checking for admin/treasury roles
-  return session.roles?.some((r: string) => ['ADMIN', 'CLUB_ADMIN', 'TREASURER'].includes(r));
+  return session.roles?.some((r: string) => ['SUPER_ADMIN', 'CLUB_ADMIN', 'FINANCE_ADMIN'].includes(r));
 }
 
 async function verifyFinanceAdmin() {
   const session = await getSession();
   if (!session) return false;
-  
+
   // Strict finance admin check for edits/deletes
-  return session.roles?.some((r: string) => ['ADMIN', 'FINANCE_ADMIN'].includes(r));
+  return session.roles?.some((r: string) => ['SUPER_ADMIN', 'CLUB_ADMIN', 'FINANCE_ADMIN'].includes(r));
 }
 
 export async function GET() {

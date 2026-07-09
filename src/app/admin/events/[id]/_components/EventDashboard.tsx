@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { 
   Calendar, 
@@ -40,6 +41,8 @@ interface EventDashboardProps {
     registrationRequired: boolean;
     registeredCount: number;
     capacity: number | null;
+    bannerMediaId: string | null;
+    posterMediaId: string | null;
     tags: string[];
     category: string | null;
     project: { title: string } | null;
@@ -459,16 +462,24 @@ export default function EventDashboard({ event }: EventDashboardProps) {
       )}
 
       {/* Gallery Tab */}
-      {activeTab === "gallery" && (
+      {activeTab === "gallery" && (() => {
+        const bannerThumb = event.media?.find((m) => m.id === event.bannerMediaId) || event.media?.[0];
+        return (
         <Card>
           <CardHeader>
             <CardTitle>Event Media & Gallery</CardTitle>
             <CardDescription>View or upload photos from this operational campaign.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {event.imageUrl ? (
+            {bannerThumb?.url ? (
               <div className="relative aspect-video max-w-lg rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                <img src={event.imageUrl} alt={event.title} className="object-cover w-full h-full" />
+                <Image
+                  src={bannerThumb.url}
+                  alt={event.title}
+                  fill
+                  sizes="512px"
+                  className="object-cover"
+                />
               </div>
             ) : (
               <div className="p-12 border border-dashed border-gray-200 rounded-3xl text-center">
@@ -478,10 +489,17 @@ export default function EventDashboard({ event }: EventDashboardProps) {
               </div>
             )}
             
-            <EventMediaModeration eventId={event.id} media={event.media} driveFolderId={event.driveFolderId} />
+            <EventMediaModeration
+              eventId={event.id}
+              media={event.media}
+              driveFolderId={event.driveFolderId}
+              bannerMediaId={event.bannerMediaId}
+              posterMediaId={event.posterMediaId}
+            />
           </CardContent>
         </Card>
-      )}
+        );
+      })()}
 
       {/* Reports Tab */}
       {activeTab === "reports" && (

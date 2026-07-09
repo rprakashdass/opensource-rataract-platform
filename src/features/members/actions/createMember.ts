@@ -77,19 +77,21 @@ export async function createMember(data: any) {
             }
         });
 
-        // Handle Board Role (Designation)
-        if (data.boardRole) {
+        // Handle Board Role (Designation) — chosen from the club's configured roles
+        if (data.roleId) {
+            const role = await tx.clubRole.findUnique({ where: { id: data.roleId } });
             const activeYear = await tx.financialYear.findFirst({
                 where: { clubId, status: "ACTIVE" }
             });
-            if (activeYear) {
+            if (role && activeYear) {
                 await tx.boardMember.create({
                     data: {
                         clubId,
                         memberId: newMember.id,
                         financialYearId: activeYear.id,
-                        position: data.boardRole,
-                        order: parseInt(data.boardOrder) || 99,
+                        roleId: role.id,
+                        position: role.name,
+                        order: role.displayOrder,
                     }
                 });
             }

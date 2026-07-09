@@ -12,7 +12,7 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
 
     // Permissions check: Treasurer or President only
     const hasAccess = session.roles?.some((r: string) => 
-      ["ADMIN", "CLUB_ADMIN", "TREASURER", "PRESIDENT"].includes(r)
+      ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r)
     );
     if (!hasAccess) return { error: "Only the Treasurer or President can moderate transactions" };
 

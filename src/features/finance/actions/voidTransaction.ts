@@ -11,7 +11,7 @@ export async function voidTransaction(id: string, reason: string) {
     if (!session) return { error: "Unauthorized" };
 
     const isTreasurerOrAdmin = session.roles?.some((r: string) => 
-      ["ADMIN", "CLUB_ADMIN", "TREASURER", "PRESIDENT"].includes(r)
+      ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r)
     );
 
     if (!isTreasurerOrAdmin) {

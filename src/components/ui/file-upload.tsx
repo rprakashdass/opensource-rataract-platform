@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Button } from './button';
-import { UploadCloud, File as FileIcon, X } from 'lucide-react';
+import { UploadCloud, File as FileIcon, X, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { uploadAsset } from '@/features/storage/actions/uploadAsset';
 
 interface FileUploadProps {
   value?: string;
@@ -10,19 +12,30 @@ interface FileUploadProps {
 
 export function FileUpload({ value, onChange, accept }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadFile = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await uploadAsset(formData);
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+      onChange(res.url!);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload file");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          onChange(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    if (file) uploadFile(file);
   };
 
   const clearFile = () => {
@@ -32,12 +45,27 @@ export function FileUpload({ value, onChange, accept }: FileUploadProps) {
     }
   };
 
+  const isImage = value && /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(value);
+
+  if (isUploading) {
+    return (
+      <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center border-purple-300 bg-purple-50">
+        <Loader2 className="h-8 w-8 text-purple-500 mb-2 animate-spin" />
+        <p className="text-sm font-medium text-slate-700">Uploading...</p>
+      </div>
+    );
+  }
+
   if (value) {
     return (
       <div className="border rounded-md p-4 flex items-center justify-between bg-slate-50">
         <div className="flex items-center gap-3 overflow-hidden">
-          <FileIcon className="h-6 w-6 text-purple-600 flex-shrink-0" />
-          <span className="text-sm truncate text-slate-700">Document Uploaded</span>
+          {isImage ? (
+            <img src={value} alt="Uploaded file" className="h-10 w-10 rounded object-cover flex-shrink-0" />
+          ) : (
+            <FileIcon className="h-6 w-6 text-purple-600 flex-shrink-0" />
+          )}
+          <span className="text-sm truncate text-slate-700">{isImage ? "Image uploaded" : "Document Uploaded"}</span>
         </div>
         <Button variant="ghost" size="icon" onClick={clearFile}>
           <X className="h-4 w-4" />
@@ -57,20 +85,14 @@ export function FileUpload({ value, onChange, accept }: FileUploadProps) {
         e.preventDefault();
         setIsDragging(false);
         const file = e.dataTransfer.files?.[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (event.target?.result) onChange(event.target.result as string);
-          };
-          reader.readAsDataURL(file);
-        }
+        if (file) uploadFile(file);
       }}
       onClick={() => fileInputRef.current?.click()}
     >
       <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
       <p className="text-sm font-medium text-slate-700">Click or drag file to upload</p>
       <p className="text-xs text-slate-500 mt-1">Accepts PDFs or Images</p>
-      
+
       <input
         type="file"
         ref={fileInputRef}

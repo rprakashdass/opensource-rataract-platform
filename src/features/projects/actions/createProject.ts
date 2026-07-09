@@ -21,9 +21,11 @@ export async function createProject(data: ProjectFormData) {
       return { error: "Club not found in database" };
     }
 
-    let slug = parsed.slug;
-    if (!slug) {
-      slug = parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const baseSlug = parsed.slug || parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    let slug = baseSlug;
+    let suffix = 1;
+    while (await prisma.project.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${++suffix}`;
     }
 
     const { team, coverMediaId, ...projectData } = parsed;

@@ -1,5 +1,6 @@
 import { getPublicGallery } from "@/features/public/queries/getPublicGallery";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
+import Image from "next/image";
 import { Camera, Folder, ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -30,13 +31,14 @@ export default async function GalleryPage() {
               const coverImage = album.media?.[0]?.url;
               return (
                 <div key={album.id} className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                  <div className="aspect-[4/3] bg-slate-100 flex items-center justify-center overflow-hidden">
+                  <div className="aspect-[4/3] bg-slate-100 flex items-center justify-center overflow-hidden relative">
                     {coverImage ? (
-                      <img 
-                        src={coverImage} 
+                      <Image
+                        src={coverImage}
                         alt={album.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
                       <Folder className="w-16 h-16 text-slate-300" />

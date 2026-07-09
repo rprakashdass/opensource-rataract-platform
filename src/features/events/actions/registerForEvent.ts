@@ -18,6 +18,12 @@ export async function registerForEvent(eventId: string, memberId: string) {
         if (event.status === "CANCELLED" || event.status === "COMPLETED") {
             return { error: "Event is no longer accepting registrations" };
         }
+        if (!event.registrationEnabled) {
+            return { error: "Registration is not open for this event" };
+        }
+        if (event.capacity && event.registeredCount >= event.capacity) {
+            return { error: "This event is full" };
+        }
 
         const existing = await prisma.registration.findUnique({
             where: {
@@ -32,13 +38,19 @@ export async function registerForEvent(eventId: string, memberId: string) {
             return { error: "You are already registered" };
         }
 
-        await prisma.registration.create({
-            data: {
-                eventId,
-                memberId,
-                status: "REGISTERED"
-            }
-        });
+        await prisma.$transaction([
+            prisma.registration.create({
+                data: {
+                    eventId,
+                    memberId,
+                    status: "REGISTERED"
+                }
+            }),
+            prisma.event.update({
+                where: { id: eventId },
+                data: { registeredCount: { increment: 1 } }
+            })
+        ]);
 
         // Try to get user email from member to send confirmation
         const member = await prisma.member.findUnique({

@@ -25,7 +25,8 @@ export const eventSchema = z.object({
   
   projectId: z.string().optional().nullable(),
   
-  coverMediaId: z.string().optional().or(z.literal("")),
+  bannerMediaId: z.string().optional().or(z.literal("")),
+  posterMediaId: z.string().optional().or(z.literal("")),
   
   capacity: z.number().int().positive().optional().nullable(),
   registrationRequired: z.boolean().default(false),

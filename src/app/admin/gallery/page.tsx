@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import Link from "next/link";
+import Image from "next/image";
 import { Plus, Folder, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -85,7 +86,7 @@ export default async function AdminGalleryPage() {
               <Link href={`/admin/gallery/media/${m.id}`} key={m.id} className="group block">
                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative">
                   {m.type === "IMAGE" ? (
-                    <img src={m.url} alt={m.title || "Media"} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <Image src={m.url} alt={m.title || "Media"} fill sizes="(max-width: 768px) 50vw, 20vw" className="object-cover group-hover:scale-105 transition-transform" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <ImageIcon className="w-8 h-8 text-gray-300" />

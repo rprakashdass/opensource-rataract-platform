@@ -31,6 +31,29 @@ export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, e
   }
 }
 
+export async function setEventMediaRole(mediaId: string, eventId: string, role: "banner" | "poster") {
+  try {
+    const session = await getSession();
+    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
+      return { error: "Unauthorized" };
+    }
+
+    await prisma.event.update({
+      where: { id: eventId },
+      data: role === "banner" ? { bannerMediaId: mediaId } : { posterMediaId: mediaId },
+    });
+
+    revalidatePath(`/admin/events/${eventId}`);
+    revalidatePath(`/events`);
+    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Set event media role error:", error);
+    return { error: error.message || "Failed to update media" };
+  }
+}
+
 export async function deleteEventMedia(mediaId: string, eventId: string) {
   try {
     const session = await getSession();

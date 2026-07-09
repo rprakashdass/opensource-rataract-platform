@@ -5,7 +5,6 @@ import React from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import ScrollToTop from "../layout/ScrollToTop";
-// import Chatbot from "../layout/Chatbot";
 
 export default function LayoutProvider({
   children,
@@ -24,7 +23,6 @@ export default function LayoutProvider({
     <div className="flex flex-col relative">
       {/* <ScrollToTop /> */}
       <Header layoutData={layoutData} />
-      {/* <Chatbot /> */}
       <div className="flex-1">{children}</div>
       <Footer layoutData={layoutData} />
     </div>

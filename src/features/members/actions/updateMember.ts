@@ -30,39 +30,6 @@ export async function updateMember(id: string, data: any) {
       }
     });
 
-    // Handle Board Role (Designation)
-    const activeYear = await prisma.financialYear.findFirst({
-      where: { clubId: club.id, status: "ACTIVE" }
-    });
-
-    if (activeYear) {
-      if (data.boardRole) {
-        await prisma.boardMember.upsert({
-          where: {
-            clubId_memberId_position_financialYearId: {
-               clubId: club.id,
-               memberId: member.id,
-               position: data.boardRole,
-               financialYearId: activeYear.id
-            }
-          },
-          update: {
-            order: parseInt(data.boardOrder) || 99,
-          },
-          create: {
-            clubId: club.id,
-            memberId: member.id,
-            financialYearId: activeYear.id,
-            position: data.boardRole,
-            order: parseInt(data.boardOrder) || 99,
-          }
-        });
-      } else {
-        // If they clear the boardRole in the form, we could delete/mark it as left.
-        // For simplicity, we won't delete unless explicitly requested.
-      }
-    }
-
     revalidatePath("/admin/members");
     revalidateTag("team", "max"); revalidateTag("homepage", "max");
     revalidatePath(`/admin/members/${id}`);

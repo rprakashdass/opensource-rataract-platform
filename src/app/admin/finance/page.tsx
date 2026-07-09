@@ -55,56 +55,49 @@ export default async function AdminFinancePage() {
     });
   }
 
-  // Fetch Accounts
-  const rawAccounts = await prisma.account.findMany({
-    where: { clubId: club.id },
-    orderBy: { type: "asc" }
-  });
-
-  // Fetch Transactions
-  const rawTransactions = await prisma.transaction.findMany({
-    where: { clubId: club.id },
-    orderBy: { date: "desc" },
-    include: {
-      member: { select: { name: true, email: true } },
-      user: { select: { name: true, email: true } },
-      category: { select: { name: true } },
-      project: { select: { title: true } },
-      event: { select: { title: true } },
-      account: { select: { name: true } }
-    }
-  });
-
-  // Fetch Budgets
-  const rawBudgets = await prisma.budget.findMany({
-    where: { clubId: club.id },
-    include: {
-      project: { select: { title: true } },
-      event: { select: { title: true } }
-    }
-  });
-
-  // Fetch Contributors
-  const rawContributors = await prisma.contributor.findMany({
-    where: { clubId: club.id }
-  });
-
-  // Fetch Transfers
-  const rawTransfers = await prisma.transfer.findMany({
-    where: { clubId: club.id },
-    orderBy: { date: "desc" },
-    include: {
-      fromAccount: { select: { name: true } },
-      toAccount: { select: { name: true } }
-    }
-  });
-
-  // Fetch Audit Logs
-  const auditLogs = await prisma.auditLog.findMany({
-    where: { action: { startsWith: "create_transaction" } },
-    orderBy: { createdAt: "desc" },
-    take: 10
-  });
+  // Fetch Accounts, Transactions, Budgets, Contributors, Transfers, Audit Logs concurrently —
+  // none of these depend on each other's results.
+  const [rawAccounts, rawTransactions, rawBudgets, rawContributors, rawTransfers, auditLogs] = await Promise.all([
+    prisma.account.findMany({
+      where: { clubId: club.id },
+      orderBy: { type: "asc" }
+    }),
+    prisma.transaction.findMany({
+      where: { clubId: club.id },
+      orderBy: { date: "desc" },
+      include: {
+        member: { select: { name: true, email: true } },
+        user: { select: { name: true, email: true } },
+        category: { select: { name: true } },
+        project: { select: { title: true } },
+        event: { select: { title: true } },
+        account: { select: { name: true } }
+      }
+    }),
+    prisma.budget.findMany({
+      where: { clubId: club.id },
+      include: {
+        project: { select: { title: true } },
+        event: { select: { title: true } }
+      }
+    }),
+    prisma.contributor.findMany({
+      where: { clubId: club.id }
+    }),
+    prisma.transfer.findMany({
+      where: { clubId: club.id },
+      orderBy: { date: "desc" },
+      include: {
+        fromAccount: { select: { name: true } },
+        toAccount: { select: { name: true } }
+      }
+    }),
+    prisma.auditLog.findMany({
+      where: { action: { startsWith: "create_transaction" } },
+      orderBy: { createdAt: "desc" },
+      take: 10
+    }),
+  ]);
 
   // 3. Serialize Decimals to Numbers for Client Components serialization
   const fySerialized = {

@@ -93,6 +93,7 @@ export default function AboutClient({ data }: { data: Data }) {
                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800"
                 alt="Club volunteers"
                 fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 priority
               />
@@ -144,6 +145,7 @@ export default function AboutClient({ data }: { data: Data }) {
                   src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800"
                   alt="Partner organization"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute bottom-6 left-6 z-20">

@@ -2,6 +2,9 @@
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
+CREATE TYPE "InitiativeStatus" AS ENUM ('DRAFT', 'SUBMITTED', 'UNDER_REVIEW', 'NEEDS_CHANGES', 'APPROVED', 'REJECTED', 'CONVERTED');
+
+-- CreateEnum
 CREATE TYPE "ProjectCategory" AS ENUM ('COMMUNITY_SERVICE', 'PROFESSIONAL_DEVELOPMENT', 'CLUB_SERVICE', 'INTERNATIONAL_SERVICE', 'FUNDRAISER', 'OTHER');
 
 -- CreateEnum
@@ -98,6 +101,13 @@ CREATE TABLE "Club" (
     "description" TEXT,
     "missionStatement" TEXT,
     "visionStatement" TEXT,
+    "aboutTitle" TEXT,
+    "aboutSubtitle" TEXT,
+    "aboutStory" TEXT,
+    "values" JSONB,
+    "history" TEXT,
+    "parentClubName" TEXT,
+    "parentClubDescription" TEXT,
     "primaryColor" TEXT NOT NULL DEFAULT '#8B5CF6',
     "secondaryColor" TEXT NOT NULL DEFAULT '#EC4899',
     "socialMedia" JSONB,
@@ -128,6 +138,7 @@ CREATE TABLE "WebsiteSettings" (
     "enableGallery" BOOLEAN NOT NULL DEFAULT true,
     "enableLeadership" BOOLEAN NOT NULL DEFAULT true,
     "enableAnnouncements" BOOLEAN NOT NULL DEFAULT true,
+    "enablePortfolios" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -146,6 +157,84 @@ CREATE TABLE "Milestone" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Milestone_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Portfolio" (
+    "id" TEXT NOT NULL,
+    "clubId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "icon" TEXT,
+    "description" TEXT,
+    "activities" JSONB,
+    "displayOrder" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Portfolio_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ClubRole" (
+    "id" TEXT NOT NULL,
+    "clubId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "displayOrder" INTEGER NOT NULL DEFAULT 0,
+    "maxMembers" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ClubRole_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MemberPortfolioAssignment" (
+    "id" TEXT NOT NULL,
+    "memberId" TEXT NOT NULL,
+    "portfolioId" TEXT NOT NULL,
+    "roleTitle" TEXT,
+    "tenureYear" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "MemberPortfolioAssignment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Initiative" (
+    "id" TEXT NOT NULL,
+    "clubId" TEXT NOT NULL,
+    "proposedById" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "problemStatement" TEXT,
+    "expectedImpact" TEXT,
+    "estimatedBudget" DECIMAL(10,2),
+    "preferredDate" TIMESTAMP(3),
+    "attachments" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "portfolioId" TEXT,
+    "status" "InitiativeStatus" NOT NULL DEFAULT 'DRAFT',
+    "submittedAt" TIMESTAMP(3),
+    "reviewedById" TEXT,
+    "reviewedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Initiative_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "InitiativeComment" (
+    "id" TEXT NOT NULL,
+    "initiativeId" TEXT NOT NULL,
+    "authorId" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "action" TEXT NOT NULL DEFAULT 'COMMENT',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "InitiativeComment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -246,6 +335,7 @@ CREATE TABLE "BoardMember" (
     "position" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "financialYearId" TEXT NOT NULL,
+    "roleId" TEXT,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "leftAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -297,6 +387,7 @@ CREATE TABLE "Project" (
     "impactMetrics" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "initiativeId" TEXT,
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
 );
@@ -339,6 +430,7 @@ CREATE TABLE "Event" (
     "category" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "initiativeId" TEXT,
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
@@ -720,6 +812,18 @@ CREATE TABLE "Contributor" (
 CREATE UNIQUE INDEX "WebsiteSettings_clubId_key" ON "WebsiteSettings"("clubId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "MemberPortfolioAssignment_memberId_portfolioId_tenureYear_key" ON "MemberPortfolioAssignment"("memberId", "portfolioId", "tenureYear");
+
+-- CreateIndex
+CREATE INDEX "Initiative_clubId_idx" ON "Initiative"("clubId");
+
+-- CreateIndex
+CREATE INDEX "Initiative_proposedById_idx" ON "Initiative"("proposedById");
+
+-- CreateIndex
+CREATE INDEX "InitiativeComment_initiativeId_idx" ON "InitiativeComment"("initiativeId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "EmailTemplate_clubId_type_key" ON "EmailTemplate"("clubId", "type");
 
 -- CreateIndex
@@ -747,7 +851,13 @@ CREATE UNIQUE INDEX "EventMember_eventId_memberId_key" ON "EventMember"("eventId
 CREATE UNIQUE INDEX "Project_slug_key" ON "Project"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Project_initiativeId_key" ON "Project"("initiativeId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Project_clubId_slug_key" ON "Project"("clubId", "slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Event_initiativeId_key" ON "Event"("initiativeId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Event_clubId_slug_key" ON "Event"("clubId", "slug");
@@ -819,6 +929,36 @@ ALTER TABLE "WebsiteSettings" ADD CONSTRAINT "WebsiteSettings_clubId_fkey" FOREI
 ALTER TABLE "Milestone" ADD CONSTRAINT "Milestone_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Portfolio" ADD CONSTRAINT "Portfolio_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ClubRole" ADD CONSTRAINT "ClubRole_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MemberPortfolioAssignment" ADD CONSTRAINT "MemberPortfolioAssignment_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MemberPortfolioAssignment" ADD CONSTRAINT "MemberPortfolioAssignment_portfolioId_fkey" FOREIGN KEY ("portfolioId") REFERENCES "Portfolio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Initiative" ADD CONSTRAINT "Initiative_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Initiative" ADD CONSTRAINT "Initiative_proposedById_fkey" FOREIGN KEY ("proposedById") REFERENCES "Member"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Initiative" ADD CONSTRAINT "Initiative_portfolioId_fkey" FOREIGN KEY ("portfolioId") REFERENCES "Portfolio"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Initiative" ADD CONSTRAINT "Initiative_reviewedById_fkey" FOREIGN KEY ("reviewedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "InitiativeComment" ADD CONSTRAINT "InitiativeComment_initiativeId_fkey" FOREIGN KEY ("initiativeId") REFERENCES "Initiative"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "InitiativeComment" ADD CONSTRAINT "InitiativeComment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "EmailTemplate" ADD CONSTRAINT "EmailTemplate_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -843,6 +983,9 @@ ALTER TABLE "BoardMember" ADD CONSTRAINT "BoardMember_clubId_fkey" FOREIGN KEY (
 ALTER TABLE "BoardMember" ADD CONSTRAINT "BoardMember_financialYearId_fkey" FOREIGN KEY ("financialYearId") REFERENCES "FinancialYear"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "BoardMember" ADD CONSTRAINT "BoardMember_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "ClubRole"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ProjectMember" ADD CONSTRAINT "ProjectMember_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -858,10 +1001,16 @@ ALTER TABLE "EventMember" ADD CONSTRAINT "EventMember_memberId_fkey" FOREIGN KEY
 ALTER TABLE "Project" ADD CONSTRAINT "Project_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Project" ADD CONSTRAINT "Project_initiativeId_fkey" FOREIGN KEY ("initiativeId") REFERENCES "Initiative"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Event" ADD CONSTRAINT "Event_initiativeId_fkey" FOREIGN KEY ("initiativeId") REFERENCES "Initiative"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Registration" ADD CONSTRAINT "Registration_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -997,3 +1146,4 @@ ALTER TABLE "Transfer" ADD CONSTRAINT "Transfer_financialYearId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "Contributor" ADD CONSTRAINT "Contributor_clubId_fkey" FOREIGN KEY ("clubId") REFERENCES "Club"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

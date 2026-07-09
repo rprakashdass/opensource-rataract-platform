@@ -16,7 +16,8 @@ import {
   AlertCircle,
   FileSpreadsheet,
   Download,
-  Plus
+  Plus,
+  Receipt
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -172,6 +173,14 @@ export default function TreasurerWorkspace({
           >
             <Download className="w-4 h-4" /> Export CSV
           </Button>
+          <Link href="/admin/finance/requests">
+            <Button
+              variant="outline"
+              className="border-slate-600 text-slate-100 bg-slate-800 hover:bg-slate-700 hover:text-white gap-1.5"
+            >
+              <Receipt className="w-4 h-4" /> Payment Requests
+            </Button>
+          </Link>
           <Link href="/admin/finance/transactions/new">
             <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-1.5">
               <Plus className="w-4 h-4" /> Add Transaction

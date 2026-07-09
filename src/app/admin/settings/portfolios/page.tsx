@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import PortfolioList from "./_components/PortfolioList";
 
 export default async function PortfoliosPage() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
   const portfolios = await prisma.portfolio.findMany({
     where: { clubId: club.id },

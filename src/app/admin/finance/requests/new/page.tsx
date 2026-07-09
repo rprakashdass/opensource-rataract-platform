@@ -61,8 +61,7 @@ export default function NewPaymentRequestPage() {
       if (data.error) throw new Error(data.error);
 
       toast.success("Payment request raised successfully!", { id: toastId });
-      toast.success("Request submitted!");
-      router.push("/admin/finance");
+      router.push("/admin/finance/requests");
       router.refresh();
     } catch (err: any) {
       toast.error(err.message, { id: toastId });
@@ -81,7 +80,7 @@ export default function NewPaymentRequestPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4 border-b border-gray-200 pb-4">
-        <Link href="/admin/finance" className="p-2 hover:bg-gray-100 rounded-full transition">
+        <Link href="/admin/finance/requests" className="p-2 hover:bg-gray-100 rounded-full transition">
           <ArrowLeft className="h-5 w-5 text-gray-600" />
         </Link>
         <div>

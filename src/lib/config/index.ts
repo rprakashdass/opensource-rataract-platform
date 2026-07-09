@@ -18,9 +18,6 @@ const configSchema = z.object({
   supabaseAnonKey: z.string().min(1),
   supabaseServiceRoleKey: z.string().min(1),
 
-  // Auth
-  authSecret: z.string().min(32),
-
   // White-label details
   orgSubName: z.string().default("District & Club Platform"),
   orgDescription: z.string().default("We are a service-oriented organization that strives to create a better world through volunteerism, community service, and professional development."),
@@ -39,7 +36,6 @@ export function loadConfig(): Config {
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    authSecret: process.env.AUTH_SECRET,
     orgSubName: process.env.NEXT_PUBLIC_ORG_SUB_NAME || "District & Club Platform",
     orgDescription: process.env.NEXT_PUBLIC_ORG_DESCRIPTION || "We are a service-oriented organization that strives to create a better world through volunteerism, community service, and professional development.",
     orgInstagram: process.env.NEXT_PUBLIC_ORG_INSTAGRAM || "https://instagram.com/rotaract",

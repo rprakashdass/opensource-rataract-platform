@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,11 +56,13 @@ export default function DashboardProjectsClient({
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map((project: any) => (
+                    {projects.map((project: any) => {
+                      const coverUrl = project.media?.[0]?.url;
+                      return (
                         <Card key={project.id} className="border-slate-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-                            {project.coverImage ? (
-                                <div className="h-32 w-full bg-slate-200">
-                                    <img src={project.coverImage} alt={project.title} className="w-full h-full object-cover" />
+                            {coverUrl ? (
+                                <div className="h-32 w-full bg-slate-200 relative">
+                                    <Image src={coverUrl} alt={project.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
                                 </div>
                             ) : (
                                 <div className="h-24 w-full bg-gradient-to-r from-emerald-100 to-teal-100"></div>
@@ -88,7 +91,8 @@ export default function DashboardProjectsClient({
                                 )}
                             </CardContent>
                         </Card>
-                    ))}
+                      );
+                    })}
                 </div>
             )}
         </div>

@@ -13,7 +13,6 @@ import { FileUpload } from "@/components/ui/file-upload";
 export default function EditMemberForm({ member }: { member: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const activeBoard = member.boardMemberships?.find((b: any) => !b.leftAt);
   const [formData, setFormData] = useState({
     name: member.name || "",
     email: member.email || "",
@@ -21,8 +20,6 @@ export default function EditMemberForm({ member }: { member: any }) {
     bloodGroup: member.bloodGroup || "",
     emergencyContact: member.emergencyContact || "",
     profession: member.profession || "",
-    boardRole: activeBoard?.position || "",
-    boardOrder: activeBoard?.order || "99",
     location: member.location || "",
     avatar: member.avatar || "",
     joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
@@ -125,25 +122,14 @@ export default function EditMemberForm({ member }: { member: any }) {
               <CardTitle className="text-lg">Additional Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Club Designation (Board Role)</label>
-                <input
-                  type="text"
-                  value={formData.boardRole}
-                  onChange={e => setFormData({...formData, boardRole: e.target.value})}
-                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
-                  placeholder="e.g. President, Secretary"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Display Order</label>
-                <input
-                  type="number"
-                  value={formData.boardOrder}
-                  onChange={e => setFormData({...formData, boardOrder: e.target.value})}
-                  className="w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
-                  placeholder="1, 2, 3..."
-                />
+              <div className="space-y-1.5 md:col-span-2 bg-purple-50 border border-purple-100 rounded-xl p-3">
+                <p className="text-xs text-purple-700">
+                  Board designation and portfolio assignments are managed in the{" "}
+                  <Link href={`/admin/members/${member.id}`} className="font-bold underline hover:text-purple-900">
+                    Assignments &amp; Roles
+                  </Link>{" "}
+                  section of this member's profile.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Profession / College</label>

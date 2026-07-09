@@ -1,5 +1,6 @@
 import { getPublicEvent } from "@/features/public/queries/getPublicEvent";
 import { Metadata } from "next";
+import Image from "next/image";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,9 @@ import { Calendar, MapPin, Clock, Users, Camera, CheckCircle2 } from "lucide-rea
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { getSession } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
+import PublicEventRegister from "../_components/PublicEventRegister";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -53,18 +57,44 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   const eventDate = new Date(eventAny.startDate);
   const isPast = eventDate < new Date() || eventAny.status === "COMPLETED";
 
-  const bannerImage = eventAny.media?.find((m: any) => m.id === eventAny.bannerMediaId)?.url || eventAny.media?.[0]?.url || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=1600";
-  const posterImage = eventAny.media?.find((m: any) => m.id === eventAny.posterMediaId)?.url || eventAny.media?.[0]?.url;
+  const featuredMedia = eventAny.media?.filter((m: any) => m.isFeatured) || [];
+  const bannerImage =
+    eventAny.media?.find((m: any) => m.id === eventAny.bannerMediaId)?.url ||
+    featuredMedia[0]?.url ||
+    eventAny.media?.[0]?.url ||
+    "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=1600";
+  const posterImage =
+    eventAny.media?.find((m: any) => m.id === eventAny.posterMediaId)?.url ||
+    featuredMedia[1]?.url ||
+    featuredMedia[0]?.url;
   const gallery = eventAny.media || [];
+
+  // Registration state for the logged-in viewer, if any
+  const session = await getSession();
+  let member: { id: string } | null = null;
+  let isRegistered = false;
+  if (session?.id) {
+    member = await prisma.member.findUnique({ where: { userId: session.id }, select: { id: true } });
+    if (member) {
+      const registration = await prisma.registration.findUnique({
+        where: { eventId_memberId: { eventId: eventAny.id, memberId: member.id } },
+      });
+      isRegistered = !!registration;
+    }
+  }
+  const isFull = !!eventAny.capacity && eventAny.registeredCount >= eventAny.capacity;
 
   return (
     <main className="min-h-screen bg-[#FAFAFA] pb-32">
       {/* Event Banner */}
       <div className="w-full h-[40vh] md:h-[50vh] relative">
-        <img 
-          src={bannerImage} 
+        <Image
+          src={bannerImage}
           alt={eventAny.title}
-          className="w-full h-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
         
@@ -126,22 +156,38 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                 </div>
               </div>
 
-              {!isPast && (
+              {!isPast && eventAny.registrationEnabled && (
                 <div className="mt-8 pt-8 border-t border-slate-100">
-                  <Link href="/auth/login">
-                    <Button className="w-full rounded-full py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-1">
-                      Register via Portal
-                    </Button>
-                  </Link>
-                  <p className="text-center text-xs text-slate-500 mt-3 font-medium">Log in to your member portal to RSVP.</p>
+                  {member ? (
+                    <PublicEventRegister
+                      eventId={eventAny.id}
+                      memberId={member.id}
+                      isRegistered={isRegistered}
+                      isFull={isFull}
+                    />
+                  ) : (
+                    <>
+                      <Link href={`/auth/login?redirect=/events/${eventAny.slug}`}>
+                        <Button className="w-full rounded-full py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-1">
+                          Register via Portal
+                        </Button>
+                      </Link>
+                      <p className="text-center text-xs text-slate-500 mt-3 font-medium">Log in to your member portal to RSVP.</p>
+                    </>
+                  )}
+                  {eventAny.capacity && (
+                    <p className="text-center text-xs text-slate-400 mt-3 font-medium">
+                      {Math.max(eventAny.capacity - eventAny.registeredCount, 0)} of {eventAny.capacity} spots left
+                    </p>
+                  )}
                 </div>
               )}
             </div>
 
             {/* Poster if Upcoming */}
             {!isPast && posterImage && (
-              <div className="rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 bg-white">
-                <img src={posterImage} alt="Event Poster" className="w-full object-contain" />
+              <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 bg-white">
+                <Image src={posterImage} alt="Event Poster" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-contain" />
               </div>
             )}
 
@@ -232,8 +278,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {gallery.map((m: any) => (
-                        <div key={m.id} className="aspect-square rounded-2xl overflow-hidden bg-slate-100 shadow-sm">
-                          <img src={m.url} alt="Memory" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                        <div key={m.id} className="aspect-square rounded-2xl overflow-hidden bg-slate-100 shadow-sm relative">
+                          <Image src={m.url} alt="Memory" fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover hover:scale-110 transition-transform duration-500" />
                         </div>
                       ))}
                     </div>

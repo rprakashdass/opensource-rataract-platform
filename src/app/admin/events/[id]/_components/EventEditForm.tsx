@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Calendar } from "lucide-react";
+import { MediaUpload } from "@/components/ui/media-upload";
+import { Label } from "@/components/ui/label";
 
 interface Initiative {
   id: string;
@@ -21,7 +23,8 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
   const [location, setLocation] = useState(initialData.location || "");
   const [startDate, setStartDate] = useState(initialData.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : "");
   const [endDate, setEndDate] = useState(initialData.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : "");
-  const [imageUrl, setImageUrl] = useState(initialData.imageUrl || "");
+  const [bannerMediaId, setBannerMediaId] = useState(initialData.bannerMediaId || "");
+  const [posterMediaId, setPosterMediaId] = useState(initialData.posterMediaId || "");
   const [status, setStatus] = useState(initialData.status || "upcoming");
   const [projectId, setProjectId] = useState(initialData.projectId || "");
   const [visibility, setVisibility] = useState(initialData.visibility || "PUBLIC");
@@ -55,7 +58,8 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
         location: location || null,
         startDate: new Date(startDate).toISOString(),
         endDate: endDate ? new Date(endDate).toISOString() : null,
-        imageUrl: imageUrl || null,
+        bannerMediaId: bannerMediaId || null,
+        posterMediaId: posterMediaId || null,
         status,
         projectId: projectId || null,
         visibility,
@@ -158,9 +162,17 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="https://..." />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">Banner Image</Label>
+            <p className="text-xs text-gray-500 mb-2">Wide hero image on the event page and cards.</p>
+            <MediaUpload value={bannerMediaId} onChange={setBannerMediaId} type="IMAGE" usage="BANNER" accept="image/*" />
+          </div>
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</Label>
+            <p className="text-xs text-gray-500 mb-2">Portrait flyer shown in the sidebar.</p>
+            <MediaUpload value={posterMediaId} onChange={setPosterMediaId} type="IMAGE" usage="POSTER" accept="image/*" />
+          </div>
         </div>
         
         <div className="pt-4 flex justify-end">

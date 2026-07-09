@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 
@@ -30,10 +31,12 @@ export function PublicCard({
       className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
     >
       <div className="aspect-[4/3] w-full bg-slate-100 relative overflow-hidden">
-        <img 
-          src={imageUrl} 
+        <Image
+          src={imageUrl}
           alt={title}
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {badge && (
           <div className="absolute top-4 left-4">

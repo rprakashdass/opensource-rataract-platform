@@ -18,7 +18,8 @@ export async function getMemberProjects() {
             include: {
                 members: {
                     include: { member: true }
-                }
+                },
+                media: { orderBy: { createdAt: "desc" }, take: 1, select: { id: true, url: true } }
             },
             orderBy: { createdAt: 'desc' }
         });

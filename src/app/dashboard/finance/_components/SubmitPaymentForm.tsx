@@ -76,8 +76,7 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
                 title="Tap to pay with UPI app"
               >
                 <div className="w-32 h-32 relative border-4 border-white shadow-sm rounded-lg overflow-hidden bg-gray-50">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={paymentQr} alt="Club Payment QR" className="object-contain w-full h-full" />
+                  <Image src={paymentQr} alt="Club Payment QR" fill sizes="128px" className="object-contain" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg group-hover:bg-emerald-600 transition-colors">
                   <Smartphone className="h-4 w-4" />

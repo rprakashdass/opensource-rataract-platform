@@ -27,7 +27,8 @@ export default function EventForm() {
   const [members, setMembers] = useState<{id: string, name: string}[]>([]);
   const [isStandalone, setIsStandalone] = useState(!defaultProjectId);
   const [team, setTeam] = useState<{memberId: string, role: string}[]>([]);
-  const [coverMediaId, setCoverMediaId] = useState<string>("");
+  const [bannerMediaId, setBannerMediaId] = useState<string>("");
+  const [posterMediaId, setPosterMediaId] = useState<string>("");
   const [sendToAll, setSendToAll] = useState(true);
   const [sendToBoard, setSendToBoard] = useState(false);
 
@@ -58,7 +59,8 @@ export default function EventForm() {
       endTime: formData.get("endTime") ? new Date(formData.get("endTime") as string).toISOString() : "",
       location: formData.get("location") || null,
       meetingLink: formData.get("meetingLink") || null,
-      coverMediaId: formData.get("coverMediaId") || undefined,
+      bannerMediaId: formData.get("bannerMediaId") || undefined,
+      posterMediaId: formData.get("posterMediaId") || undefined,
       capacity: formData.get("capacity") ? Number(formData.get("capacity")) : null,
       registrationRequired: formData.get("registrationRequired") === "on",
       registrationEnabled: formData.get("registrationEnabled") === "on",
@@ -212,17 +214,31 @@ export default function EventForm() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="coverImage">Poster / Banner Upload</Label>
-            <MediaUpload 
-              value={coverMediaId} 
-              onChange={setCoverMediaId} 
-              type="IMAGE"
-              usage="COVER"
-              accept="image/*"
-              isCover={true}
-            />
-            <input type="hidden" name="coverMediaId" value={coverMediaId} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bannerImage">Banner Image</Label>
+              <p className="text-xs text-gray-500">Wide hero image shown at the top of the event page and on cards.</p>
+              <MediaUpload
+                value={bannerMediaId}
+                onChange={setBannerMediaId}
+                type="IMAGE"
+                usage="BANNER"
+                accept="image/*"
+              />
+              <input type="hidden" name="bannerMediaId" value={bannerMediaId} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="posterImage">Poster Image</Label>
+              <p className="text-xs text-gray-500">Portrait flyer shown in the event sidebar, e.g. for sharing.</p>
+              <MediaUpload
+                value={posterMediaId}
+                onChange={setPosterMediaId}
+                type="IMAGE"
+                usage="POSTER"
+                accept="image/*"
+              />
+              <input type="hidden" name="posterMediaId" value={posterMediaId} />
+            </div>
           </div>
 
           <div className="border-t border-gray-100 pt-6 mt-6 space-y-4">

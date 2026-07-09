@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { redirect } from "next/navigation";
-import { 
-  Layout, 
-  Image as ImageIcon, 
-  Users, 
+import { getOrCreateWebsiteSettings } from "@/features/public/queries/getOrCreateWebsiteSettings";
+import { notFound } from "next/navigation";
+import {
+  Layout,
+  Image as ImageIcon,
+  Users,
   ExternalLink,
   Megaphone,
   BookOpen,
@@ -18,13 +18,9 @@ import WebsiteModuleToggles from "./_components/WebsiteModuleToggles";
 
 export default async function WebsiteControlCenter() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
-  const settings = await prisma.websiteSettings.upsert({
-    where: { clubId: club.id },
-    create: { clubId: club.id },
-    update: {},
-  });
+  const settings = await getOrCreateWebsiteSettings(club.id);
 
   const modules = [
     {

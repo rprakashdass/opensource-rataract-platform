@@ -29,7 +29,7 @@ export default async function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {upcomingEvents.map((event: any) => {
               const eventDate = new Date(event.startDate);
-              const poster = event.media?.[0];
+              const poster = event.media?.find((m: any) => m.id === event.bannerMediaId) || event.media?.[0];
               const imageUrl = poster?.url || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800";
               
               const MetaData = (
@@ -80,7 +80,7 @@ export default async function EventsPage() {
         {completedEvents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {completedEvents.map((event: any) => {
-              const poster = event.media?.[0];
+              const poster = event.media?.find((m: any) => m.id === event.bannerMediaId) || event.media?.[0];
               const imageUrl = poster?.url || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800";
               
               return (

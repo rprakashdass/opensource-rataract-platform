@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default async function PartnerPage() {
@@ -75,7 +76,9 @@ export default async function PartnerPage() {
               {sponsors.map((sponsor) => (
                 <div key={sponsor.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center hover:shadow-md transition">
                   {sponsor.logo ? (
-                    <img src={sponsor.logo} alt={sponsor.name} className="h-20 object-contain mx-auto mb-4" />
+                    <div className="relative h-20 w-full mb-4">
+                      <Image src={sponsor.logo} alt={sponsor.name} fill sizes="200px" className="object-contain" />
+                    </div>
                   ) : (
                     <div className="h-20 flex items-center justify-center bg-slate-50 text-slate-400 font-bold rounded-lg mb-4">
                       {sponsor.name}

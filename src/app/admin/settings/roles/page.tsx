@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import RoleList from "./_components/RoleList";
 
 export default async function RolesPage() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
   const roles = await prisma.clubRole.findMany({
     where: { clubId: club.id },

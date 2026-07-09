@@ -1,19 +1,15 @@
-import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { redirect } from "next/navigation";
+import { getOrCreateWebsiteSettings } from "@/features/public/queries/getOrCreateWebsiteSettings";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import AboutEditorForm from "./_components/AboutEditorForm";
 
 export default async function AboutEditorPage() {
   const club = await getCurrentClub();
-  if (!club) redirect("/setup");
+  if (!club) notFound();
 
-  const settings = await prisma.websiteSettings.upsert({
-    where: { clubId: club.id },
-    create: { clubId: club.id },
-    update: {},
-  });
+  const settings = await getOrCreateWebsiteSettings(club.id);
 
   return (
     <div className="max-w-4xl mx-auto py-8 space-y-6">
