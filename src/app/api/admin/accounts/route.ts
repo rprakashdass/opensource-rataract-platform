@@ -48,7 +48,6 @@ export async function POST(req: Request) {
         email: loginId.toLowerCase(),
         password,
         name: name || "Internal Account",
-        avatar: "/user.png",
         roles: roles || ["ADMIN"],
       },
     });

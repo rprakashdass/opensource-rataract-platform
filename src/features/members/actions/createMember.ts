@@ -44,13 +44,15 @@ export async function createMember(data: any) {
         return { error: "A user with this email already exists" };
     }
 
+    const defaultPassword = data.name.trim().toLowerCase().replace(/\s+/g, ".") + "@nexus";
+
     const result = await prisma.$transaction(async (tx) => {
         // 1. Create User account (with default MEMBER role)
         const user = await tx.user.create({
             data: {
                 email: data.email,
                 name: data.name,
-                password: "defaultPassword123!", // In a real app, generate a token and send an invite email
+                password: defaultPassword, // e.g. "john.doe@nexus"
                 roles: ["MEMBER"],
                 isActive: true,
             }

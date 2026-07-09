@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DeleteMemberButton from "./DeleteMemberButton";
+import { prisma } from "@/lib/prisma";
+import AssignmentsManager from "../_components/AssignmentsManager";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 interface PageProps {
   params: Promise<{
@@ -23,6 +26,12 @@ export default async function MemberProfilePage({ params }: PageProps) {
 
   const activeBoard = member.boardMemberships?.find(b => !b.leftAt);
   const boardHistory = member.boardMemberships?.filter(b => b.leftAt);
+
+  const [availablePortfolios, availableRoles, availableYears] = await Promise.all([
+    prisma.portfolio.findMany({ where: { clubId: member.clubId }, orderBy: { displayOrder: 'asc' } }),
+    prisma.clubRole.findMany({ where: { clubId: member.clubId }, orderBy: { displayOrder: 'asc' } }),
+    prisma.financialYear.findMany({ where: { clubId: member.clubId }, orderBy: { name: 'desc' } })
+  ]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 py-6 animate-in fade-in duration-300">
@@ -49,18 +58,12 @@ export default async function MemberProfilePage({ params }: PageProps) {
             <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
             <CardContent className="relative z-10 pt-4">
               <div className="w-24 h-24 mx-auto rounded-full bg-white p-1 shadow-md mb-4 overflow-hidden">
-                {member.avatar ? (
-                  <img src={member.avatar || undefined} alt={member.name || undefined} className="w-full h-full object-cover rounded-full" />
-                ) : (
-                  <div className="w-full h-full rounded-full bg-purple-100 flex items-center justify-center text-3xl font-black text-purple-700">
-                    {member.name?.[0] || "?"}
-                  </div>
-                )}
+                <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-full h-full" textClassName="text-3xl" />
               </div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">{member.name}</h1>
               {activeBoard ? (
                 <Badge className="mt-2 bg-amber-100 text-amber-700 hover:bg-amber-200 border-0 uppercase tracking-widest text-[10px]">
-                  {activeBoard.position}
+                  {activeBoard.role?.name || activeBoard.position}
                 </Badge>
               ) : (
                 <Badge variant="outline" className="mt-2 text-[10px] uppercase tracking-widest text-slate-500">
@@ -149,35 +152,14 @@ export default async function MemberProfilePage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-100 shadow-sm">
-            <CardHeader>
-              <CardTitle>Board History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {member.boardMemberships?.length === 0 ? (
-                <p className="text-sm text-slate-500 py-4">No board positions held.</p>
-              ) : (
-                <div className="space-y-4 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
-                  {member.boardMemberships?.map((board: any, idx: number) => (
-                    <div key={board.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                      <div className={`flex items-center justify-center w-8 h-8 rounded-full border border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 ${board.leftAt ? 'bg-slate-100 text-slate-500' : 'bg-amber-100 text-amber-600'}`}>
-                        <Shield className="w-4 h-4" />
-                      </div>
-                      <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2rem)] p-4 rounded-xl border shadow-sm ${board.leftAt ? 'border-slate-100 bg-white' : 'border-amber-200 bg-amber-50/30'}`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <p className={`font-bold text-sm ${board.leftAt ? 'text-slate-900' : 'text-amber-900'}`}>{board.position}</p>
-                          <Badge variant="outline" className="text-[10px]">{board.financialYear?.name}</Badge>
-                        </div>
-                        <p className="text-xs text-slate-500 font-medium">
-                          {new Date(board.joinedAt).toLocaleDateString()} - {board.leftAt ? new Date(board.leftAt).toLocaleDateString() : "Present"}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AssignmentsManager 
+            memberId={member.id}
+            portfolioAssignments={member.portfolioAssignments || []}
+            boardMemberships={member.boardMemberships || []}
+            availablePortfolios={availablePortfolios}
+            availableRoles={availableRoles}
+            availableYears={availableYears}
+          />
 
           <Card className="border-slate-100 shadow-sm">
             <CardHeader>

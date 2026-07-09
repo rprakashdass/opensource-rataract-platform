@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, UserCircle, MapPin, ArrowRight, Camera, Users, Clock, Target } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -243,10 +244,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <div className="space-y-4">
                   {projectAny.members.map((pm: any) => (
                     <div key={pm.id} className="flex items-center gap-4">
-                      <img 
-                        src={pm.member.avatar || "/user.png"} 
-                        alt={pm.member.name}
-                        className="w-12 h-12 rounded-full bg-slate-100 object-cover border border-slate-200"
+                      <MemberAvatar
+                        name={pm.member.name}
+                        avatarUrl={pm.member.avatar}
+                        className="w-12 h-12 border border-slate-200"
                       />
                       <div>
                         <p className="font-bold text-slate-900">{pm.member.name}</p>

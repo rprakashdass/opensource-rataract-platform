@@ -29,6 +29,27 @@ export const getHomeBaseData = unstable_cache(
     { tags: ['homepage', 'club', 'website-settings'], revalidate: 3600 }
 );
 
+export const getHomePortfolios = unstable_cache(
+    async (clubId: string) => {
+        try {
+            const portfolios = await prisma.portfolio.findMany({
+                where: { clubId, isActive: true },
+                orderBy: { displayOrder: "asc" }
+            });
+            return portfolios.map(p => ({
+                id: p.id,
+                name: p.name,
+                icon: p.icon,
+                description: p.description,
+            }));
+        } catch (error) {
+            return [];
+        }
+    },
+    ['home-portfolios-data'],
+    { tags: ['homepage', 'portfolios'], revalidate: 3600 }
+);
+
 export const getHomeImpact = unstable_cache(
     async (clubId: string) => {
         try {

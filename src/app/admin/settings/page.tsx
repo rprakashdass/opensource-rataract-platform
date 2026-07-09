@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Settings, Save } from "lucide-react";
+import { Settings, Save, Layers, ShieldCheck, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useLoadingToast } from "@/hooks/useLoadingToast";
 import { FileUpload } from "@/components/ui/file-upload";
+import Link from "next/link";
 
 export default function SettingsAdmin() {
   const [clubName, setClubName] = useState("");
@@ -128,6 +129,33 @@ export default function SettingsAdmin() {
           <h1 className="text-3xl font-black text-foreground">Club Configurations</h1>
           <p className="text-sm text-muted-foreground mt-1">Configure your organization and active tenure details</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Link href="/admin/settings/portfolios">
+          <div className="group border border-primary/10 bg-card p-4 rounded-2xl hover:border-primary/30 hover:shadow-sm transition-all flex items-center gap-4">
+            <div className="p-3 rounded-xl h-fit shrink-0 bg-violet-100 text-violet-600">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">Portfolio Management</h3>
+              <p className="text-sm text-muted-foreground mt-1">Configure your club's avenues of service.</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </div>
+        </Link>
+        <Link href="/admin/settings/roles">
+          <div className="group border border-primary/10 bg-card p-4 rounded-2xl hover:border-primary/30 hover:shadow-sm transition-all flex items-center gap-4">
+            <div className="p-3 rounded-xl h-fit shrink-0 bg-indigo-100 text-indigo-600">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">Board Role Configuration</h3>
+              <p className="text-sm text-muted-foreground mt-1">Define board, core team, and member roles.</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </div>
+        </Link>
       </div>
 
       {message && (

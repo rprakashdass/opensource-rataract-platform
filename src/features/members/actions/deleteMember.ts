@@ -15,8 +15,25 @@ export async function deleteMember(id: string) {
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };
 
-    await prisma.member.delete({
-      where: { id, clubId: club.id }
+    const member = await prisma.member.findUnique({
+      where: { id, clubId: club.id },
+      select: { userId: true }
+    });
+
+    if (!member) {
+      return { error: "Member not found" };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.member.delete({
+        where: { id }
+      });
+      
+      if (member.userId) {
+        await tx.user.delete({
+          where: { id: member.userId }
+        });
+      }
     });
 
     revalidatePath("/admin/members");

@@ -10,6 +10,7 @@ import { markAttendance } from "@/features/attendance/actions/markAttendance";
 import { bulkMarkAttendance } from "@/features/attendance/actions/bulkMarkAttendance";
 import { generateAttendanceSession, invalidateAttendanceSession } from "@/features/attendance/actions/attendanceSession";
 import { toggleAttendanceLock } from "@/features/attendance/actions/lockAttendance";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 import { exportAttendanceCsv } from "@/features/attendance/actions/exportAttendance";
 import { useRouter } from "next/navigation";
 import { AttendanceStatus } from "@prisma/client";
@@ -299,7 +300,7 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
-                                            <img src={member.avatar || "/user.png"} alt={member.name} className="w-8 h-8 rounded-full border border-slate-200" />
+                                            <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-8 h-8 border border-slate-200" textClassName="text-xs" />
                                             <div>
                                                 <p className="font-semibold text-slate-900">{member.name}</p>
                                                 <p className="text-xs text-slate-500">{member.email || "No email"}</p>
@@ -338,7 +339,7 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex items-center gap-3">
                                     <input type="checkbox" checked={selectedIds.includes(member.id)} onChange={() => toggleSelect(member.id)} className="rounded text-purple-600 focus:ring-purple-500 border-slate-300" />
-                                    <img src={member.avatar || "/user.png"} alt={member.name} className="w-10 h-10 rounded-full border border-slate-200" />
+                                    <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-10 h-10 border border-slate-200" textClassName="text-sm" />
                                     <div>
                                         <p className="font-semibold text-slate-900 text-base">{member.name}</p>
                                         <p className="text-sm text-slate-500">{member.email || "No email"}</p>

@@ -34,7 +34,10 @@ export async function getMembers(filterStatus?: string) {
           user: { select: { roles: true } },
           boardMemberships: {
               where: { leftAt: null }, // Current active board positions
-              include: { financialYear: true }
+              include: { financialYear: true, role: true }
+          },
+          portfolioAssignments: {
+              include: { portfolio: true }
           }
       },
       orderBy: { name: 'asc' }
@@ -52,8 +55,12 @@ export async function getMember(id: string) {
         include: {
             user: { select: { roles: true } },
             boardMemberships: {
-                include: { financialYear: true },
+                include: { financialYear: true, role: true },
                 orderBy: { joinedAt: 'desc' }
+            },
+            portfolioAssignments: {
+                include: { portfolio: true },
+                orderBy: { tenureYear: 'desc' }
             },
             attendance: {
                 include: { event: true },

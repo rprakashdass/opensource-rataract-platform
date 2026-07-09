@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 export default async function MemberDashboardPage() {
   const { member, profileCompletion, stats, upcomingEvents, checkInEvents, timeline, error } = await getMemberDashboard();
@@ -46,7 +47,7 @@ export default async function MemberDashboardPage() {
       {/* Welcome Header */}
       <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
         <div className="flex items-center gap-4 relative z-10">
-            <img src={member.avatar || "/user.png"} alt={member.name || "Member"} className="w-14 h-14 rounded-full border-2 border-white shadow-sm object-cover" />
+            <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-14 h-14 border-2 border-white shadow-sm" textClassName="text-lg" />
             <div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Hello,</p>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">

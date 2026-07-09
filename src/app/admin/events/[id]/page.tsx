@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lightbulb } from "lucide-react";
 import EventDashboard from "./_components/EventDashboard";
 import EventSettingsButton from "./_components/EventSettingsButton";
 import EventPublishButton from "./_components/EventPublishButton";
@@ -23,7 +23,8 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
       minutes: { select: { content: true } },
       attendance: { select: { id: true, memberId: true } },
       transactions: { select: { id: true, title: true, amount: true, type: true, status: true } },
-      media: { orderBy: { createdAt: "desc" } }
+      media: { orderBy: { createdAt: "desc" } },
+      initiative: { select: { id: true, proposedBy: { select: { name: true, avatar: true } } } }
     }
   });
 
@@ -62,6 +63,14 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{event.title}</h1>
         {event.description && <p className="text-gray-500 max-w-3xl leading-relaxed">{event.description}</p>}
       </div>
+
+      {event.initiative && (
+        <div className="inline-flex items-center gap-2 text-sm bg-purple-50 border border-purple-100 text-purple-700 px-4 py-2 rounded-xl">
+          <Lightbulb className="w-4 h-4" />
+          Originally proposed by <span className="font-bold">{event.initiative.proposedBy?.name || "a member"}</span>
+          <Link href={`/admin/proposals/${event.initiative.id}`} className="underline hover:text-purple-900">View proposal</Link>
+        </div>
+      )}
 
       <EventDashboard event={event as any} />
     </div>

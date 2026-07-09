@@ -5,6 +5,7 @@ import { UserCircle, Mail, Phone, HeartPulse, GraduationCap, MapPin, Award, Hist
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 export default async function MemberProfilePage() {
     const session = await getSession();
@@ -50,7 +51,7 @@ export default async function MemberProfilePage() {
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 text-center relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-purple-500 to-pink-500"></div>
                         <div className="relative pt-12">
-                            <img src={member.avatar || "/user.png"} alt={member.name || "Member"} className="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover mx-auto mb-4 bg-white" />
+                            <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-24 h-24 border-4 border-white shadow-md mx-auto mb-4 bg-white" textClassName="text-2xl" />
                             <h2 className="text-xl font-bold text-slate-900">{member.name}</h2>
                             <p className="text-slate-500 text-sm font-medium mb-4">{member.club?.name}</p>
                             

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutProvider from "@/components/providers/LayoutProvider";
+import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
 import { Providers } from "@/app/providers";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,11 +28,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const layoutData = await getPublicLayoutData();
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -44,7 +46,7 @@ export default function RootLayout({
         <Suspense>
           <TopLoader />
           <Providers>
-            <LayoutProvider>{children}</LayoutProvider>
+            <LayoutProvider layoutData={layoutData}>{children}</LayoutProvider>
           </Providers>
           <Toaster position="top-right" />
         </Suspense>

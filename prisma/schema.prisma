@@ -42,9 +42,16 @@ model Club {
   postalCode String?
 
   /// About Information
-  description      String?
-  missionStatement String?
-  visionStatement  String?
+  description           String?
+  missionStatement      String?
+  visionStatement       String?
+  aboutTitle            String?
+  aboutSubtitle         String?
+  aboutStory            String? @db.Text
+  values                Json?
+  history               String? @db.Text
+  parentClubName        String?
+  parentClubDescription String? @db.Text
 
   /// Branding
   primaryColor   String @default("#8B5CF6")
@@ -84,6 +91,9 @@ model Club {
   scheduledCommunications ScheduledCommunication[]
   websiteSettings         WebsiteSettings?
   milestones              Milestone[]
+  portfolios              Portfolio[]
+  clubRoles               ClubRole[]
+  initiatives             Initiative[]
 }
 
 // ============================================================================
@@ -111,6 +121,7 @@ model WebsiteSettings {
   enableGallery          Boolean @default(true)
   enableLeadership       Boolean @default(true)
   enableAnnouncements    Boolean @default(true)
+  enablePortfolios       Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -128,6 +139,132 @@ model Milestone {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// PORTFOLIOS & ROLES
+// ============================================================================
+
+model Portfolio {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name        String
+  icon        String? // Lucide icon name or emoji
+  description String? @db.Text
+  activities  Json? // String[]
+
+  displayOrder Int     @default(0)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments MemberPortfolioAssignment[]
+  initiatives Initiative[]
+}
+
+model ClubRole {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name     String
+  category String // "BOARD" | "CORE_TEAM" | "MEMBER"
+
+  displayOrder Int  @default(0)
+  maxMembers   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boardMembers BoardMember[]
+}
+
+model MemberPortfolioAssignment {
+  id String @id @default(cuid())
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  roleTitle  String? // e.g., "Chair", "Volunteer"
+  tenureYear String // e.g., "2026-27"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([memberId, portfolioId, tenureYear])
+}
+
+// ============================================================================
+// INITIATIVE PROPOSALS
+// ============================================================================
+
+enum InitiativeStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  NEEDS_CHANGES
+  APPROVED
+  REJECTED
+  CONVERTED
+}
+
+model Initiative {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  proposedById String
+  proposedBy   Member @relation(fields: [proposedById], references: [id], onDelete: Cascade)
+
+  title            String
+  description      String    @db.Text
+  problemStatement String?   @db.Text
+  expectedImpact   String?   @db.Text
+  estimatedBudget  Decimal?  @db.Decimal(10, 2)
+  preferredDate    DateTime?
+  attachments      String[]  @default([])
+
+  portfolioId String?
+  portfolio   Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+
+  status InitiativeStatus @default(DRAFT)
+
+  submittedAt  DateTime?
+  reviewedById String?
+  reviewedBy   User?     @relation("InitiativeReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments         InitiativeComment[]
+  convertedEvent   Event?
+  convertedProject Project?
+
+  @@index([clubId])
+  @@index([proposedById])
+}
+
+model InitiativeComment {
+  id           String     @id @default(cuid())
+  initiativeId String
+  initiative   Initiative @relation(fields: [initiativeId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  body   String @db.Text
+  action String @default("COMMENT") // COMMENT | REQUESTED_CHANGES | APPROVED | REJECTED
+
+  createdAt DateTime @default(now())
+
+  @@index([initiativeId])
 }
 
 // ============================================================================
@@ -329,6 +466,9 @@ model User {
   markedAttendances  Attendance[]        @relation("AttendanceMarker")
   attendanceSessions AttendanceSession[] @relation("AttendanceSessionCreator")
   uploadedMedia      Media[]             @relation("MediaUploader")
+
+  reviewedInitiatives Initiative[]        @relation("InitiativeReviewer")
+  initiativeComments  InitiativeComment[]
 }
 
 model Session {
@@ -394,13 +534,15 @@ model Member {
   updatedAt     DateTime @updatedAt
 
   // Relations
-  boardMemberships BoardMember[]
-  projectRoles     ProjectMember[]
-  eventRoles       EventMember[]
-  registrations    Registration[]
-  attendance       Attendance[]
-  transactions     Transaction[]
-  paymentRequests  PaymentRequestAssignee[]
+  boardMemberships     BoardMember[]
+  projectRoles         ProjectMember[]
+  eventRoles           EventMember[]
+  registrations        Registration[]
+  attendance           Attendance[]
+  transactions         Transaction[]
+  paymentRequests      PaymentRequestAssignee[]
+  portfolioAssignments MemberPortfolioAssignment[]
+  initiatives          Initiative[]
 }
 
 model BoardMember {
@@ -416,6 +558,9 @@ model BoardMember {
 
   financialYearId String
   financialYear   FinancialYear @relation(fields: [financialYearId], references: [id], onDelete: Cascade)
+
+  roleId String?
+  role   ClubRole? @relation(fields: [roleId], references: [id], onDelete: SetNull)
 
   joinedAt DateTime  @default(now())
   leftAt   DateTime?
@@ -477,6 +622,9 @@ model Project {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  initiativeId String?     @unique
+  initiative   Initiative? @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
 
   events       Event[]
   members      ProjectMember[]
@@ -543,6 +691,9 @@ model Event {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  initiativeId String?     @unique
+  initiative   Initiative? @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
 
   // Relations
   members            EventMember[]

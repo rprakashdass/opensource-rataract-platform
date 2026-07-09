@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, Users, IndianRupee, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, Users, IndianRupee, Plus, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import ProjectSettingsButton from "./_components/ProjectSettingsButton";
@@ -22,7 +22,8 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
         where: { isCover: true, usage: "COVER" },
         take: 1,
         select: { url: true }
-      }
+      },
+      initiative: { select: { id: true, proposedBy: { select: { name: true, avatar: true } } } }
     }
   });
 
@@ -73,6 +74,14 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
         <h1 className="text-4xl font-bold text-gray-900">{project.title}</h1>
         <p className="text-lg text-gray-500 mt-2 max-w-3xl">{project.description}</p>
       </div>
+
+      {project.initiative && (
+        <div className="inline-flex items-center gap-2 text-sm bg-purple-50 border border-purple-100 text-purple-700 px-4 py-2 rounded-xl">
+          <Lightbulb className="w-4 h-4" />
+          Originally proposed by <span className="font-bold">{project.initiative.proposedBy?.name || "a member"}</span>
+          <Link href={`/admin/proposals/${project.initiative.id}`} className="underline hover:text-purple-900">View proposal</Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>

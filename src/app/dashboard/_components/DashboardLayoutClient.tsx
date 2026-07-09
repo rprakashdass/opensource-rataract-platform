@@ -4,14 +4,15 @@ import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useState } from "react";
-import { Menu, X, LayoutDashboard, UserCircle, Calendar, Banknote, Briefcase, ClipboardCheck, ShieldCheck } from "lucide-react";
+import { Menu, X, LayoutDashboard, UserCircle, Calendar, Banknote, Briefcase, ClipboardCheck, ShieldCheck, Lightbulb } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const BASE_NAV_ITEMS = [
   { label: "Overview", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
   { label: "Events", href: `${ROUTES.DASHBOARD}/events`, icon: Calendar },
-  { label: "Projects", href: `${ROUTES.DASHBOARD}/projects`, icon: Briefcase }, 
+  { label: "Projects", href: `${ROUTES.DASHBOARD}/projects`, icon: Briefcase },
+  { label: "Initiatives", href: `${ROUTES.DASHBOARD}/initiatives`, icon: Lightbulb },
   { label: "Attendance", href: `${ROUTES.DASHBOARD}/attendance`, icon: ClipboardCheck },
   { label: "Profile", href: `${ROUTES.DASHBOARD}/profile`, icon: UserCircle },
 ];

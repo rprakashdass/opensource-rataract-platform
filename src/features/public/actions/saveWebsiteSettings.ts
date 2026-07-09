@@ -30,11 +30,12 @@ export async function saveWebsiteSettings(data: any) {
     });
 
     revalidatePath("/");
-    revalidateTag("website-settings", "max"); revalidateTag("layout", "max"); revalidateTag("club", "max"); revalidateTag("homepage", "max");
     revalidatePath("/about");
-    revalidateTag("website-settings", "max"); revalidateTag("layout", "max"); revalidateTag("club", "max"); revalidateTag("homepage", "max");
     revalidatePath("/admin/website");
-    revalidateTag("website-settings", "max"); revalidateTag("layout", "max"); revalidateTag("club", "max"); revalidateTag("homepage", "max");
+    revalidateTag("website-settings", "max");
+    revalidateTag("layout", "max");
+    revalidateTag("club", "max");
+    revalidateTag("homepage", "max");
 
     return { success: true, data: settings };
   } catch (error: any) {

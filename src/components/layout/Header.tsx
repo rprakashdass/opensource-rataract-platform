@@ -1,14 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "../ui/button";
+import { ClubLogo } from "@/components/ui/club-logo";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MenuIcon, Heart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -19,19 +18,13 @@ const NAV_LINKS = [
   { label: "Updates", href: "/announcements" },
 ];
 
-export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Header({ layoutData }: { layoutData?: any }) {
+  const [isOpen, setIsOpen] = React.useState(false);
   const pathname = usePathname();
-  const [club, setClub] = useState<any>(null);
-
-  useEffect(() => {
-    getPublicLayoutData().then(data => {
-      if (data) setClub(data.club);
-    });
-  }, []);
+  const club = layoutData?.club;
 
   const appName = club?.shortName || club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
-  const logoUrl = club?.logoUrl || "/logo.png";
+  const logoUrl = club?.logoUrl;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-200/50 shadow-sm text-slate-900 transition-all duration-300">
@@ -39,13 +32,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-3 select-none flex-shrink-0 group">
           <div className="bg-white rounded-full p-1 overflow-hidden shadow-sm border border-slate-100 group-hover:border-amber-400 transition-colors">
-            <Image
-              src={logoUrl}
-              alt="Club Logo"
-              width={40}
-              height={40}
-              className="object-contain"
-            />
+            <ClubLogo logoUrl={logoUrl} name={appName} size={40} />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-lg md:text-xl font-black tracking-tight leading-tight truncate text-slate-900">
@@ -99,7 +86,7 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] border-l border-slate-100 bg-white text-slate-900">
               <div className="flex items-center gap-3 mb-8 mt-4">
-                <Image src={logoUrl} alt="Logo" width={40} height={40} className="rounded-full bg-slate-50 p-1 border border-slate-100" />
+                <ClubLogo logoUrl={logoUrl} name={appName} size={40} className="bg-slate-50 p-1 border border-slate-100" />
                 <div>
                   <p className="font-black text-lg text-slate-900">{appName}</p>
                   <p className="text-[10px] text-amber-600 uppercase tracking-widest font-bold">Rotary International</p>

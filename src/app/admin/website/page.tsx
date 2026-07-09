@@ -9,7 +9,8 @@ import {
   Megaphone,
   BookOpen,
   MessageSquareHeart,
-  Flag
+  Flag,
+  Layers
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,13 @@ export default async function WebsiteControlCenter() {
       icon: Flag,
       href: "/admin/website/milestones",
       color: "bg-amber-100 text-amber-600"
+    },
+    {
+      title: "Portfolios",
+      description: "Define your club's avenues of service shown on the About page and homepage.",
+      icon: Layers,
+      href: "/admin/settings/portfolios",
+      color: "bg-violet-100 text-violet-600"
     },
     {
       title: "Membership Inquiries",

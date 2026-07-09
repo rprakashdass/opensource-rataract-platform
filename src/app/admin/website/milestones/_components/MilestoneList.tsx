@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import { Plus, Trash2, Edit2, X, Flag } from "lucide-react";
 
 export default function MilestoneList({ initialMilestones, clubId }: { initialMilestones: Milestone[], clubId: string }) {
   const [milestones, setMilestones] = useState(initialMilestones);
+  useEffect(() => setMilestones(initialMilestones), [initialMilestones]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 

@@ -13,7 +13,6 @@ export function MemberListView({ members }: { members: any[] }) {
             <tr>
               <th className="px-6 py-4">Member</th>
               <th className="px-6 py-4">Designation</th>
-              <th className="px-6 py-4">Board Role</th>
               <th className="px-6 py-4">System Access</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
@@ -38,15 +37,6 @@ export function MemberListView({ members }: { members: any[] }) {
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
                       {currentBoard?.position || "Member"}
                     </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {currentBoard ? (
-                      <span className="font-semibold text-slate-700 text-xs px-2 py-1 bg-amber-50 rounded border border-amber-100">
-                        {currentBoard.position}
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 text-xs italic">Member</span>
-                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">

@@ -1,4 +1,4 @@
-import { getHomeBaseData, getHomeImpact, getHomeNews } from "@/features/public/queries/getHomeData";
+import { getHomeBaseData, getHomeImpact, getHomeNews, getHomePortfolios } from "@/features/public/queries/getHomeData";
 import { getPublicProjects } from "@/features/public/queries/getPublicProjects";
 import { getPublicEvents } from "@/features/public/queries/getPublicEvents";
 import { getPublicTeam } from "@/features/public/queries/getPublicTeam";
@@ -16,7 +16,7 @@ import { Timeline } from "@/components/ui/public/Timeline";
 import { GalleryGrid } from "@/components/ui/public/GalleryGrid";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 function SectionSkeleton() {
   return (
@@ -39,7 +39,7 @@ export default async function HomePage() {
   const { club, settings } = data;
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col overflow-x-hidden">
       {settings.enableHero !== false && (
         <Hero 
           clubName={settings.heroHeadline || club.name} 
@@ -55,7 +55,11 @@ export default async function HomePage() {
         </Suspense>
       )}
 
-      <AvenuesOfService />
+      {settings.enablePortfolios !== false && (
+        <Suspense fallback={<SectionSkeleton />}>
+          <AvenuesSection clubId={club.id} />
+        </Suspense>
+      )}
 
       {settings.enableFeaturedProjects !== false && (
         <Suspense fallback={<SectionSkeleton />}>
@@ -116,6 +120,11 @@ export default async function HomePage() {
 // -------------------------------------------------------------
 // Component Sections
 // -------------------------------------------------------------
+
+async function AvenuesSection({ clubId }: { clubId: string }) {
+  const portfolios = await getHomePortfolios(clubId);
+  return <AvenuesOfService portfolios={portfolios} />;
+}
 
 async function ImpactSection({ clubId }: { clubId: string }) {
   const impact = await getHomeImpact(clubId);
@@ -274,7 +283,7 @@ async function LeadershipSection({ tenureYear }: { tenureYear: string }) {
           {leadership.length > 0 ? leadership.map((leader: any) => (
             <div key={leader.id} className="text-center group cursor-default">
               <div className="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full overflow-hidden mb-6 bg-slate-200 shadow-lg group-hover:shadow-xl group-hover:-translate-y-2 transition-all duration-300 relative">
-                <Image src={leader.member.avatar || "/user.png"} alt={leader.member.name} fill sizes="(max-width: 768px) 128px, 160px" className="object-cover" />
+                <MemberAvatar name={leader.member.name} avatarUrl={leader.member.avatar} fill textClassName="text-3xl md:text-4xl" />
               </div>
               <h3 className="text-xl font-bold text-slate-900">{leader.member.name}</h3>
               <p className="text-slate-500 font-medium uppercase tracking-wider text-xs mt-2 bg-white px-3 py-1 rounded-full inline-block border border-slate-100">{leader.position.replace(/_/g, " ")}</p>

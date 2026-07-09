@@ -17,7 +17,8 @@ import {
   Globe,
   ArrowLeftRight,
   PieChart,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ const navGroups = [
   {
     group: "Operations",
     items: [
+      { label: "Proposals", href: `${ROUTES.ADMIN}/proposals`, icon: Lightbulb },
       { label: "Projects", href: `${ROUTES.ADMIN}/projects`, icon: Briefcase },
       { label: "Events", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
       { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },

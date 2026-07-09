@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Clock, Users, Camera, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -153,10 +154,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                 <div className="space-y-4">
                   {eventAny.members.map((em: any) => (
                     <div key={em.id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                      <img 
-                        src={em.member.avatar || "/user.png"} 
-                        alt={em.member.name}
-                        className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                      <MemberAvatar
+                        name={em.member.name}
+                        avatarUrl={em.member.avatar}
+                        className="w-12 h-12 border border-slate-200"
                       />
                       <div>
                         <p className="font-bold text-slate-900">{em.member.name}</p>

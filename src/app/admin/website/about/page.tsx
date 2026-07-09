@@ -23,11 +23,12 @@ export default async function AboutEditorPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">About Page Editor</h1>
-          <p className="text-slate-500 mt-1">Manage your club's story and history.</p>
+          <p className="text-slate-500 mt-1">Manage your club's story, mission, and history.</p>
         </div>
       </div>
 
-      <AboutEditorForm settings={settings} />
+      <AboutEditorForm settings={settings} club={club} />
     </div>
   );
 }
+

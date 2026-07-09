@@ -9,8 +9,10 @@ import ScrollToTop from "../layout/ScrollToTop";
 
 export default function LayoutProvider({
   children,
+  layoutData,
 }: {
   children: React.ReactNode;
+  layoutData?: any;
 }) {
   const pathname = usePathname();
   const noLayoutPages = ["/join-now", "/sustainability-hackathon"];
@@ -21,10 +23,10 @@ export default function LayoutProvider({
   return (
     <div className="flex flex-col relative">
       {/* <ScrollToTop /> */}
-      <Header />
+      <Header layoutData={layoutData} />
       {/* <Chatbot /> */}
       <div className="flex-1">{children}</div>
-      <Footer />
+      <Footer layoutData={layoutData} />
     </div>
   );
 }

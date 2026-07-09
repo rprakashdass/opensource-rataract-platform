@@ -1,25 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Instagram, Linkedin, Youtube, Mail, MapPin } from "lucide-react";
 import MaxWidthWrapper from "../wrappers/MaxWidthWrapper";
-import React, { useState, useEffect } from "react";
-import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
+import { ClubLogo } from "@/components/ui/club-logo";
+import { ROUTES } from "@/lib/constants";
 
-export default function Footer() {
-  const [club, setClub] = useState<any>(null);
-
-  useEffect(() => {
-    getPublicLayoutData().then(data => {
-      if (data) setClub(data.club);
-    });
-  }, []);
+export default function Footer({ layoutData }: { layoutData?: any }) {
+  const club = layoutData?.club;
 
   const appName = club?.shortName || club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
-  const logoUrl = club?.logoUrl || "/logo.png";
+  const logoUrl = club?.logoUrl;
   const orgDescription = club?.missionStatement || process.env.NEXT_PUBLIC_ORG_DESCRIPTION || "We function as a service-oriented organization that strives to create a better world through volunteerism, community service, and professional development.";
-  
+
   const socialMedia = club?.socialMedia || {};
   const orgInstagram = socialMedia.instagram || process.env.NEXT_PUBLIC_ORG_INSTAGRAM;
   const orgLinkedin = socialMedia.linkedin || process.env.NEXT_PUBLIC_ORG_LINKEDIN;
@@ -29,18 +22,12 @@ export default function Footer() {
     <footer className="bg-slate-950 text-slate-300 pt-20 pb-10 border-t-4 border-amber-500">
       <MaxWidthWrapper>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
-          
+
           {/* Brand & About */}
           <div className="lg:col-span-5 space-y-6">
             <Link href="/" className="inline-flex items-center gap-4 group">
               <div className="bg-white rounded-full p-1.5 overflow-hidden shadow-lg group-hover:shadow-amber-500/20 transition-all">
-                <Image
-                  src={logoUrl}
-                  alt="Rotaract Club Logo"
-                  width={56}
-                  height={56}
-                  className="object-contain"
-                />
+                <ClubLogo logoUrl={logoUrl} name={appName} size={56} />
               </div>
               <div>
                 <h2 className="text-2xl font-black text-white tracking-tight">
@@ -82,6 +69,7 @@ export default function Footer() {
               <li><Link href="/events" className="hover:text-amber-400 transition-colors">Events</Link></li>
               <li><Link href="/gallery" className="hover:text-amber-400 transition-colors">Gallery</Link></li>
               <li><Link href="/announcements" className="hover:text-amber-400 transition-colors">Announcements</Link></li>
+              <li><Link href={ROUTES.ADMIN} className="hover:text-amber-400 transition-colors">Admin Login</Link></li>
             </ul>
           </div>
 

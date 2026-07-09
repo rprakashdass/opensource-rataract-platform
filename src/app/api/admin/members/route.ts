@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     const club = await getOrCreateDefaultClub();
 
     // Create User first
-    const defaultPassword = "rotaract123"; // Standard default password
+    const defaultPassword = payload.name.trim().toLowerCase().replace(/\s+/g, ".") + "@nexus"; // e.g. "john.doe@nexus"
     
     // Check if user already exists
     let user = await prisma.user.findUnique({
@@ -123,6 +123,10 @@ export async function DELETE(req: Request) {
     const member = await prisma.member.findUnique({ where: { id } });
     if (member) {
       await prisma.member.delete({ where: { id } });
+      // Also delete the associated user so the email can be reused
+      if (member.userId) {
+        await prisma.user.delete({ where: { id: member.userId } });
+      }
     }
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
@@ -161,7 +165,7 @@ export async function PUT(req: Request) {
         data: {
           name: data.name,
           email: data.email?.trim().toLowerCase() || undefined,
-          avatar: data.avatar || "/user.png",
+          avatar: data.avatar || null,
           phone: data.phone,
           profession: data.profession,
           bio: data.bio,
