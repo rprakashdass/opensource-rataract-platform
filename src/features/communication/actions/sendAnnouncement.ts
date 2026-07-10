@@ -1,16 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageCommunication } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { dispatchNotification } from "@/features/notifications/service";
 
 export async function sendAnnouncement(id: string) {
   try {
     const session = await getSession();
-    if (!session || !session.roles?.includes("ADMIN") && !session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("BOARD_MEMBER")) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageCommunication(session)) { return { error: "Unauthorized" }; }
 
     const announcement = await prisma.announcement.findUnique({
       where: { id }

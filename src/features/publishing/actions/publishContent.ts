@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { PublishStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { sendEmail } from "@/lib/email";
@@ -26,9 +26,7 @@ export type PublishActionInput = {
 export async function publishContent(input: PublishActionInput) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
 
     let clubId = "";
     let itemTitle = "";

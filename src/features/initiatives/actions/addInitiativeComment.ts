@@ -1,13 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
 export async function addInitiativeComment(initiativeId: string, body: string) {
   try {
     const session = await getSession();
-    if (!session?.id) return { error: "Unauthorized" };
+    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
     if (!body?.trim()) return { error: "Comment cannot be empty" };
 
     const initiative = await prisma.initiative.findUnique({ where: { id: initiativeId } });

@@ -1,16 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageMembers } from "@/lib/auth/session";
 import { getCurrentClub } from "@/lib/club";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function deleteMember(id: string) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageMembers(session)) { return { error: "Unauthorized" }; }
 
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };

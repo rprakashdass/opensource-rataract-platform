@@ -1,14 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageMembers } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 
 export async function createMember(data: any) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageMembers(session)) return { error: "Unauthorized" };
 
     const isAuthorized = session.roles?.some((r: string) => 
       ["SUPER_ADMIN", "CLUB_ADMIN", "PRESIDENT", "SECRETARY"].includes(r)

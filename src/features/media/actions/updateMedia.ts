@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 
 export async function updateMedia(mediaId: string, data: {
   title?: string;
@@ -11,7 +11,7 @@ export async function updateMedia(mediaId: string, data: {
 }) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
 
     const media = await prisma.media.update({
       where: { id: mediaId },

@@ -1,14 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { initiativeSchema, InitiativeFormData } from "../schemas/initiative.schema";
 import { revalidatePath } from "next/cache";
 
 export async function updateInitiative(id: string, data: InitiativeFormData, submit: boolean = false) {
   try {
     const session = await getSession();
-    if (!session?.id) return { error: "Unauthorized" };
+    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
 
     const member = await prisma.member.findUnique({ where: { userId: session.id } });
     if (!member) return { error: "Member profile not found" };

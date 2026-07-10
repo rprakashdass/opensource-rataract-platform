@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -18,9 +18,7 @@ export async function reviewInitiative(
 ) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
 
     const existing = await prisma.initiative.findUnique({ where: { id } });
     if (!existing) return { error: "Proposal not found" };

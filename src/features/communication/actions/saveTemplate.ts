@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageCommunication } from "@/lib/auth/session";
 import { EmailTemplateType } from "@prisma/client";
 import { getCurrentClub } from "@/lib/club";
 import { revalidatePath } from "next/cache";
@@ -9,9 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function saveTemplate(data: { type: EmailTemplateType, subjectTemplate: string, bodyTemplate: string, enabled: boolean }) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageCommunication(session)) { return { error: "Unauthorized" }; }
 
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };

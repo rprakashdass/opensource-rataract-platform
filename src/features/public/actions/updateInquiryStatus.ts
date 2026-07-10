@@ -1,15 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
 export async function updateInquiryStatus(id: string, status: "PENDING" | "CONTACTED" | "CONVERTED" | "REJECTED" | "REVIEWING") {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
     const inquiry = await prisma.membershipInquiry.update({
       where: { id },

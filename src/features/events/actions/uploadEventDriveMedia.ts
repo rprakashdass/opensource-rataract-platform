@@ -1,6 +1,6 @@
 "use server";
 
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { uploadFile } from "@/features/storage/googleDrive";
 import { revalidatePath, revalidateTag } from "next/cache";

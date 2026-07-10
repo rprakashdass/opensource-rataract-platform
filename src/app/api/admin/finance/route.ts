@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import { TransactionStatus, TransactionType } from "@prisma/client";
 
 async function verifyAdmin() {
   const session = await getSession();
-  if (!session) return false;
+  if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
   
   // Checking for admin/treasury roles
   return session.roles?.some((r: string) => ['SUPER_ADMIN', 'CLUB_ADMIN', 'FINANCE_ADMIN'].includes(r));
@@ -14,7 +14,7 @@ async function verifyAdmin() {
 
 async function verifyFinanceAdmin() {
   const session = await getSession();
-  if (!session) return false;
+  if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
 
   // Strict finance admin check for edits/deletes
   return session.roles?.some((r: string) => ['SUPER_ADMIN', 'CLUB_ADMIN', 'FINANCE_ADMIN'].includes(r));

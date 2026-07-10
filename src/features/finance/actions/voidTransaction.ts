@@ -1,14 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageFinance } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 
 export async function voidTransaction(id: string, reason: string) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
 
     const isTreasurerOrAdmin = session.roles?.some((r: string) => 
       ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r)

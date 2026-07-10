@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, Bell, ExternalLink, User as UserIcon, Settings, LogOut, ArrowRightLeft, Calendar, Banknote, FileText } from "lucide-react";
+import { Menu, Bell, ExternalLink, User as UserIcon, Settings, LogOut, ArrowRightLeft, Calendar, Banknote, FileText, Check } from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useState, useRef, useEffect } from "react";
 import { ROUTES } from "@/lib/constants";
@@ -36,6 +36,36 @@ interface PortalHeaderProps {
 export function PortalHeader({ club, user, notifications, onMobileMenuToggle, isAdminContext }: PortalHeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [readNotifIds, setReadNotifIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("read_notifications");
+    if (stored) {
+      try {
+        setReadNotifIds(JSON.parse(stored));
+      } catch (e) {
+        // ignore JSON parse errors
+      }
+    }
+  }, []);
+
+  const markAsRead = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newReadIds = [...readNotifIds, id];
+    setReadNotifIds(newReadIds);
+    localStorage.setItem("read_notifications", JSON.stringify(newReadIds));
+  };
+
+  const markAllAsRead = () => {
+    const allIds = notifications.map(n => n.id);
+    const newReadIds = Array.from(new Set([...readNotifIds, ...allIds]));
+    setReadNotifIds(newReadIds);
+    localStorage.setItem("read_notifications", JSON.stringify(newReadIds));
+  };
+
+  const unreadCount = notifications.filter(n => !readNotifIds.includes(n.id)).length;
+  const hasUnread = unreadCount > 0;
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -122,7 +152,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                 className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative"
               >
                 <Bell className="h-5 w-5" />
-                {notifications.length > 0 && (
+                {hasUnread && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
                 )}
               </button>
@@ -131,6 +161,14 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                 <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
                   <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                     <h3 className="font-semibold text-slate-900">Notifications</h3>
+                    {hasUnread && (
+                      <button 
+                        onClick={markAllAsRead}
+                        className="text-xs text-purple-600 hover:text-purple-700 font-medium bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
                   </div>
                   <div className="max-h-[360px] overflow-y-auto">
                     {notifications.length === 0 ? (
@@ -139,27 +177,40 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                       </div>
                     ) : (
                       <div className="divide-y divide-slate-100">
-                        {notifications.map((n) => (
-                          <Link
-                            key={n.id}
-                            href={n.href}
-                            onClick={() => setNotifOpen(false)}
-                            className="p-4 hover:bg-slate-50 transition-colors flex gap-3 block"
-                          >
-                            <div className="mt-0.5 flex-shrink-0">
-                              <NotifIcon type={n.type} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-900 truncate">{n.title}</p>
-                              {n.description && (
-                                <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{n.description}</p>
+                        {notifications.map((n) => {
+                          const isRead = readNotifIds.includes(n.id);
+                          return (
+                            <Link
+                              key={n.id}
+                              href={n.href}
+                              onClick={() => setNotifOpen(false)}
+                              className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${isRead ? 'opacity-70' : 'bg-slate-50/30'}`}
+                            >
+                              <div className="mt-0.5 flex-shrink-0 relative">
+                                <NotifIcon type={n.type} />
+                                {!isRead && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-900 truncate">{n.title}</p>
+                                {n.description && (
+                                  <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{n.description}</p>
+                                )}
+                                <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
+                                  {formatDistanceToNow(n.date, { addSuffix: true })}
+                                </p>
+                              </div>
+                              {!isRead && (
+                                <button
+                                  onClick={(e) => markAsRead(e, n.id)}
+                                  className="self-center p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                  title="Mark as read"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </button>
                               )}
-                              <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
-                                {formatDistanceToNow(n.date, { addSuffix: true })}
-                              </p>
-                            </div>
-                          </Link>
-                        ))}
+                            </Link>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

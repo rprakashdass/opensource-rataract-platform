@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 
 // Helper to get logged in user
 async function getSessionUser() {
   const session = await getSession();
-  if (!session) return null;
+  if (!session || !canManageFinance(session)) return null;
 
   return prisma.user.findUnique({
     where: { id: session.id },

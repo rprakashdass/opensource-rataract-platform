@@ -1,13 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 
 export async function deleteMedia(mediaId: string) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
 
     const media = await prisma.media.findUnique({
       where: { id: mediaId },

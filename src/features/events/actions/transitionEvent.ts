@@ -1,16 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { EventStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function transitionEvent(eventId: string, newStatus: EventStatus) {
   try {
     const session = await getSession();
-    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "BOARD_MEMBER"].includes(role))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
 
     const event = await prisma.event.findUnique({
       where: { id: eventId }

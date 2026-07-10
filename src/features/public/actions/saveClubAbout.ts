@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
 export async function saveClubAbout(data: {
@@ -16,9 +16,7 @@ export async function saveClubAbout(data: {
 }) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
     const member = await prisma.member.findUnique({
       where: { userId: session.id }

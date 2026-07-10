@@ -1,14 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageFinance } from "@/lib/auth/session";
 import { transactionSchema } from "../schemas/transaction.schema";
 import { revalidatePath } from "next/cache";
 
 export async function createTransaction(data: any) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
 
     const parsed = transactionSchema.safeParse(data);
     if (!parsed.success) {

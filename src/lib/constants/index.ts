@@ -15,7 +15,6 @@ export const ROUTES = {
   PROJECTS: "/projects",
   GALLERY: "/gallery",
   LOGIN: "/auth/login",
-  SIGNUP: "/auth/signup",
   DASHBOARD: "/dashboard",
   ADMIN: "/admin",
 } as const;

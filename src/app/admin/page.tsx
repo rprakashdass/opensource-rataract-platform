@@ -106,7 +106,7 @@ export default async function AdminPage() {
     console.warn("Dashboard stats fetch failed:", error);
   }
 
-  const attentionSummary = await getAttentionSummary(club.id, session.roles);
+  const attentionSummary = await getAttentionSummary(club?.id || "", session.roles);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-2">

@@ -18,13 +18,19 @@ export default async function AdminLayout({
     redirect("/auth/login");
   }
 
-  const isAdmin = session.roles?.some((role: string) =>
-    ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER", "EVENTS_ADMIN", "CONTENT_ADMIN"].includes(role)
-  );
+  const { canAccessAdminPortal, canViewFinance, canManageClub, canManageSystem, canManageWebsite, canManageCommunication } = await import("@/lib/auth/session");
 
-  if (!isAdmin) {
-    redirect("/");
+  if (!canAccessAdminPortal(session)) {
+    redirect("/admin/unauthorized");
   }
+
+  const permissions = {
+    canViewFinance: canViewFinance(session),
+    canManageClub: canManageClub(session),
+    canManageSystem: canManageSystem(session),
+    canManageWebsite: canManageWebsite(session),
+    canManageCommunication: canManageCommunication(session),
+  };
 
   const club = await getCurrentClub();
 
@@ -59,6 +65,7 @@ export default async function AdminLayout({
       }}
       notifications={notifications}
       attentionSummary={attentionSummary}
+      permissions={permissions}
     >
       {children}
     </AdminLayoutClient>

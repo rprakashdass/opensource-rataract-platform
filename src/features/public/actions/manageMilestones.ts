@@ -1,15 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function saveMilestone(data: { id?: string, year: string, title: string, description: string, clubId: string }) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
     let milestone;
     if (data.id) {
@@ -46,9 +44,7 @@ export async function saveMilestone(data: { id?: string, year: string, title: st
 export async function deleteMilestone(id: string) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
     await prisma.milestone.delete({ where: { id } });
 

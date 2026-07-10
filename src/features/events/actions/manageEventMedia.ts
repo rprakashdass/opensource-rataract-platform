@@ -1,6 +1,6 @@
 "use server";
 
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { deleteFile } from "@/features/storage/googleDrive";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -8,9 +8,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, eventId: string) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
 
     await prisma.media.update({
       where: { id: mediaId },
@@ -34,9 +32,7 @@ export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, e
 export async function setEventMediaRole(mediaId: string, eventId: string, role: "banner" | "poster") {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
 
     await prisma.event.update({
       where: { id: eventId },
@@ -57,9 +53,7 @@ export async function setEventMediaRole(mediaId: string, eventId: string, role: 
 export async function deleteEventMedia(mediaId: string, eventId: string) {
   try {
     const session = await getSession();
-    if (!session || (!session.roles?.includes("SUPER_ADMIN") && !session.roles?.includes("ADMIN") && !session.roles?.includes("CLUB_ADMIN") && !session.roles?.includes("BOARD_MEMBER"))) {
-      return { error: "Unauthorized" };
-    }
+    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
 
     const media = await prisma.media.findUnique({
       where: { id: mediaId }

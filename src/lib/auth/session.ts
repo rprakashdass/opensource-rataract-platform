@@ -113,10 +113,34 @@ export function hasRole(session: any, roles: string[]) {
   return session.roles.some((r: string) => roles.includes(r));
 }
 
-export function adminOnly(session: any) {
-  return hasRole(session, ["ADMIN", "CLUB_ADMIN"]);
+export function canAccessAdminPortal(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER"]);
 }
 
-export function financeAdminOnly(session: any) {
-  return hasRole(session, ["ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"]);
+export function canManageSystem(session: any) {
+  return hasRole(session, ["SUPER_ADMIN"]);
+}
+
+export function canManageClub(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "CLUB_ADMIN"]);
+}
+
+export function canManageMembers(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "CLUB_ADMIN"]);
+}
+
+export function canManageWebsite(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "CLUB_ADMIN"]);
+}
+
+export function canManageCommunication(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "CLUB_ADMIN"]);
+}
+
+export function canManageFinance(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "FINANCE_ADMIN"]);
+}
+
+export function canViewFinance(session: any) {
+  return hasRole(session, ["SUPER_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER"]);
 }

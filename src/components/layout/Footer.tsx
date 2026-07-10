@@ -107,10 +107,10 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
 
         {/* Copyright */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
-          <p>&copy; {new Date().getFullYear()} {appName}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {appName}. Powered by Rotaract Platform.</p>
           <div className="flex gap-6">
-            <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Use</Link>
           </div>
         </div>
       </MaxWidthWrapper>

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageFinance } from "@/lib/auth/session";
 import { transferSchema } from "../schemas/transaction.schema";
 import { revalidatePath } from "next/cache";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
@@ -9,7 +9,7 @@ import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 export async function createTransfer(data: any) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
 
     // Permissions check: Treasurer or President only
     const hasAccess = session.roles?.some((r: string) => 

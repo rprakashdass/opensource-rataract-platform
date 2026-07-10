@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { getSession , canManageClub } from "@/lib/auth/session";
 
 export async function attachMedia(mediaId: string, data: {
   eventId?: string | null;
@@ -11,7 +11,7 @@ export async function attachMedia(mediaId: string, data: {
 }) {
   try {
     const session = await getSession();
-    if (!session) return { error: "Unauthorized" };
+    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
 
     if (data.isCover) {
       if (data.eventId) {
