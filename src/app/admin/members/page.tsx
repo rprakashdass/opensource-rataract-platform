@@ -22,6 +22,18 @@ export default async function MembersPage({
   const boardCount = members?.filter(m => m.boardMemberships?.length > 0).length || 0;
   const totalCount = members?.length || 0;
 
+  const safeMembers = members?.map(m => ({
+    ...m,
+    boardMemberships: m.boardMemberships?.map((b: any) => ({
+      ...b,
+      financialYear: b.financialYear ? {
+        ...b.financialYear,
+        openingBalance: Number(b.financialYear.openingBalance),
+        closingBalance: b.financialYear.closingBalance ? Number(b.financialYear.closingBalance) : null
+      } : null
+    }))
+  }));
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
       
@@ -72,7 +84,7 @@ export default async function MembersPage({
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Leaders</p>
+                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Board Members</p>
                 <h3 className="text-3xl font-black text-amber-600">{boardCount}</h3>
               </div>
               <div className="p-2 bg-amber-50 rounded-lg">
@@ -115,7 +127,7 @@ export default async function MembersPage({
             </Link>
           </div>
         ) : (
-          <MemberListView members={members || []} />
+          <MemberListView members={safeMembers || []} />
         )}
       </div>
 

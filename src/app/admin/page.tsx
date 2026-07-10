@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getAttentionSummary } from "@/features/admin/queries/getAttentionSummary";
 import { getSession } from "@/lib/auth/session";
 import { 
   Plus, 
@@ -105,6 +106,8 @@ export default async function AdminPage() {
     console.warn("Dashboard stats fetch failed:", error);
   }
 
+  const attentionSummary = await getAttentionSummary(club.id, session.roles);
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-2">
       {/* Header & Greetings */}
@@ -138,6 +141,70 @@ export default async function AdminPage() {
           </Button>
         </div>
       </div>
+
+      {/* Needs Attention */}
+      {(attentionSummary.memberships.count > 0 || attentionSummary.ideas.count > 0 || attentionSummary.finance.count > 0 || attentionSummary.media.count > 0) ? (
+        <div className="space-y-4 mb-2">
+          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Needs Attention</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {attentionSummary.memberships.count > 0 && (
+              <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <h3 className="font-bold text-amber-900">Membership Requests</h3>
+                  </div>
+                  <p className="text-3xl font-black text-amber-700">{attentionSummary.memberships.count}</p>
+                  <p className="text-xs text-amber-800 mt-1">New people want to join your club</p>
+                </div>
+                <Button variant="outline" className="mt-4 w-full bg-white text-amber-900 border-amber-300 hover:bg-amber-100" asChild>
+                  <Link href={attentionSummary.memberships.href}>Review</Link>
+                </Button>
+              </div>
+            )}
+            
+            {attentionSummary.ideas.count > 0 && (
+              <div className="bg-blue-50 rounded-xl border border-blue-200 p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <h3 className="font-bold text-blue-900">Event Ideas</h3>
+                  </div>
+                  <p className="text-3xl font-black text-blue-700">{attentionSummary.ideas.count}</p>
+                  <p className="text-xs text-blue-800 mt-1">Members suggested new initiatives</p>
+                </div>
+                <Button variant="outline" className="mt-4 w-full bg-white text-blue-900 border-blue-300 hover:bg-blue-100" asChild>
+                  <Link href={attentionSummary.ideas.href}>Review</Link>
+                </Button>
+              </div>
+            )}
+
+            {attentionSummary.finance.count > 0 && (
+              <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <h3 className="font-bold text-emerald-900">Finance Approvals</h3>
+                  </div>
+                  <p className="text-3xl font-black text-emerald-700">{attentionSummary.finance.count}</p>
+                  <p className="text-xs text-emerald-800 mt-1">Expenses waiting for approval</p>
+                </div>
+                <Button variant="outline" className="mt-4 w-full bg-white text-emerald-900 border-emerald-300 hover:bg-emerald-100" asChild>
+                  <Link href={attentionSummary.finance.href}>Review</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-8 text-center mb-2">
+          <div className="flex justify-center mb-3">
+            <span className="text-4xl">🎉</span>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-800">You're all caught up!</h3>
+          <p className="text-sm text-slate-500 mt-1">No pending approvals or requests right now.</p>
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -273,18 +340,6 @@ export default async function AdminPage() {
                   <p className="text-sm font-bold text-slate-900 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
                 </div>
               </div>
-
-              {pendingApprovalsCount > 0 && (
-                <div className="bg-amber-50 border border-amber-100 rounded-lg p-2.5 flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                    <span className="text-xs font-semibold text-amber-800">{pendingApprovalsCount} pending approvals</span>
-                  </div>
-                  <Link href="/admin/finance" className="text-[10px] font-bold text-amber-900 uppercase hover:underline">
-                    Review
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
 

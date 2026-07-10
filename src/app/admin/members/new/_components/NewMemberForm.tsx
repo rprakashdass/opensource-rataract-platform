@@ -18,7 +18,6 @@ interface ClubRoleOption {
 
 const CATEGORY_LABELS: Record<string, string> = {
   BOARD: "Board of Directors",
-  CORE_TEAM: "Core Team",
   MEMBER: "General Members",
 };
 

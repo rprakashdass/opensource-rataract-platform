@@ -2,6 +2,9 @@ import { getSession } from "@/lib/auth/session";
 import DashboardLayoutClient from "./_components/DashboardLayoutClient";
 import { getCurrentClub } from "@/lib/club";
 import { redirect } from "next/navigation";
+import { getRecentNotifications } from "@/lib/notifications";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -25,8 +28,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
     );
   }
 
+  const notifications = await getRecentNotifications(club.id);
+
   return (
-    <DashboardLayoutClient roles={roles}>
+    <DashboardLayoutClient 
+      roles={roles} 
+      club={{
+        name: club.name,
+        logoUrl: club.logoUrl,
+        tenureYear: club.tenureYear
+      }}
+      user={{
+        name: session.name,
+        email: session.email,
+        roles: session.roles
+      }}
+      notifications={notifications}
+    >
       {children}
     </DashboardLayoutClient>
   );

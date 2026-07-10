@@ -2,16 +2,16 @@ import { getCurrentClub } from "@/lib/club";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import AdminLayoutClient from "./layout-client";
+import { getRecentNotifications } from "@/lib/notifications";
+import { getAttentionSummary } from "@/features/admin/queries/getAttentionSummary";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Check session/role before club: an authenticated admin session can only exist if
-  // setup already ran, so a missing club at this point is a transient DB failure, not
-  // a genuine first-run — bouncing an active admin session into the onboarding form is
-  // confusing and wrong. Fail loud instead so the real problem (DB connectivity) surfaces.
   const session = await getSession();
 
   if (!session) {
@@ -42,5 +42,25 @@ export default async function AdminLayout({
     );
   }
 
-  return <AdminLayoutClient>{children}</AdminLayoutClient>;
+  const notifications = await getRecentNotifications(club.id);
+  const attentionSummary = await getAttentionSummary(club.id, session.roles);
+
+  return (
+    <AdminLayoutClient
+      club={{
+        name: club.name,
+        logoUrl: club.logoUrl,
+        tenureYear: club.tenureYear
+      }}
+      user={{
+        name: session.name,
+        email: session.email,
+        roles: session.roles
+      }}
+      notifications={notifications}
+      attentionSummary={attentionSummary}
+    >
+      {children}
+    </AdminLayoutClient>
+  );
 }

@@ -27,11 +27,17 @@ export default async function MemberProfilePage({ params }: PageProps) {
   const activeBoard = member.boardMemberships?.find(b => !b.leftAt);
   const boardHistory = member.boardMemberships?.filter(b => b.leftAt);
 
-  const [availablePortfolios, availableRoles, availableYears] = await Promise.all([
+  const [availablePortfolios, availableRoles, rawAvailableYears] = await Promise.all([
     prisma.portfolio.findMany({ where: { clubId: member.clubId }, orderBy: { displayOrder: 'asc' } }),
     prisma.clubRole.findMany({ where: { clubId: member.clubId }, orderBy: { displayOrder: 'asc' } }),
     prisma.financialYear.findMany({ where: { clubId: member.clubId }, orderBy: { name: 'desc' } })
   ]);
+
+  const availableYears = rawAvailableYears.map(fy => ({
+    ...fy,
+    openingBalance: Number(fy.openingBalance),
+    closingBalance: fy.closingBalance ? Number(fy.closingBalance) : null
+  }));
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 py-6 animate-in fade-in duration-300">
@@ -163,7 +169,7 @@ export default async function MemberProfilePage({ params }: PageProps) {
 
           <Card className="border-slate-100 shadow-sm">
             <CardHeader>
-              <CardTitle>Leadership & Contributions</CardTitle>
+              <CardTitle>Project & Event Roles</CardTitle>
             </CardHeader>
             <CardContent>
               {member.projectRoles?.length === 0 && member.eventRoles?.length === 0 ? (

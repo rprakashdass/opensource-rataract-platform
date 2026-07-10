@@ -16,5 +16,17 @@ export default async function EditMemberPage({ params }: PageProps) {
     notFound();
   }
 
-  return <EditMemberForm member={member} />;
+  const safeMember = {
+    ...member,
+    boardMemberships: member.boardMemberships?.map((b: any) => ({
+      ...b,
+      financialYear: b.financialYear ? {
+        ...b.financialYear,
+        openingBalance: Number(b.financialYear.openingBalance),
+        closingBalance: b.financialYear.closingBalance ? Number(b.financialYear.closingBalance) : null
+      } : null
+    }))
+  };
+
+  return <EditMemberForm member={safeMember} />;
 }
