@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Bell, Calendar, MapPin, Video, Users } from "lucide-react";
+import { Bell, Calendar, MapPin, Video } from "lucide-react";
 import DeleteAnnouncementButton from "./DeleteAnnouncementButton";
 import FilterBar from "@/components/admin/FilterBar";
 
@@ -14,7 +14,7 @@ export default async function AnnouncementsPage(props: {
   const year = searchParams.year ? parseInt(searchParams.year) : undefined;
   const status = searchParams.status || "";
 
-  let where: any = {};
+  const where: any = {};
   
   if (search) {
     where.title = { contains: search, mode: "insensitive" };

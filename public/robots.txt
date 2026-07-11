@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow private sections
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /api/
+Disallow: /attendance/
+
+Sitemap: https://racnexus.org/sitemap.xml

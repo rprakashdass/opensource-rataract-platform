@@ -2,15 +2,17 @@ import React, { useState, useRef } from 'react';
 import { Button } from './button';
 import { UploadCloud, File as FileIcon, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { uploadAsset } from '@/features/storage/actions/uploadAsset';
+import { uploadMedia } from '@/features/media/actions/uploadMedia';
 
 interface FileUploadProps {
   value?: string;
   onChange: (url: string) => void;
   accept?: string;
+  /** Album title this upload should be filed under (e.g. "Homepage", "About Page"), for Gallery management. */
+  albumTitle?: string;
 }
 
-export function FileUpload({ value, onChange, accept }: FileUploadProps) {
+export function FileUpload({ value, onChange, accept, albumTitle }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -20,12 +22,16 @@ export function FileUpload({ value, onChange, accept }: FileUploadProps) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await uploadAsset(formData);
+      formData.append("title", file.name.split(".").slice(0, -1).join(".") || file.name);
+      formData.append("type", "IMAGE");
+      formData.append("usage", "WEBSITE");
+      if (albumTitle) formData.append("albumTitle", albumTitle);
+      const res = await uploadMedia(formData);
       if (res.error) {
         toast.error(res.error);
         return;
       }
-      onChange(res.url!);
+      onChange(res.media!.url);
     } catch (err: any) {
       toast.error(err.message || "Failed to upload file");
     } finally {

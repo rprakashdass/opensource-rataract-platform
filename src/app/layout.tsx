@@ -16,17 +16,25 @@ const inter = Inter({
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-export const metadata: Metadata = {
-  title: {
-    default: appName,
-    template: `%s | ${appName}`,
-  },
-  description: "A modern platform for Rotaract clubs and districts",
-  icons: {
-    icon: "/favicon.ico",
-  },
-  metadataBase: new URL(appUrl),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const layoutData = await getPublicLayoutData();
+  const settings = layoutData?.settings as any;
+
+  const title = settings?.seoTitle || appName;
+  const description = settings?.seoDescription || "A modern platform for Rotaract clubs and districts";
+
+  return {
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
+    description,
+    icons: {
+      icon: "/favicon.ico",
+    },
+    metadataBase: new URL(appUrl),
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -34,12 +42,35 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const layoutData = await getPublicLayoutData();
+  const settings = layoutData?.settings;
+
+  // Retrieve brand styling or fallbacks
+  const primaryColor = settings?.primaryColor || "#F7A800";
+  const secondaryColor = settings?.secondaryColor || "#003DA5";
+  const accentColor = settings?.accentColor || "#FAF9F6";
+  const darkColor = settings?.darkColor || "#0B132B";
+  const lightColor = settings?.lightColor || "#FAF9F6";
+
   return (
     <html lang="en" className="h-full antialiased">
       <head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover"
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              :root {
+                --color-primary: ${primaryColor};
+                --color-secondary: ${secondaryColor};
+                --color-accent: ${accentColor};
+                --color-foreground: ${darkColor};
+                --color-background: ${lightColor};
+                --color-border: rgba(0, 0, 0, 0.08);
+              }
+            `,
+          }}
         />
       </head>
       <body className={`${inter.className} min-h-full flex flex-col bg-white text-gray-950`}>

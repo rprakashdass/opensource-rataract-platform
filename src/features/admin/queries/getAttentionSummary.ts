@@ -46,7 +46,7 @@ export async function getAttentionSummary(clubId: string, roles: string[]): Prom
   await Promise.all(promises);
 
   return {
-    memberships: { count: membershipCount, href: `${ROUTES.ADMIN}/members/inquiries` },
+    memberships: { count: membershipCount, href: `${ROUTES.ADMIN}/inquiries` },
     ideas: { count: ideaCount, href: `${ROUTES.ADMIN}/proposals` },
     finance: { count: financeCount, href: `${ROUTES.ADMIN}/finance/transactions` },
     media: { count: 0, href: `${ROUTES.ADMIN}/gallery` }

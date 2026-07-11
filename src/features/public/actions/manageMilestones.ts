@@ -31,9 +31,9 @@ export async function saveMilestone(data: { id?: string, year: string, title: st
     }
 
     revalidatePath("/about");
-    revalidateTag("club", "max"); revalidateTag("homepage", "max");
+    revalidatePath("/our-archive");
     revalidatePath("/admin/website/milestones");
-    revalidateTag("club", "max"); revalidateTag("homepage", "max");
+    revalidateTag("club", "max"); revalidateTag("homepage", "max"); revalidateTag("milestones", "max");
 
     return { success: true, data: milestone };
   } catch (error: any) {
@@ -49,9 +49,9 @@ export async function deleteMilestone(id: string) {
     await prisma.milestone.delete({ where: { id } });
 
     revalidatePath("/about");
-    revalidateTag("club", "max"); revalidateTag("homepage", "max");
+    revalidatePath("/our-archive");
     revalidatePath("/admin/website/milestones");
-    revalidateTag("club", "max"); revalidateTag("homepage", "max");
+    revalidateTag("club", "max"); revalidateTag("homepage", "max"); revalidateTag("milestones", "max");
 
     return { success: true };
   } catch (error: any) {

@@ -1,13 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ClipboardCheck, Calendar, Users, ChevronRight, Clock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ClipboardCheck, Calendar, ChevronRight, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getSession } from "@/lib/auth/session";
+
 
 export default async function GlobalAttendanceDashboard() {
-  const session = await getSession();
   
   // Find club
   const club = await prisma.club.findFirst();

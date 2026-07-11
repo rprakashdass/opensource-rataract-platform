@@ -10,7 +10,12 @@ import {
   BookOpen,
   MessageSquareHeart,
   Flag,
-  Layers
+  Layers,
+  HandCoins,
+  UserPlus,
+  Calendar,
+  Flame,
+  Camera
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -46,10 +51,45 @@ export default async function WebsiteControlCenter() {
     },
     {
       title: "Portfolios",
-      description: "Define your club's avenues of service shown on the About page and homepage.",
+      description: "Define your club's avenues of service shown on the About page.",
       icon: Layers,
       href: "/admin/settings/portfolios",
       color: "bg-violet-100 text-violet-600"
+    },
+    {
+      title: "Sponsors & Packages",
+      description: "Manage sponsor logos and sponsorship tiers shown on /partner.",
+      icon: HandCoins,
+      href: "/admin/sponsors",
+      color: "bg-teal-100 text-teal-600"
+    },
+    {
+      title: "Gallery Page",
+      description: "Manage the Gallery page copy and the homepage photo teaser.",
+      icon: Camera,
+      href: "/admin/website/gallery",
+      color: "bg-pink-100 text-pink-600"
+    },
+    {
+      title: "Events Page",
+      description: "Manage the copy shown on the public Events page.",
+      icon: Calendar,
+      href: "/admin/website/events",
+      color: "bg-sky-100 text-sky-600"
+    },
+    {
+      title: "Projects Page",
+      description: "Manage the copy shown on the public Projects page.",
+      icon: Flame,
+      href: "/admin/website/projects",
+      color: "bg-orange-100 text-orange-600"
+    },
+    {
+      title: "Join Page",
+      description: "Manage the copy shown on the public \"Join Us\" page.",
+      icon: UserPlus,
+      href: "/admin/website/join",
+      color: "bg-cyan-100 text-cyan-600"
     },
     {
       title: "Membership Inquiries",

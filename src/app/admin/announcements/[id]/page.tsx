@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Bell, Calendar, MapPin, Video, Users, FileText, ArrowLeft, Mail, Clock } from "lucide-react";
+import { Calendar, MapPin, Video, Users, FileText, ArrowLeft, Mail, Clock } from "lucide-react";
 import AnnouncementActions from "./AnnouncementActions";
 
 export default async function AnnouncementDetailsPage({ params }: { params: { id: string } }) {

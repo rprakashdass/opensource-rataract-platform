@@ -20,7 +20,8 @@ export async function uploadMedia(formData: FormData) {
     const isCover = formData.get("isCover") === "true";
     const eventId = formData.get("eventId") as string | null;
     const projectId = formData.get("projectId") as string | null;
-    const albumId = formData.get("albumId") as string | null;
+    let albumId = formData.get("albumId") as string | null;
+    const albumTitle = formData.get("albumTitle") as string | null;
 
     if (!file && type !== "VIDEO_LINK") {
       return { error: "Missing file" };
@@ -28,6 +29,15 @@ export async function uploadMedia(formData: FormData) {
 
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };
+
+    if (!albumId && albumTitle) {
+      const album = await prisma.album.findFirst({
+        where: { clubId: club.id, title: albumTitle, eventId: null, projectId: null },
+      });
+      albumId = album
+        ? album.id
+        : (await prisma.album.create({ data: { clubId: club.id, title: albumTitle } })).id;
+    }
 
     let publicUrl = "";
 

@@ -1,48 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: 0 0% 100%; /* Pure White */
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
+  --background: 45 20% 98%; /* Warm White #FAF9F6 */
+  --foreground: 225 59% 11%; /* Ink Navy #0B132B */
+  --card: 0 0% 100%; /* Pure White */
+  --card-foreground: 225 59% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 262 83% 58%;
+  --popover-foreground: 225 59% 11%;
+  --primary: 41 100% 48%; /* Rotary Gold #F7A800 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 262 10% 97%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 262 10% 97%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 262 95% 96%;
-  --accent-foreground: 262 83% 58%;
+  --secondary: 218 100% 32%; /* Rotary Blue #003DA5 */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 45 10% 95%;
+  --muted-foreground: 225 15% 45%;
+  --accent: 41 100% 48%; /* Rotary Gold */
+  --accent-foreground: 225 59% 11%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 262 30% 93%; /* Violet Tinted Border */
-  --input: 262 30% 93%;
-  --ring: 262 83% 58%;
+  --border: 225 15% 91%; /* Neutral slate/cream border */
+  --input: 225 15% 91%;
+  --ring: 41 100% 48%;
   --radius: 1rem;
 }
 
 .dark {
-  --background: 240 20% 2.5%; /* Pure Deep Black */
-  --foreground: 0 0% 98%;
-  --card: 240 10% 4.5%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 4.5%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 262 89% 68%;
-  --primary-foreground: 240 5.9% 10%;
-  --secondary: 262 15% 9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 262 15% 8%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 262 30% 12%;
-  --accent-foreground: 262 89% 68%;
+  --background: 225 59% 6%; /* Deep Navy Dark Mode */
+  --foreground: 45 20% 98%;
+  --card: 225 45% 9%;
+  --card-foreground: 45 20% 98%;
+  --popover: 225 45% 9%;
+  --popover-foreground: 45 20% 98%;
+  --primary: 41 100% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 218 100% 38%;
+  --secondary-foreground: 45 20% 98%;
+  --muted: 225 30% 12%;
+  --muted-foreground: 225 15% 65%;
+  --accent: 41 100% 48%;
+  --accent-foreground: 45 20% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --border: 262 20% 10%; /* Dark Violet Tinted Border */
-  --input: 262 20% 10%;
-  --ring: 262 89% 68%;
+  --border: 225 30% 15%;
+  --input: 225 30% 15%;
+  --ring: 41 100% 48%;
 }
 
 @theme {

@@ -1,281 +1,206 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  HeartHandshake, Globe, Share2, BookOpen, UserPlus, Users, Briefcase, 
-  Mic2, Radio, Wrench, Computer, CheckCircle2, Flag, Circle
-} from "lucide-react";
+import { Globe, HeartHandshake, BookOpen, Compass, Target, CheckCircle2, Flag, Circle } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
-import { LucideIcon } from "lucide-react";
-import { PublicHero } from "@/components/ui/public/PublicHero";
+import { PageHero } from "@/components/ui/public/PageHero";
+import { EditorialSection } from "@/components/ui/public/EditorialSection";
+import { QuoteCard } from "@/components/ui/public/QuoteCard";
+import { getGoogleDriveDirectLink } from "@/lib/utils";
+import { useCmsPreview } from "@/hooks/useCmsPreview";
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+// (Keep icon resolution logic as is)
+const ICON_MAP: Record<string, any> = { HeartHandshake, Globe, BookOpen, Compass, Target };
+function resolveIcon(iconName?: string | null) { return iconName && ICON_MAP[iconName] ? ICON_MAP[iconName] : Circle; }
 
-// Map icon name strings to Lucide components
-const ICON_MAP: Record<string, LucideIcon> = {
-  HeartHandshake, Globe, Share2, BookOpen, UserPlus, Users, Briefcase,
-  Mic2, Radio, Wrench, Computer, Globe2: Globe, Circle
-};
+export default function AboutClient({ data, isPreview }: { data: any; isPreview?: boolean }) {
+  const merged = useCmsPreview(data, {
+    enabled: !!isPreview,
+    channel: "about",
+    merge: (prev, payload) => ({
+      ...prev,
+      club: { ...prev.club, ...payload.club },
+      settings: { ...prev.settings, ...payload.settings },
+      milestones: payload.milestones ?? prev.milestones,
+      portfolios: payload.portfolios ?? prev.portfolios,
+    }),
+  });
+  const { club, settings, milestones, portfolios } = merged;
+  const [activePortfolio, setActivePortfolio] = useState(portfolios?.[0] || null);
 
-function resolveIcon(iconName?: string | null): LucideIcon {
-  if (!iconName) return Circle;
-  return ICON_MAP[iconName] || Circle;
-}
+  // Club Story fields are edited from Admin -> Website -> About Page Editor, which writes to the Club model.
+  const heroEyebrow = settings?.aboutEyebrow || "Our Journey";
+  const heroTitle = club.aboutTitle || "Our Story.";
+  const heroSubtitle = club.aboutSubtitle || club.missionStatement || "From a group of young people with ideas, to a community creating change.";
 
-interface Portfolio {
-  id: string;
-  name: string;
-  icon?: string | null;
-  description?: string | null;
-  activities: string[];
-}
+  const storyEyebrow = settings?.aboutEyebrow || "About Our Club";
+  const storyHeading = club.aboutTitle || "The foundation of our movement.";
+  const storyBody = club.aboutStory || "Our club biography is currently being curated by the board. We believe in service, friendship, and professional development.";
 
-interface Data {
-  club: {
-    name: string;
-    shortName?: string;
-    aboutTitle?: string;
-    aboutSubtitle?: string;
-    missionStatement?: string;
-    visionStatement?: string;
-    aboutStory?: string;
-    history?: string;
-    parentClubName?: string;
-    parentClubDescription?: string;
-    district?: string;
-    city?: string;
-    tenureYear?: string;
-  };
-  settings?: { aboutStory?: string | null };
-  milestones: any[];
-  portfolios: Portfolio[];
-}
+  const missionText = settings?.missionQuote || club.missionStatement || "We are students and young professionals building friendships while serving our community.";
+  const visionText = settings?.visionQuote || club.visionStatement || "To build a vibrant ecosystem of youth empowerment and ethical leadership development.";
+  const valuesText = settings?.valuesQuote || "Fellowship through community service, integrity in operations, and professional leadership development.";
 
-export default function AboutClient({ data }: { data: Data }) {
-  const { club, settings, milestones, portfolios } = data;
-  const [activePortfolio, setActivePortfolio] = useState<Portfolio | null>(
-    portfolios.length > 0 ? portfolios[0] : null
-  );
-
-  const heroTitle = club.aboutTitle || club.name;
-  const heroSubtitle = club.aboutSubtitle || club.missionStatement || 
-    "We strive to create a better world through volunteerism, community service, and professional development.";
-  const storyText = club.aboutStory || settings?.aboutStory || null;
-  const ActiveIcon = activePortfolio ? resolveIcon(activePortfolio.icon) : Circle;
+  const aboutPhoto = settings?.aboutPhoto || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800";
 
   return (
-    <div className="min-h-screen bg-background pb-16">
-      <PublicHero 
-        badge="Who We Are"
-        title={heroTitle}
-        description={heroSubtitle}
-      />
-      
-      <MaxWidthWrapper className="py-2 space-y-20 lg:py-6">
+    <div className="min-h-screen bg-white pb-24">
+      {/* Editorial page hero */}
+      <div id="about-hero">
+        <PageHero
+          eyebrow={heroEyebrow}
+          title={heroTitle}
+          subtitle={heroSubtitle}
+        />
+      </div>
 
-        {/* OUR STORY */}
-        <div className="grid gap-12 lg:gap-24">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeIn}
-            className="grid gap-8 lg:grid-cols-2 lg:items-center"
-          >
-            <div className="relative group overflow-hidden rounded-3xl aspect-[4/3] shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-              <Image
-                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800"
+      {/* 1. OUR STORY */}
+      <div id="about-story">
+        <EditorialSection eyebrow={storyEyebrow} heading={storyHeading} background="white">
+          <div className="grid lg:grid-cols-2 gap-16 lg:items-center mt-12">
+            <div className="space-y-6">
+              <h3 className="text-3xl font-medium text-[#0B132B] leading-tight">
+                We are a collective of young professionals dedicated to creating lasting change.
+              </h3>
+              <div className="text-lg text-slate-500 leading-relaxed font-medium">
+                <p>{storyBody}</p>
+              </div>
+              {club.history && (
+                <div className="pt-4 border-t border-slate-200/60">
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2">History</h4>
+                  <p className="text-base text-slate-500 leading-relaxed font-medium">{club.history}</p>
+                </div>
+              )}
+            </div>
+            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-slate-100">
+               <Image
+                src={getGoogleDriveDirectLink(aboutPhoto)}
                 alt="Club volunteers"
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
               />
-              {storyText && (
-                <div className="absolute bottom-6 left-6 z-20">
-                  <h3 className="text-white text-2xl font-bold">{club.name}</h3>
-                  <p className="text-white/80">{club.tenureYear}</p>
-                </div>
-              )}
             </div>
-            <div className="space-y-6 lg:pl-10">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900">Our Story</h2>
-              <div className="text-lg text-gray-600 leading-relaxed whitespace-pre-wrap">
-                {storyText ? (
-                  storyText
-                ) : (
-                  <span className="italic text-gray-400">
-                    No club story set yet. Add one from Admin → Website → About Page Editor.
-                  </span>
-                )}
-              </div>
-              {club.visionStatement && (
-                <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
-                  <p className="text-xs font-bold text-purple-500 uppercase tracking-widest mb-2">Our Vision</p>
-                  <p className="text-slate-700 font-medium">{club.visionStatement}</p>
-                </div>
-              )}
+          </div>
+        </EditorialSection>
+      </div>
+
+      {/* 2. VALUES ( Pastels Style Quote Cards ) */}
+      <div id="about-values">
+        <section className="py-24 bg-[#FAF9F6]">
+          <MaxWidthWrapper>
+            <div className="grid md:grid-cols-3 gap-6">
+              <QuoteCard
+                quote={missionText}
+                authorName="Our Mission"
+                colorTheme="peach"
+              />
+              <QuoteCard
+                quote={visionText}
+                authorName="Our Vision"
+                colorTheme="lavender"
+              />
+               <QuoteCard
+                quote={valuesText}
+                authorName="Our Values"
+                colorTheme="blue"
+              />
             </div>
-          </motion.div>
+          </MaxWidthWrapper>
+        </section>
+      </div>
 
-          {/* Parent Club — only shows if configured */}
-          {club.parentClubName && (
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeIn}
-              className="grid gap-8 lg:grid-cols-2 lg:items-center"
-            >
-              <div className="space-y-6 lg:pr-10 order-2 lg:order-1">
-                <h2 className="text-3xl font-bold tracking-tight text-gray-900">{club.parentClubName}</h2>
-                <p className="text-lg text-gray-600 leading-relaxed">
-                  {club.parentClubDescription || "Our club is proudly sponsored and guided by our parent organization."}
-                </p>
-              </div>
-              <div className="relative group overflow-hidden rounded-3xl aspect-[4/3] shadow-2xl order-1 lg:order-2">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-                <Image
-                  src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800"
-                  alt="Partner organization"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute bottom-6 left-6 z-20">
-                  <h3 className="text-white text-2xl font-bold">Guided by Experience</h3>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* INTERACTIVE PORTFOLIOS SECTION */}
-        {portfolios.length > 0 ? (
-          <section className="space-y-10 pt-10">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-black text-gray-900">Our Avenues of Service</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                We work across {portfolios.length} distinctive {portfolios.length === 1 ? "portfolio" : "portfolios"}, 
-                empowering members to make a holistic impact.
-              </p>
-            </div>
-
-            <div className="flex flex-col lg:flex-row gap-8 bg-white border border-gray-100 shadow-xl shadow-gray-200/50 rounded-3xl p-4 lg:p-8 overflow-hidden relative">
-              {/* Left: Tab List */}
-              <div className="flex-shrink-0 lg:w-80 relative -mx-4 lg:mx-0">
-                <div
-                  className="flex gap-2 lg:flex-col overflow-x-auto px-4 lg:px-0 pb-4 lg:pb-0 scrollbar-hide snap-x snap-mandatory scroll-px-4 [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-24px),transparent)] lg:[mask-image:none]"
-                >
-                  {portfolios.map((portfolio) => {
-                    const isActive = activePortfolio?.id === portfolio.id;
-                    const Icon = resolveIcon(portfolio.icon);
-                    return (
-                      <button
-                        key={portfolio.id}
-                        onClick={() => setActivePortfolio(portfolio)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all duration-300 whitespace-nowrap lg:whitespace-normal shrink-0 snap-start ${
-                          isActive
-                          ? "bg-purple-50 text-purple-700 shadow-sm border border-purple-100"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
-                        }`}
-                      >
-                        <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? "text-purple-600" : "text-gray-400"}`} />
-                        <span className="text-sm">{portfolio.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Right: Content Pane */}
-              <div className="flex-1 bg-gray-50/50 rounded-2xl p-6 lg:p-10 border border-gray-100 relative min-h-[350px] flex flex-col justify-center overflow-hidden">
-                <AnimatePresence mode="wait">
-                  {activePortfolio && (
-                    <motion.div
-                      key={activePortfolio.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-6"
-                    >
-                      <div className="inline-flex p-3 rounded-2xl bg-purple-100 text-purple-700">
-                        <ActiveIcon className="h-8 w-8" />
-                      </div>
-                      <div>
-                        <h3 className="text-3xl font-bold text-gray-900 mb-4">{activePortfolio.name}</h3>
-                        <p className="text-lg text-gray-600 leading-relaxed">
-                          {activePortfolio.description || ""}
-                        </p>
-                      </div>
-                      
-                      {activePortfolio.activities.length > 0 && (
-                        <div className="pt-6 border-t border-gray-200/60">
-                          <h4 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Key Activities</h4>
-                          <ul className="grid sm:grid-cols-2 gap-3">
-                            {activePortfolio.activities.map((activity, i) => (
-                              <li key={i} className="flex items-start gap-2 text-gray-700">
-                                <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                                <span>{activity}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </section>
-        ) : (
-          <section className="text-center py-16 space-y-4 bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
-            <Globe className="w-12 h-12 text-slate-300 mx-auto" />
-            <h3 className="text-xl font-bold text-slate-700">No Portfolios Configured Yet</h3>
-            <p className="text-slate-500 max-w-sm mx-auto">
-              Admins can define the club's avenues of service from the Portfolio Management settings.
+      {/* PARENT CLUB / PARTNER ORGANIZATION — only shows if configured */}
+      {club.parentClubName && (
+        <div id="about-parent">
+          <EditorialSection eyebrow="Guided By" heading={club.parentClubName} background="white">
+            <p className="text-lg text-slate-500 leading-relaxed font-medium max-w-3xl">
+              {club.parentClubDescription || "Our club is proudly sponsored and guided by our parent organization."}
             </p>
-          </section>
-        )}
+          </EditorialSection>
+        </div>
+      )}
 
-        {/* MILESTONES */}
-        {milestones.length > 0 && (
-          <section className="space-y-10 pt-16">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-black text-gray-900">Our Journey</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-                Key milestones and achievements along our path of service.
-              </p>
+      {/* 3. PORTFOLIOS */}
+      {portfolios?.length > 0 && (
+        <div id="about-portfolios">
+        <EditorialSection eyebrow="Portfolio Teams" heading="How we organize our impact." background="white">
+          <div className="flex flex-col lg:flex-row gap-12 mt-12">
+            <div className="flex-shrink-0 lg:w-72 flex lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 scrollbar-hide">
+              {portfolios.map((portfolio: any) => {
+                const isActive = activePortfolio?.id === portfolio.id;
+                return (
+                  <button
+                    key={portfolio.id}
+                    onClick={() => setActivePortfolio(portfolio)}
+                    className={`text-left px-6 py-4 rounded-2xl font-bold transition-all whitespace-nowrap lg:whitespace-normal ${
+                      isActive ? "bg-[#0B132B] text-white" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                    }`}
+                  >
+                    {portfolio.name}
+                  </button>
+                );
+              })}
             </div>
-            <div className="bg-white p-8 lg:p-12 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 max-w-4xl mx-auto">
-              <div className="space-y-8 relative before:absolute before:inset-0 before:ml-[15px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-purple-200 before:to-transparent">
-                {milestones.map((m: any) => (
-                  <div key={m.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full border-4 border-white bg-purple-100 text-purple-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                      <Flag className="w-3 h-3" />
+
+            <div className="flex-1 bg-slate-50 rounded-3xl p-10 lg:p-16">
+              <AnimatePresence mode="wait">
+                {activePortfolio && (
+                  <motion.div
+                    key={activePortfolio.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-8"
+                  >
+                    <div>
+                      <h3 className="text-3xl font-medium text-[#0B132B] mb-4">{activePortfolio.name}</h3>
+                      <p className="text-lg text-slate-600 leading-relaxed">
+                        {activePortfolio.description || "Portfolio details and service focus are managed by committee chairs."}
+                      </p>
                     </div>
-                    <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-6 rounded-2xl border border-gray-100 bg-gray-50/50 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
-                      <div className="flex items-center justify-between space-x-2 mb-2">
-                        <div className="text-xl font-bold text-gray-900">{m.title}</div>
-                        <time className="font-caveat font-bold text-xl text-purple-600">{m.year}</time>
+                    
+                    {activePortfolio.activities?.length > 0 && (
+                      <div className="pt-8 border-t border-slate-200">
+                        <ul className="grid sm:grid-cols-2 gap-4">
+                          {activePortfolio.activities.map((activity: string, i: number) => (
+                            <li key={i} className="flex items-start gap-3 text-slate-700 font-medium">
+                              <CheckCircle2 className="h-5 w-5 text-[#F7A800] shrink-0" />
+                              <span>{activity}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      {m.description && <div className="text-gray-600 leading-relaxed">{m.description}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </section>
-        )}
+          </div>
+        </EditorialSection>
+        </div>
+      )}
 
-      </MaxWidthWrapper>
+      {/* 4. HISTORICAL MILESTONES */}
+      {milestones?.length > 0 && (
+        <div id="about-milestones">
+         <EditorialSection eyebrow="Archive Timeline" heading="Our Milestones" background="slate">
+            <div className="max-w-3xl mx-auto mt-12 space-y-8">
+              {milestones.map((m: any) => (
+                <div key={m.id} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                     <h4 className="text-xl font-bold text-[#0B132B]">{m.title}</h4>
+                     {m.description && <p className="text-slate-500 mt-2">{m.description}</p>}
+                  </div>
+                  <span className="text-2xl font-black text-[#F7A800]/50">{m.year}</span>
+                </div>
+              ))}
+            </div>
+         </EditorialSection>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,31 +1,44 @@
-"use server";
-
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
+import { unstable_cache } from "next/cache";
 
-// Not wrapped in unstable_cache: club.logoUrl is stored as a base64 data URL and can
-// exceed the Next.js Data Cache's 2MB-per-entry limit, which throws an unhandled
-// rejection and breaks the request entirely. Caching isn't worth that failure mode here.
-export async function getPublicLayoutData() {
-  try {
+const getCachedLayoutText = unstable_cache(
+  async () => {
     const club = await getCurrentClub();
     if (!club) return null;
 
-    const websiteSettings = await prisma.websiteSettings.findUnique({
-      where: { clubId: club.id },
-      select: {
-        enableHero: true,
-        enableEvents: true,
-        enableGallery: true,
-        enableAnnouncements: true,
-      }
-    });
+    const [websiteSettings, navigationItems] = await Promise.all([
+      prisma.websiteSettings.findUnique({
+        where: { clubId: club.id },
+        select: {
+          enableEvents: true,
+          enableAnnouncements: true,
+          enableJoin: true,
+          enablePartner: true,
+          enableArchive: true,
+          primaryColor: true,
+          secondaryColor: true,
+          accentColor: true,
+          darkColor: true,
+          lightColor: true,
+          footerDescription: true,
+          footerSocials: true,
+          footerQuickLinks: true,
+          seoTitle: true,
+          seoDescription: true,
+        }
+      }),
+      prisma.navigationItem.findMany({
+        where: { clubId: club.id, visible: true },
+        orderBy: { displayOrder: "asc" }
+      })
+    ]);
 
     return {
       club: {
+        id: club.id,
         name: club.name,
         shortName: club.shortName,
-        logoUrl: club.logoUrl,
         email: club.email,
         phone: club.phone,
         socialMedia: club.socialMedia,
@@ -34,6 +47,36 @@ export async function getPublicLayoutData() {
         meetingVenue: club.meetingVenue,
       },
       settings: websiteSettings,
+      navigationItems: navigationItems.map((item: any) => ({
+        id: item.id,
+        label: item.label,
+        url: item.url,
+        external: item.external,
+      })),
+    };
+  },
+  ["public-layout-text-data"],
+  { tags: ["layout", "website-settings"], revalidate: 3600 }
+);
+
+export async function getPublicLayoutData() {
+  try {
+    const base = await getCachedLayoutText();
+    if (!base) return null;
+
+    // Fetch the logoUrl uncached to prevent exceeding Next.js Cache 2MB payload limits
+    const logoData = await prisma.club.findUnique({
+      where: { id: base.club.id },
+      select: { logoUrl: true }
+    });
+
+    return {
+      club: {
+        ...base.club,
+        logoUrl: logoData?.logoUrl || null,
+      },
+      settings: base.settings,
+      navigationItems: base.navigationItems,
     };
   } catch (error) {
     console.error("Failed to get layout data", error);

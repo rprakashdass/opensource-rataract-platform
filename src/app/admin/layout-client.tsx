@@ -46,7 +46,6 @@ export default function AdminLayoutClient({ children, club, user, notifications,
       group: "Club Operations",
       items: [
         { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
-        { label: "Board", href: `${ROUTES.ADMIN}/settings/roles`, icon: UserCircle },
         { label: "Projects", href: `${ROUTES.ADMIN}/projects`, icon: Briefcase },
         { label: "Events", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
         { label: "Ideas", href: `${ROUTES.ADMIN}/proposals`, icon: Lightbulb, badgeCount: attentionSummary.ideas.count },
@@ -102,7 +101,7 @@ export default function AdminLayoutClient({ children, club, user, notifications,
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 text-slate-900 relative selection:bg-slate-200 selection:text-slate-900 flex flex-col">
+    <div className="h-screen overflow-hidden bg-[#F4F5F7] text-slate-900 relative selection:bg-slate-200 selection:text-slate-900 flex flex-col">
       <PortalHeader 
         club={club}
         user={user}

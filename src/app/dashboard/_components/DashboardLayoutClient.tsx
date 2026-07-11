@@ -31,7 +31,7 @@ export default function DashboardLayoutClient({ children, roles, club, user, not
   ];
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 flex flex-col">
+    <div className="h-screen overflow-hidden bg-[#F4F5F7] flex flex-col">
       <PortalHeader 
         club={club}
         user={user}

@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { cache } from "react";
 
 // Plain upsert races when multiple pages/build workers ensure-exist the same
 // row concurrently — two callers can both see "no row" and both try to INSERT,
 // so the second hits the unique constraint on clubId. Check-then-create with a
 // fallback re-fetch on conflict makes this safe under real concurrency.
-export async function getOrCreateWebsiteSettings(clubId: string) {
+export const getOrCreateWebsiteSettings = cache(async (clubId: string) => {
   const existing = await prisma.websiteSettings.findUnique({ where: { clubId } });
   if (existing) return existing;
 
@@ -16,4 +17,4 @@ export async function getOrCreateWebsiteSettings(clubId: string) {
     }
     throw error;
   }
-}
+});

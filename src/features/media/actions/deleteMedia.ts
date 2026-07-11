@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function deleteMedia(mediaId: string) {
   try {
@@ -43,6 +44,13 @@ export async function deleteMedia(mediaId: string) {
     await prisma.media.delete({
       where: { id: mediaId }
     });
+
+    revalidatePath("/admin/gallery");
+    if (media.albumId) revalidatePath(`/admin/gallery/albums/${media.albumId}`);
+    revalidatePath("/gallery");
+    revalidatePath("/");
+    revalidateTag("gallery", "max");
+    revalidateTag("homepage", "max");
 
     return { success: true };
   } catch (error: any) {

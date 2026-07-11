@@ -8,7 +8,15 @@ import { toast } from "sonner";
 import { submitInquiry } from "@/features/public/actions/submitInquiry";
 import { CheckCircle2, Heart } from "lucide-react";
 
-export default function JoinUsForm({ clubId }: { clubId: string }) {
+export default function JoinUsForm({
+  clubId,
+  successTitle = "Thank you for your interest!",
+  successDesc = "We have received your details. A member of our board will reach out to you shortly.",
+}: {
+  clubId: string;
+  successTitle?: string;
+  successDesc?: string;
+}) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -38,9 +46,9 @@ export default function JoinUsForm({ clubId }: { clubId: string }) {
     return (
       <div className="text-center py-8">
         <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Thank you for your interest!</h2>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">{successTitle}</h2>
         <p className="text-slate-500 text-lg">
-          We have received your details. A member of our board will reach out to you shortly.
+          {successDesc}
         </p>
       </div>
     );

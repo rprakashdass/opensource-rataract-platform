@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import Link from "next/link";
-import Image from "next/image";
-import { Plus, Folder, Image as ImageIcon } from "lucide-react";
+import { Plus, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { GalleryUpload } from "./GalleryUpload";
+import { CreateAlbumDialog } from "./CreateAlbumDialog";
+import { MediaThumbnail } from "./_components/MediaThumbnail";
 
 export default async function AdminGalleryPage() {
   const club = await getCurrentClub();
@@ -40,7 +42,8 @@ export default async function AdminGalleryPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* Note: Album creation and media uploads are now managed via Event/Project workflows with Google Drive */}
+          <CreateAlbumDialog />
+          <GalleryUpload albums={albums.map(a => ({ id: a.id, title: a.title }))} />
         </div>
       </div>
 
@@ -82,21 +85,16 @@ export default async function AdminGalleryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {media.map(m => (
-              <Link href={`/admin/gallery/media/${m.id}`} key={m.id} className="group block">
-                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative">
-                  {m.type === "IMAGE" ? (
-                    <Image src={m.url} alt={m.title || "Media"} fill sizes="(max-width: 768px) 50vw, 20vw" className="object-cover group-hover:scale-105 transition-transform" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-gray-300" />
-                    </div>
-                  )}
-                  {m.isCover && (
-                    <Badge className="absolute top-2 left-2 bg-purple-500 text-white border-none shadow-sm text-[10px] px-1.5 py-0">Cover</Badge>
-                  )}
-                </div>
-              </Link>
+            {media.map((m, idx) => (
+              <MediaThumbnail
+                key={m.id}
+                id={m.id}
+                url={m.url}
+                title={m.title}
+                type={m.type}
+                isCover={m.isCover}
+                priority={idx === 0}
+              />
             ))}
           </div>
         )}

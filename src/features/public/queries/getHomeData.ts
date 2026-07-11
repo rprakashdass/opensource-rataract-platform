@@ -8,46 +8,41 @@ export const getHomeBaseData = unstable_cache(
             const club = await getCurrentClub();
             if (!club) return { error: "Club not initialized" };
             
-            const websiteSettings = await prisma.websiteSettings.findUnique({
-                where: { clubId: club.id }
-            }) as any;
+            const [websiteSettings, websiteMetrics] = await Promise.all([
+                prisma.websiteSettings.findUnique({
+                    where: { clubId: club.id }
+                }),
+                prisma.websiteMetric.findMany({
+                    where: { clubId: club.id, enabled: true },
+                    orderBy: { displayOrder: "asc" }
+                })
+            ]);
             
             return {
                 club: {
                     id: club.id,
                     name: club.name,
                     missionStatement: club.missionStatement,
+                    visionStatement: club.visionStatement,
+                    presidentMessage: club.presidentMessage,
                     tenureYear: club.tenureYear,
+                    aboutTitle: club.aboutTitle,
+                    aboutSubtitle: club.aboutSubtitle,
                 },
-                settings: websiteSettings
+                settings: websiteSettings as any,
+                metrics: websiteMetrics.map((m: any) => ({
+                    id: m.id,
+                    number: m.number,
+                    label: m.label,
+                    description: m.description,
+                }))
             };
         } catch (error) {
             return { error: "Failed to load base data" };
         }
     },
     ['home-base-data'],
-    { tags: ['homepage', 'club', 'website-settings'], revalidate: 3600 }
-);
-
-export const getHomePortfolios = unstable_cache(
-    async (clubId: string) => {
-        try {
-            const portfolios = await prisma.portfolio.findMany({
-                where: { clubId, isActive: true },
-                orderBy: { displayOrder: "asc" }
-            });
-            return portfolios.map(p => ({
-                id: p.id,
-                name: p.name,
-                icon: p.icon,
-                description: p.description,
-            }));
-        } catch (error) {
-            return [];
-        }
-    },
-    ['home-portfolios-data'],
-    { tags: ['homepage', 'portfolios'], revalidate: 3600 }
+    { tags: ['homepage', 'club', 'website-settings', 'events', 'projects', 'gallery', 'team', 'announcements'], revalidate: 3600 }
 );
 
 export const getHomeImpact = unstable_cache(
@@ -68,7 +63,7 @@ export const getHomeImpact = unstable_cache(
         }
     },
     ['home-impact-data'],
-    { tags: ['homepage', 'events', 'projects', 'team'], revalidate: 3600 }
+    { tags: ['homepage', 'events', 'projects', 'team', 'gallery', 'announcements'], revalidate: 3600 }
 );
 
 export const getHomeNews = unstable_cache(
@@ -86,5 +81,5 @@ export const getHomeNews = unstable_cache(
         }
     },
     ['home-news-data'],
-    { tags: ['homepage', 'announcements'], revalidate: 3600 }
+    { tags: ['homepage', 'announcements', 'events', 'projects', 'gallery', 'team'], revalidate: 3600 }
 );

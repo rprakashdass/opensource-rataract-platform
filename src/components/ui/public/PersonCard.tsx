@@ -7,29 +7,82 @@ interface PersonCardProps {
   avatarUrl?: string;
   professionOrYear?: string;
   boardRole?: string;
+  portfolio?: string;
+  joinedAt?: string | Date;
+  size?: "lg" | "md";
 }
 
-export function PersonCard({ name, avatarUrl, professionOrYear, boardRole }: PersonCardProps) {
+export function PersonCard({ 
+  name, 
+  avatarUrl, 
+  professionOrYear, 
+  boardRole,
+  portfolio,
+  joinedAt,
+  size = "md"
+}: PersonCardProps) {
+  const isLarge = size === "lg";
+  
+  // Format joined year
+  let joinedYear = "";
+  if (joinedAt) {
+    try {
+      joinedYear = `Since ${new Date(joinedAt).getFullYear()}`;
+    } catch (e) {
+      joinedYear = "";
+    }
+  }
+
   return (
-    <div className="flex flex-col items-center text-center group">
-      <div className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg mb-4 relative">
-        <MemberAvatar
-          name={name}
-          avatarUrl={avatarUrl}
-          fill
-          textClassName="text-2xl md:text-3xl"
-          className="group-hover:scale-110 transition-transform duration-500"
-        />
+    <div className="flex flex-col items-center text-center group bg-white border border-slate-200/60 rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 w-full max-w-[240px] mx-auto min-h-[220px] justify-between">
+      <div className="space-y-4 w-full flex flex-col items-center">
+        {/* Avatar */}
+        <div className={`
+          rounded-full overflow-hidden border-2 border-slate-100 shadow-sm relative transition-transform duration-350 group-hover:scale-[1.03] shrink-0
+          ${isLarge ? "w-24 h-24 md:w-28 h-28" : "w-20 h-20"}
+        `}>
+          <MemberAvatar
+            name={name}
+            avatarUrl={avatarUrl}
+            fill
+            textClassName={isLarge ? "text-2xl md:text-3xl" : "text-xl"}
+            className="object-cover"
+          />
+        </div>
+        
+        {/* Text details */}
+        <div className="space-y-1 w-full">
+          <h3 className="font-black text-[#0B132B] leading-tight text-sm md:text-base group-hover:text-secondary transition-colors line-clamp-1">
+            {name}
+          </h3>
+          
+          {professionOrYear && (
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider line-clamp-1">
+              {professionOrYear}
+            </p>
+          )}
+
+          {portfolio && (
+            <p className="text-[10px] text-secondary font-black uppercase tracking-widest line-clamp-1">
+              {portfolio}
+            </p>
+          )}
+        </div>
       </div>
-      <h3 className="text-lg font-bold text-slate-900 leading-tight">{name}</h3>
-      {professionOrYear && (
-        <p className="text-sm text-slate-500 mt-1">{professionOrYear}</p>
-      )}
-      {boardRole && (
-        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 mt-2 border-none text-xs uppercase tracking-wider">
-          {boardRole.replace(/_/g, " ")}
-        </Badge>
-      )}
+
+      {/* Badges / Meta row */}
+      <div className="w-full pt-3 mt-3 border-t border-slate-100 flex flex-col items-center gap-1.5 shrink-0">
+        {boardRole && (
+          <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black uppercase tracking-wider hover:bg-primary/15 select-none">
+            {boardRole.replace(/_/g, " ").replace(/-/g, " ")}
+          </Badge>
+        )}
+        {joinedYear && (
+          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest select-none">
+            {joinedYear}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,23 +1,30 @@
 import { getCurrentClub } from "@/lib/club";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { getPublicMilestones } from "@/features/public/queries/getPublicMilestones";
 import AboutClient from "./AboutClient";
 
-export default async function AboutPage() {
+export default async function AboutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const isPreview = resolvedParams?.preview === "true";
+
   const club = await getCurrentClub();
   if (!club) notFound();
 
-  const [settings, milestones, portfolios] = await Promise.all([
+  const [settings, milestonesData, portfolios] = await Promise.all([
     prisma.websiteSettings.findUnique({ where: { clubId: club.id } }),
-    prisma.milestone.findMany({
-      where: { clubId: club.id },
-      orderBy: [{ year: "desc" }, { displayOrder: "asc" }]
-    }),
+    getPublicMilestones(),
     prisma.portfolio.findMany({
       where: { clubId: club.id, isActive: true },
       orderBy: { displayOrder: "asc" }
     })
   ]);
+
+  const milestones = (milestonesData as any).milestones || [];
 
   const data = {
     club: {
@@ -37,9 +44,14 @@ export default async function AboutPage() {
       tenureYear: club.tenureYear,
     },
     settings: {
-      aboutStory: settings?.aboutStory,
+      aboutEyebrow: settings?.aboutEyebrow ?? undefined,
+      aboutStory: settings?.aboutStory ?? undefined,
+      aboutPhoto: settings?.aboutPhoto ?? undefined,
+      missionQuote: settings?.missionQuote ?? undefined,
+      visionQuote: settings?.visionQuote ?? undefined,
+      valuesQuote: settings?.valuesQuote ?? undefined,
     },
-    milestones: milestones.map(m => ({
+    milestones: milestones.map((m: any) => ({
       id: m.id,
       title: m.title,
       description: m.description,
@@ -54,6 +66,6 @@ export default async function AboutPage() {
     }))
   };
 
-  return <AboutClient data={data} />;
+  return <AboutClient data={data} isPreview={isPreview} />;
 }
 

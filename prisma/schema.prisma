@@ -85,6 +85,7 @@ model Club {
   media                   Media[]
   inquiries               MembershipInquiry[]
   sponsors                Sponsor[]
+  sponsorshipPackages     SponsorshipPackage[]
   transactions            Transaction[]
   paymentRequests         PaymentRequest[]
   accounts                Account[]
@@ -100,6 +101,8 @@ model Club {
   portfolios              Portfolio[]
   clubRoles               ClubRole[]
   initiatives             Initiative[]
+  navigationItems         NavigationItem[]
+  websiteMetrics          WebsiteMetric[]
 }
 
 // ============================================================================
@@ -111,26 +114,147 @@ model WebsiteSettings {
   clubId String @unique
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  heroHeadline String?
-  heroSubtitle String?
-  heroCTA      String?
-  heroImages   Json? // Optional: Store array of URLs if needed separately from Media
+  // SEO & General Branding
+  seoTitle          String?
+  seoDescription    String?
+  primaryColor      String?  @default("#8B5CF6")
+  secondaryColor    String?  @default("#EC4899")
+  accentColor       String?  @default("#F4F5F7")
+  darkColor         String?  @default("#0B132B")
+  lightColor        String?  @default("#FAF9F6")
 
-  aboutStory     String? @db.Text
-  seoTitle       String?
-  seoDescription String?
+  // Homepage Settings
+  heroHeadline      String?
+  heroSubtitle      String?
+  heroCTA           String?
+  heroCTALink       String?
+  heroSecondaryCTA     String?
+  heroSecondaryCTALink String?
+  heroImages        Json?    // Array of string URLs
 
-  enableHero             Boolean @default(true)
-  enableImpact           Boolean @default(true)
-  enableFeaturedProjects Boolean @default(true)
+  // President Section
+  presName          String?
+  presMessage       String?  @db.Text
+  presSignature     String?
+  presQuote         String?
+  presPhoto         String?
+
+  // Homepage Composition & Section Order
+  // Stored as JSON: [ { id: "hero", enabled: true, order: 0 }, ... ]
+  homepageSections  Json?
+
+  // Gallery Section
+  galleryTitle      String?
+  gallerySubtitle   String?
+  galleryCTA        String?
+  galleryCTALink    String?
+  galleryLayout     String?  @default("MASONRY") // MASONRY, GRID, CAROUSEL
+  galleryShowLatest Boolean  @default(true)
+  galleryShowFeatured Boolean @default(false)
+  galleryAlbumId    String?
+  galleryLimit      Int      @default(3)
+
+  // About Section/Page Content
+  aboutEyebrow      String?
+  aboutStory        String?  @db.Text
+  aboutPhoto        String?
+  missionQuote      String?
+  visionQuote       String?
+  valuesQuote       String?
+  noticeboardEyebrow String?
+  noticeboardTitle   String?
+
+  // Team Section/Page Content
+  teamEyebrow       String?
+  teamTitle         String?
+  teamSubtitle      String?
+  teamLeadershipTitle String?
+  teamMembersTitle  String?
+  teamJoinCTA       String?
+  teamJoinCTALink   String?
+
+  // Projects Section/Page Content
+  projectsEyebrow   String?
+  projectsTitle     String?
+  projectsSubtitle  String?
+  projectsActiveTitle String?
+  projectsCompletedTitle String?
+  projectsEmptyTitle String?
+  projectsEmptyDesc String?
+  projectsCTA       String?
+  projectsCTALink   String?
+
+  // Events Section/Page Content
+  eventsEyebrow     String?
+  eventsTitle       String?
+  eventsSubtitle    String?
+  eventsUpcomingTitle String?
+  eventsCompletedTitle String?
+  eventsEmptyTitle  String?
+  eventsEmptyDesc   String?
+  eventsRegisterCTA String?
+  eventsCompletedCTA String?
+
+  // Footer Config
+  footerDescription String?
+  footerSocials     Json?    // { twitter, instagram, facebook, linkedin }
+  footerQuickLinks  Json?    // Array of { label, url }
+
+  // Sponsors Page Config
+  sponsorsTitle      String?
+  sponsorsSubtitle   String?
+  sponsorsMission    String?
+  sponsorsCTA        String?
+  sponsorsCTALink    String?
+  sponsorsImageUrl   String?
+
+  // Join Page Config
+  joinTitle          String?
+  joinSubtitle       String?
+  joinSuccessTitle   String?
+  joinSuccessDesc    String?
+
+  // Archive Page Config
+  archiveTitle       String?
+  archiveSubtitle    String?
+
+  // Visibilities and statuses for other public pages
+  enableJoin         Boolean @default(true)
+  enablePartner      Boolean @default(true)
+  enableArchive      Boolean @default(true)
+
   enableEvents           Boolean @default(true)
-  enableGallery          Boolean @default(true)
-  enableLeadership       Boolean @default(true)
   enableAnnouncements    Boolean @default(true)
   enablePortfolios       Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model NavigationItem {
+  id           String   @id @default(cuid())
+  clubId       String
+  club         Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  label        String
+  url          String
+  displayOrder Int      @default(0)
+  visible      Boolean  @default(true)
+  external     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model WebsiteMetric {
+  id           String   @id @default(cuid())
+  clubId       String
+  club         Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  number       String
+  label        String
+  description  String?  @db.Text
+  displayOrder Int      @default(0)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Milestone {
@@ -383,6 +507,7 @@ enum MediaUsage {
   ATTACHMENT
   DOCUMENT_REPORT
   DOCUMENT_MINUTES
+  WEBSITE
 }
 
 // ============================================================================
@@ -1258,3 +1383,17 @@ model Contributor {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 }
+
+model SponsorshipPackage {
+  id           String   @id @default(cuid())
+  clubId       String
+  club         Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  title        String
+  amount       Int
+  impactText   String
+  description  String?  @db.Text
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical, Trash2, Edit2, CheckCircle2, Globe, HeartHandshake, Share2, BookOpen, UserPlus, Users, Briefcase, Mic2, Radio, Wrench, Computer } from "lucide-react";
+import { savePortfolio, deletePortfolio, reorderPortfolios } from "@/features/public/actions/managePortfolios";
+import CmsPreviewFrame, { CmsPreviewFrameHandle } from "@/components/cms/CmsPreviewFrame";
 
 // Standard preset icons to choose from
 const ICON_OPTIONS = [
@@ -28,6 +30,7 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
   const [editForm, setEditForm] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const previewRef = useRef<CmsPreviewFrameHandle>(null);
 
   const handleAddNew = () => {
     const newId = "new-" + Date.now();
@@ -50,30 +53,20 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
     setIsLoading(true);
     try {
       const isNew = id.startsWith("new-");
-      const url = "/api/admin/portfolios";
-      const method = isNew ? "POST" : "PUT";
-      
-      const payload = {
+      const res = await savePortfolio({
         ...editForm,
-        id: isNew ? undefined : id
-      };
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        id: isNew ? undefined : id,
       });
 
-      if (!res.ok) throw new Error("Failed to save portfolio");
-      
-      const saved = await res.json();
-      
-      setPortfolios(portfolios.map(p => p.id === id ? saved : p));
+      if (res.error) throw new Error(res.error);
+
+      setPortfolios(portfolios.map(p => p.id === id ? res.data : p));
       setIsEditing(null);
       router.refresh();
-    } catch (error) {
+    previewRef.current?.reload();
+    } catch (error: any) {
       console.error(error);
-      alert("Error saving portfolio");
+      alert(error.message || "Error saving portfolio");
     } finally {
       setIsLoading(false);
     }
@@ -90,14 +83,15 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
 
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/admin/portfolios?id=${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
-      
+      const res = await deletePortfolio(id);
+      if (res.error) throw new Error(res.error);
+
       setPortfolios(portfolios.filter(p => p.id !== id));
       router.refresh();
-    } catch (error) {
+    previewRef.current?.reload();
+    } catch (error: any) {
       console.error(error);
-      alert("Error deleting portfolio");
+      alert(error.message || "Error deleting portfolio");
     } finally {
       setIsLoading(false);
     }
@@ -110,15 +104,18 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
     const temp = newPortfolios[index].displayOrder;
     newPortfolios[index].displayOrder = newPortfolios[index - 1].displayOrder;
     newPortfolios[index - 1].displayOrder = temp;
-    
+
     // Swap in array for instant UI update
     [newPortfolios[index - 1], newPortfolios[index]] = [newPortfolios[index], newPortfolios[index - 1]];
     setPortfolios(newPortfolios);
-    
+
     // Persist
-    await fetch("/api/admin/portfolios", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: newPortfolios[index].id, displayOrder: newPortfolios[index].displayOrder }) });
-    await fetch("/api/admin/portfolios", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: newPortfolios[index - 1].id, displayOrder: newPortfolios[index - 1].displayOrder }) });
+    await reorderPortfolios([
+      { id: newPortfolios[index].id, displayOrder: newPortfolios[index].displayOrder },
+      { id: newPortfolios[index - 1].id, displayOrder: newPortfolios[index - 1].displayOrder },
+    ]);
     router.refresh();
+    previewRef.current?.reload();
   };
 
   const moveDown = async (index: number) => {
@@ -128,19 +125,23 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
     const temp = newPortfolios[index].displayOrder;
     newPortfolios[index].displayOrder = newPortfolios[index + 1].displayOrder;
     newPortfolios[index + 1].displayOrder = temp;
-    
+
     // Swap in array
     [newPortfolios[index + 1], newPortfolios[index]] = [newPortfolios[index], newPortfolios[index + 1]];
     setPortfolios(newPortfolios);
-    
+
     // Persist
-    await fetch("/api/admin/portfolios", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: newPortfolios[index].id, displayOrder: newPortfolios[index].displayOrder }) });
-    await fetch("/api/admin/portfolios", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: newPortfolios[index + 1].id, displayOrder: newPortfolios[index + 1].displayOrder }) });
+    await reorderPortfolios([
+      { id: newPortfolios[index].id, displayOrder: newPortfolios[index].displayOrder },
+      { id: newPortfolios[index + 1].id, displayOrder: newPortfolios[index + 1].displayOrder },
+    ]);
     router.refresh();
+    previewRef.current?.reload();
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div className="lg:col-span-5 space-y-6 max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
       <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <p className="text-sm text-slate-500 font-medium">Configure the avenues and domains your club operates in.</p>
         <Button onClick={handleAddNew} disabled={isEditing !== null} className="bg-purple-600 hover:bg-purple-700">
@@ -270,6 +271,15 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
           </div>
         )}
       </div>
+    </div>
+
+      <CmsPreviewFrame
+        ref={previewRef}
+        previewUrl="/about?preview=true"
+        channel="about"
+        scrollTo="about-portfolios"
+        payload={{ portfolios }}
+      />
     </div>
   );
 }

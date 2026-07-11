@@ -17,21 +17,21 @@ async function getSigningKey() {
 export async function signJWT(payload: any) {
   const header = { alg: "HS256", typ: "JWT" };
   const enc = new TextEncoder();
-  
+
   const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   const encodedPayload = btoa(JSON.stringify({ ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 })).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  
+
   const key = await getSigningKey();
   const signatureBuffer = await crypto.subtle.sign(
     "HMAC",
     key,
     enc.encode(`${encodedHeader}.${encodedPayload}`)
   );
-  
+
   const signatureArray = Array.from(new Uint8Array(signatureBuffer));
   const signatureString = signatureArray.map(b => String.fromCharCode(b)).join("");
   const encodedSignature = btoa(signatureString).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  
+
   return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
 }
 
@@ -40,25 +40,25 @@ export async function verifyJWT(token: string) {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
     const [header, payload, signature] = parts;
-    
+
     const key = await getSigningKey();
     const enc = new TextEncoder();
-    
+
     const sigString = atob(signature.replace(/-/g, "+").replace(/_/g, "/"));
     const sigBytes = new Uint8Array(sigString.length);
     for (let i = 0; i < sigString.length; i++) {
       sigBytes[i] = sigString.charCodeAt(i);
     }
-    
+
     const isValid = await crypto.subtle.verify(
       "HMAC",
       key,
       sigBytes,
       enc.encode(`${header}.${payload}`)
     );
-    
+
     if (!isValid) return null;
-    
+
     const decodedPayload = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
     if (decodedPayload.exp && decodedPayload.exp < Math.floor(Date.now() / 1000)) {
       return null;
@@ -85,7 +85,7 @@ export async function getSession() {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("session")?.value;
   if (!sessionCookie) return null;
-  
+
   const payload = await verifyJWT(sessionCookie) as any;
   if (!payload || !payload.id) return null;
 

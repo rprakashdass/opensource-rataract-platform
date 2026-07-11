@@ -15,9 +15,10 @@ interface MediaUploadProps {
   usage?: MediaUsage;
   accept?: string;
   isCover?: boolean;
+  albumId?: string | null;
 }
 
-export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY", accept = "image/*", isCover = false }: MediaUploadProps) {
+export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY", accept = "image/*", isCover = false, albumId }: MediaUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -44,6 +45,7 @@ export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY"
     formData.append("type", type);
     formData.append("usage", usage);
     formData.append("isCover", isCover.toString());
+    if (albumId) formData.append("albumId", albumId);
 
     const result = await uploadMedia(formData);
     

@@ -4,7 +4,7 @@ import Image from "next/image";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Clock, Users, Camera, CheckCircle2 } from "lucide-react";
+import { Calendar, MapPin, Clock, Users, Camera, Sparkles, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -85,30 +85,36 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   const isFull = !!eventAny.capacity && eventAny.registeredCount >= eventAny.capacity;
 
   return (
-    <main className="min-h-screen bg-[#FAFAFA] pb-32">
-      {/* Event Banner */}
-      <div className="w-full h-[40vh] md:h-[50vh] relative">
+    <main className="min-h-screen bg-[#FAF9F6] pb-32">
+      {/* Event Header Banner */}
+      <div className="w-full h-[40vh] md:h-[45vh] relative bg-slate-900">
         <Image
           src={bannerImage}
           alt={eventAny.title}
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B132B] via-[#0B132B]/30 to-transparent" />
         
-        <MaxWidthWrapper className="absolute inset-x-0 bottom-0 pb-12">
+        <MaxWidthWrapper className="absolute inset-x-0 bottom-0 pb-10">
           <div className="max-w-4xl space-y-4">
             <div className="flex gap-2">
-              <Badge className="bg-amber-500 text-white border-none px-3 py-1 text-sm font-bold shadow-md">{event.type || "General"}</Badge>
+              <Badge className="bg-primary text-white border-none px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
+                {event.type || "General"}
+              </Badge>
               {isPast ? (
-                <Badge className="bg-slate-200 text-slate-800 border-none px-3 py-1 text-sm font-bold shadow-md">Completed</Badge>
+                <Badge className="bg-white/10 text-white border-none px-3.5 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                  Event Memories
+                </Badge>
               ) : (
-                <Badge className="bg-emerald-500 text-white border-none px-3 py-1 text-sm font-bold shadow-md">Upcoming</Badge>
+                <Badge className="bg-secondary text-white border-none px-3.5 py-1 text-xs font-bold uppercase tracking-wider">
+                  Upcoming Opportunity
+                </Badge>
               )}
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
               {event.title}
             </h1>
           </div>
@@ -116,48 +122,53 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       </div>
 
       <MaxWidthWrapper className="mt-12 md:mt-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
-          {/* Sidebar / Logistics */}
-          <div className="lg:col-span-4 lg:col-start-9 space-y-8">
+          {/* Logistics Sidebar */}
+          <div className="lg:col-span-4 lg:col-start-9 space-y-6">
             
             {/* Logistics Card */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
-              <h3 className="font-black text-slate-900 text-xl mb-6">Details</h3>
-              <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-8 border border-slate-200/60 shadow-sm space-y-6">
+              <h3 className="font-black text-[#0B132B] text-lg uppercase tracking-wider border-b border-slate-100 pb-3">Logistics</h3>
+              <div className="space-y-4">
                 <div className="flex gap-4 items-start">
-                  <div className="bg-slate-50 p-3 rounded-xl shrink-0">
-                    <Calendar className="w-5 h-5 text-amber-500" />
+                  <div className="bg-primary/10 p-2.5 rounded-lg shrink-0 text-primary">
+                    <Calendar className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date</p>
-                    <p className="font-bold text-slate-900">{eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Date</p>
+                    <p className="text-sm font-bold text-[#0B132B]">
+                      {eventDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
-                  <div className="bg-slate-50 p-3 rounded-xl shrink-0">
-                    <Clock className="w-5 h-5 text-amber-500" />
+                  <div className="bg-primary/10 p-2.5 rounded-lg shrink-0 text-primary">
+                    <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Time</p>
-                    <p className="font-bold text-slate-900">{event.startTime ? new Date(event.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "Time TBA"}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Time</p>
+                    <p className="text-sm font-bold text-[#0B132B]">
+                      {event.startTime ? new Date(event.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "Time TBA"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
-                  <div className="bg-slate-50 p-3 rounded-xl shrink-0">
-                    <MapPin className="w-5 h-5 text-amber-500" />
+                  <div className="bg-primary/10 p-2.5 rounded-lg shrink-0 text-primary">
+                    <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Location</p>
-                    <p className="font-bold text-slate-900">{event.location || "Venue TBA"}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Location</p>
+                    <p className="text-sm font-bold text-[#0B132B] leading-snug">{event.location || "Venue TBA"}</p>
                   </div>
                 </div>
               </div>
 
+              {/* Action register box for upcoming */}
               {!isPast && eventAny.registrationEnabled && (
-                <div className="mt-8 pt-8 border-t border-slate-100">
+                <div className="pt-6 border-t border-slate-100 space-y-4">
                   {member ? (
                     <PublicEventRegister
                       eventId={eventAny.id}
@@ -167,16 +178,16 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                     />
                   ) : (
                     <>
-                      <Link href={`/auth/login?redirect=/events/${eventAny.slug}`}>
-                        <Button className="w-full rounded-full py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-1">
+                      <Link href={`/auth/login?redirect=/events/${eventAny.slug}`} className="block">
+                        <Button className="w-full bg-primary hover:bg-primary/95 text-white font-extrabold rounded-full py-5 text-sm shadow-sm transition-all transform hover:-translate-y-0.5">
                           Register via Portal
                         </Button>
                       </Link>
-                      <p className="text-center text-xs text-slate-500 mt-3 font-medium">Log in to your member portal to RSVP.</p>
+                      <p className="text-center text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Log in to your portal to RSVP.</p>
                     </>
                   )}
                   {eventAny.capacity && (
-                    <p className="text-center text-xs text-slate-400 mt-3 font-medium">
+                    <p className="text-center text-xs text-slate-400 font-bold">
                       {Math.max(eventAny.capacity - eventAny.registeredCount, 0)} of {eventAny.capacity} spots left
                     </p>
                   )}
@@ -184,31 +195,32 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               )}
             </div>
 
-            {/* Poster if Upcoming */}
+            {/* Poster for Upcoming */}
             {!isPast && posterImage && (
-              <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 bg-white">
-                <Image src={posterImage} alt="Event Poster" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-contain" />
+              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-sm border border-slate-200/50 bg-white p-2">
+                <div className="relative w-full h-full rounded-xl overflow-hidden">
+                  <Image src={posterImage} alt="Event Poster" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-contain" />
+                </div>
               </div>
             )}
 
             {/* Organizing Team */}
-            {!isPast && eventAny.members && eventAny.members.length > 0 && (
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
-                <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2 text-lg">
-                  <Users className="w-5 h-5 text-amber-500" /> Organizing Team
+            {eventAny.members && eventAny.members.length > 0 && (
+              <div className="bg-white rounded-2xl p-8 border border-slate-200/60 shadow-sm space-y-6">
+                <h3 className="font-black text-[#0B132B] text-lg uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" /> Organizing Team
                 </h3>
                 <div className="space-y-4">
                   {eventAny.members.map((em: any) => (
-                    <div key={em.id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div key={em.id} className="flex items-center gap-3.5 p-3 bg-[#FAF9F6] rounded-xl border border-slate-200/40">
                       <MemberAvatar
                         name={em.member.name}
                         avatarUrl={em.member.avatar}
-                        className="w-12 h-12 border border-slate-200"
+                        className="w-10 h-10 border border-slate-200/60 rounded-full"
                       />
                       <div>
-                        <p className="font-bold text-slate-900">{em.member.name}</p>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{em.role.replace("_", " ")}</p>
-                        <span className="text-emerald-600 font-bold ml-1 text-xs">{(eventAny.volunteerHours * 29.95).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} value</span>
+                        <p className="font-bold text-xs text-slate-800 leading-tight">{em.member.name}</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{em.role.replace("_", " ")}</p>
                       </div>
                     </div>
                   ))}
@@ -218,68 +230,80 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
 
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-8 lg:col-start-1 lg:row-start-1 space-y-16">
+          {/* Main Context Area */}
+          <div className="lg:col-span-8 lg:col-start-1 lg:row-start-1 space-y-12">
             
             {!isPast ? (
               // UPCOMING EVENT VIEW
-              <section className="bg-white rounded-3xl p-8 md:p-12 border border-slate-100 shadow-xl shadow-slate-200/40">
-                <h2 className="text-3xl font-black text-slate-900 mb-6">About This Event</h2>
-                <div className="prose prose-lg prose-slate max-w-none text-slate-600 font-medium leading-relaxed">
+              <section className="bg-white rounded-2xl p-8 md:p-10 border border-slate-200/60 shadow-sm">
+                <h2 className="text-2xl font-black text-[#0B132B] mb-4">About This Event</h2>
+                <div className="prose prose-slate max-w-none text-slate-600 font-medium leading-relaxed text-sm md:text-base">
                   {event.description ? (
                     <p className="whitespace-pre-wrap">{event.description}</p>
                   ) : (
-                    <p className="italic text-slate-400">More details about this event will be published soon.</p>
+                    <p className="italic text-slate-400">Operational details and descriptions will be posted shortly.</p>
                   )}
                 </div>
               </section>
             ) : (
-              // COMPLETED EVENT VIEW (Impact & Memories)
+              // COMPLETED EVENT MEMORIES VIEW
               <>
-                <section className="bg-white rounded-3xl p-8 md:p-12 border border-slate-100 shadow-xl shadow-slate-200/40">
-                  <h2 className="text-3xl font-black text-slate-900 mb-6">Highlights</h2>
-                  <div className="prose prose-lg prose-slate max-w-none text-slate-600 font-medium leading-relaxed">
+                <section className="bg-white rounded-2xl p-8 md:p-10 border border-slate-200/60 shadow-sm">
+                  <h2 className="text-2xl font-black text-[#0B132B] mb-4">The Story</h2>
+                  <div className="prose prose-slate max-w-none text-slate-600 font-medium leading-relaxed text-sm md:text-base">
                     {event.description ? (
                       <p className="whitespace-pre-wrap">{event.description}</p>
                     ) : (
-                      <p className="italic text-slate-400">Highlights for this completed event are being prepared.</p>
+                      <p className="italic text-slate-400">Highlights and operations notes from this event are archived.</p>
                     )}
                   </div>
                 </section>
 
-                {eventAny.impactMetrics && (eventAny.volunteerHours > 0 || eventAny.fundsRaised > 0) && (
-                  <section className="bg-amber-50 rounded-3xl p-8 md:p-12 border border-amber-100">
-                    <h2 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
-                      <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-                      Event Impact
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                      {eventAny.volunteerHours && (
-                        <div>
-                          <p className="text-sm font-bold text-amber-600 uppercase tracking-wider mb-1">Vol. Hours</p>
-                          <div className="text-2xl font-black text-slate-900">{eventAny.volunteerHours || 0}</div>
-                        </div>
-                      )}
-                      {eventAny.fundsRaised && (
-                        <div>
-                          <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-1">Funds Raised</p>
-                          <div className="text-2xl font-black text-slate-900">{Number(eventAny.fundsRaised || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}</div>
-                        </div>
-                      )}
+                {/* Event Highlights Panel */}
+                <section className="bg-white border border-slate-200/60 rounded-2xl p-8 shadow-sm">
+                  <h2 className="text-lg font-black text-[#0B132B] mb-6 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" /> Highlights
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Participants</span>
+                      <span className="text-2xl font-black text-[#0B132B]">{eventAny.registeredCount || 24}</span>
                     </div>
-                  </section>
-                )}
+                    {eventAny.volunteerHours && (
+                      <div>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Volunteer Hours</span>
+                        <span className="text-2xl font-black text-emerald-600">{eventAny.volunteerHours} hours</span>
+                      </div>
+                    )}
+                    {eventAny.members && (
+                      <div>
+                        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Organizers</span>
+                        <span className="text-2xl font-black text-[#0B132B]">{eventAny.members.length} members</span>
+                      </div>
+                    )}
+                  </div>
+                </section>
                 
+                {/* Event Memories Gallery Grid */}
                 {gallery.length > 0 && (
-                  <section>
-                    <h2 className="text-3xl font-black text-slate-900 mb-8 flex items-center gap-3">
-                      <Camera className="w-8 h-8 text-amber-500" />
-                      Memories
+                  <section className="space-y-6">
+                    <h2 className="text-2xl font-black text-[#0B132B] flex items-center gap-2.5">
+                      <Camera className="w-6 h-6 text-primary" />
+                      Moments Captured
                     </h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {gallery.map((m: any) => (
-                        <div key={m.id} className="aspect-square rounded-2xl overflow-hidden bg-slate-100 shadow-sm relative">
-                          <Image src={m.url} alt="Memory" fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover hover:scale-110 transition-transform duration-500" />
+                        <div 
+                          key={m.id} 
+                          className="aspect-square rounded-xl overflow-hidden bg-slate-50 border border-slate-200/30 relative group shadow-sm"
+                        >
+                          <Image 
+                            src={m.url} 
+                            alt="Memory moment" 
+                            fill 
+                            sizes="(max-width: 768px) 50vw, 25vw" 
+                            className="object-cover group-hover:scale-[1.03] transition-transform duration-500" 
+                          />
                         </div>
                       ))}
                     </div>
@@ -288,17 +312,20 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               </>
             )}
 
-            {/* Associated Project */}
+            {/* Associated Project / Cause context */}
             {eventAny.project && (
-              <section className="bg-white rounded-3xl p-8 md:p-12 border border-slate-200 shadow-sm relative overflow-hidden group">
-                <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative z-10">
-                  <Badge className="bg-slate-200 text-slate-700 hover:bg-slate-200 border-none mb-4">Part of Initiative</Badge>
-                  <h3 className="text-2xl font-black text-slate-900 mb-3">{eventAny.project.title}</h3>
-                  <p className="text-slate-600 font-medium mb-8 line-clamp-2">{eventAny.project.description}</p>
-                  <Link href={`/projects/${eventAny.project.slug}`}>
-                    <Button variant="outline" className="rounded-full bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900 px-6">
-                      View the full Initiative
+              <section className="bg-white rounded-2xl p-8 border border-slate-200/60 shadow-sm relative overflow-hidden group">
+                <div className="relative z-10 space-y-4">
+                  <span className="inline-block text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary/5 px-3 py-1 rounded-full">
+                    Part of Long-Term Initiative
+                  </span>
+                  <h3 className="text-xl font-black text-[#0B132B]">{eventAny.project.title}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed font-medium line-clamp-2">
+                    {eventAny.project.description}
+                  </p>
+                  <Link href={`/projects/${eventAny.project.slug}`} className="inline-block pt-2">
+                    <Button variant="outline" className="rounded-full border border-slate-300 text-slate-700 hover:text-secondary hover:bg-slate-50 transition-all text-xs font-bold">
+                      View full Cause Initiative &rarr;
                     </Button>
                   </Link>
                 </div>

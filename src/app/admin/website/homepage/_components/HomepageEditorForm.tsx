@@ -1,85 +1,839 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { saveWebsiteSettings } from "@/features/public/actions/saveWebsiteSettings";
+import { saveWebsiteMetrics } from "@/features/public/actions/saveWebsiteMetrics";
 import { toast } from "sonner";
 import { WebsiteSettings } from "@prisma/client";
-import { Save } from "lucide-react";
+import { Save, Layout, Palette, FileText, BarChart3, MoveUp, MoveDown, Plus, Trash2, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { HomepageSectionConfig, normalizeHomepageSections } from "@/features/public/lib/homepageSections";
+import CmsPreviewFrame, { CmsPreviewFrameHandle } from "@/components/cms/CmsPreviewFrame";
+import { FileUpload } from "@/components/ui/file-upload";
 
-export default function HomepageEditorForm({ settings }: { settings: WebsiteSettings }) {
+export default function HomepageEditorForm({
+  settings,
+  initialMetrics,
+}: {
+  settings: WebsiteSettings;
+  initialMetrics: any[];
+}) {
+  const [activeTab, setActiveTab] = useState<"layout" | "style" | "content" | "metrics">("layout");
   const [loading, setLoading] = useState(false);
+  const previewRef = useRef<CmsPreviewFrameHandle>(null);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
+  // States
+  const [localSettings, setLocalSettings] = useState<any>({
+    primaryColor: settings.primaryColor || "#F7A800",
+    secondaryColor: settings.secondaryColor || "#003DA5",
+    accentColor: settings.accentColor || "#FAF9F6",
+    darkColor: settings.darkColor || "#0B132B",
+    lightColor: settings.lightColor || "#FAF9F6",
+    heroHeadline: settings.heroHeadline || "",
+    heroSubtitle: settings.heroSubtitle || "",
+    heroCTA: settings.heroCTA || "",
+    heroCTALink: settings.heroCTALink || "",
+    heroSecondaryCTA: settings.heroSecondaryCTA || "",
+    heroSecondaryCTALink: settings.heroSecondaryCTALink || "",
+    heroImages: (settings.heroImages as string[]) || [],
+    presName: settings.presName || "",
+    presMessage: settings.presMessage || "",
+    presQuote: settings.presQuote || "",
+    presPhoto: settings.presPhoto || "",
+    presSignature: settings.presSignature || "",
+    sponsorsTitle: settings.sponsorsTitle || "",
+    sponsorsSubtitle: settings.sponsorsSubtitle || "",
+    sponsorsMission: settings.sponsorsMission || "",
+    sponsorsCTA: settings.sponsorsCTA || "",
+    sponsorsCTALink: settings.sponsorsCTALink || "",
+    sponsorsImageUrl: settings.sponsorsImageUrl || "",
+    galleryTitle: settings.galleryTitle || "",
+    gallerySubtitle: settings.gallerySubtitle || "",
+    galleryCTA: settings.galleryCTA || "",
+    galleryCTALink: settings.galleryCTALink || "",
+    eventsTitle: settings.eventsTitle || "",
+    eventsRegisterCTA: settings.eventsRegisterCTA || "",
+    eventsEmptyTitle: settings.eventsEmptyTitle || "",
+    projectsEmptyTitle: settings.projectsEmptyTitle || "",
+    projectsEmptyDesc: settings.projectsEmptyDesc || "",
+    footerDescription: settings.footerDescription || "",
+    footerSocials: (settings.footerSocials as any) || { twitter: "", instagram: "", facebook: "", linkedin: "" },
+    footerQuickLinks: (settings.footerQuickLinks as any[]) || [],
+    aboutEyebrow: settings.aboutEyebrow || "",
+    noticeboardEyebrow: settings.noticeboardEyebrow || "",
+    noticeboardTitle: settings.noticeboardTitle || "",
+    teamEyebrow: settings.teamEyebrow || "",
+    teamTitle: settings.teamTitle || "",
+    teamSubtitle: settings.teamSubtitle || "",
+    teamLeadershipTitle: settings.teamLeadershipTitle || "",
+    teamMembersTitle: settings.teamMembersTitle || "",
+    teamJoinCTA: settings.teamJoinCTA || "",
+    teamJoinCTALink: settings.teamJoinCTALink || "",
+    seoTitle: settings.seoTitle || "",
+    seoDescription: settings.seoDescription || "",
+  });
+
+  const [sections, setSections] = useState<HomepageSectionConfig[]>(() =>
+    normalizeHomepageSections(settings.homepageSections)
+  );
+
+  const [localMetrics, setLocalMetrics] = useState<any[]>(initialMetrics);
+
+  // Single source shared by the live preview payload and the save call.
+  const settingsPayload = useMemo(() => ({
+    ...localSettings,
+    homepageSections: sections.map(s => ({ id: s.id, enabled: s.enabled, order: s.order })),
+    enableEvents: sections.find(s => s.id === "events_news")?.enabled !== false,
+    enableAnnouncements: sections.find(s => s.id === "events_news")?.enabled !== false,
+  }), [localSettings, sections]);
+
+  // Handle setting updates
+  const handleSettingChange = (field: string, value: any) => {
+    setLocalSettings((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  // Reorder sections functions
+  const moveSection = (index: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= sections.length) return;
+
+    const reordered = [...sections];
+    const temp = reordered[index];
+    reordered[index] = reordered[targetIdx];
+    reordered[targetIdx] = temp;
+
+    // Recalculate order indices
+    setSections(reordered.map((s, idx) => ({ ...s, order: idx })));
+  };
+
+  const toggleSection = (index: number) => {
+    const updated = [...sections];
+    updated[index] = { ...updated[index], enabled: !updated[index].enabled };
+    setSections(updated);
+  };
+
+  // Handle metrics updates
+  const addMetric = () => {
+    setLocalMetrics(prev => [...prev, { number: "0", label: "New Stat", description: "", enabled: true }]);
+  };
+
+  const removeMetric = (index: number) => {
+    setLocalMetrics(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const updateMetric = (index: number, field: string, value: any) => {
+    setLocalMetrics(prev => prev.map((m, idx) => idx === index ? { ...m, [field]: value } : m));
+  };
+
+  // Handle save database submit
+  const handleSave = async () => {
     setLoading(true);
-    const res = await saveWebsiteSettings({
-      heroHeadline: formData.get("heroHeadline") as string,
-      heroSubtitle: formData.get("heroSubtitle") as string,
-      heroCTA: formData.get("heroCTA") as string,
-      seoTitle: formData.get("seoTitle") as string,
-      seoDescription: formData.get("seoDescription") as string,
-    });
-    setLoading(false);
+    try {
+      const [settingsRes, metricsRes] = await Promise.all([
+        saveWebsiteSettings(settingsPayload),
+        saveWebsiteMetrics(localMetrics)
+      ]);
 
-    if (res.error) {
-      toast.error(res.error);
-    } else {
-      toast.success("Homepage content saved!");
+      if (settingsRes.error) {
+        toast.error(settingsRes.error);
+      } else if (metricsRes.error) {
+        toast.error(metricsRes.error);
+      } else {
+        toast.success("Homepage layout configurations saved successfully!");
+        previewRef.current?.reload();
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Failed to persist layouts");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
-        <h2 className="text-xl font-bold text-slate-900">Hero Section</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Headline</label>
-            <Input name="heroHeadline" defaultValue={settings.heroHeadline || ""} placeholder="e.g. Empowering Youth. Changing The World." />
-            <p className="text-xs text-slate-500 mt-1">Leave blank to use your Club Name</p>
-          </div>
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch h-full">
+      {/* LEFT COLUMN: Controls form */}
+      <div className="lg:col-span-5 flex flex-col h-full bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        {/* Sub-tabs header */}
+        <div className="flex border-b border-slate-100 bg-slate-50/50 p-2 gap-1">
+          <button
+            onClick={() => setActiveTab("layout")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "layout" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+            )}
+          >
+            <Layout className="w-4 h-4" /> Layout
+          </button>
+          <button
+            onClick={() => setActiveTab("style")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "style" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+            )}
+          >
+            <Palette className="w-4 h-4" /> Styling
+          </button>
+          <button
+            onClick={() => setActiveTab("content")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "content" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+            )}
+          >
+            <FileText className="w-4 h-4" /> Content
+          </button>
+          <button
+            onClick={() => setActiveTab("metrics")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "metrics" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+            )}
+          >
+            <BarChart3 className="w-4 h-4" /> Stats
+          </button>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Subtitle</label>
-            <Textarea name="heroSubtitle" defaultValue={settings.heroSubtitle || ""} placeholder="e.g. Join the movement of young leaders..." rows={3} />
-            <p className="text-xs text-slate-500 mt-1">Leave blank to use your Mission Statement</p>
-          </div>
+        {/* Scrollable control panel body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin">
+          {/* TAB 1: SECTIONS LAYOUT AND COMPOSITION */}
+          {activeTab === "layout" && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-black text-[#0B132B] mb-1">Section Composer</h3>
+                <p className="text-slate-400 text-xs font-medium">Toggle section visibility and customize display order.</p>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Call to Action Button Text</label>
-            <Input name="heroCTA" defaultValue={settings.heroCTA || ""} placeholder="e.g. Join Us Today" />
-          </div>
+              <div className="space-y-3">
+                {sections.map((sec, idx) => (
+                  <div
+                    key={sec.id}
+                    className={cn(
+                      "flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl transition-all",
+                      !sec.enabled && "opacity-50"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={() => moveSection(idx, "up")}
+                          disabled={idx === 0}
+                          className="p-1 hover:bg-slate-200 rounded-md disabled:opacity-30"
+                        >
+                          <MoveUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => moveSection(idx, "down")}
+                          disabled={idx === sections.length - 1}
+                          className="p-1 hover:bg-slate-200 rounded-md disabled:opacity-30"
+                        >
+                          <MoveDown className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm leading-none mb-1">{sec.label}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Position: {idx + 1}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => toggleSection(idx)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all",
+                          sec.enabled ? "bg-[#003DA5]/10 text-[#003DA5] hover:bg-[#003DA5]/20" : "bg-slate-200 text-slate-500"
+                        )}
+                      >
+                        {sec.enabled ? "Visible" : "Hidden"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: BRANDING AND COLORING */}
+          {activeTab === "style" && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-black text-[#0B132B] mb-1">Color Aesthetics</h3>
+                <p className="text-slate-400 text-xs font-medium">Tailor the brand color theme dynamically across the public portal.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Primary Accent</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={localSettings.primaryColor}
+                      onChange={e => handleSettingChange("primaryColor", e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded-lg cursor-pointer"
+                    />
+                    <Input
+                      value={localSettings.primaryColor}
+                      onChange={e => handleSettingChange("primaryColor", e.target.value)}
+                      className="font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Secondary Color</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={localSettings.secondaryColor}
+                      onChange={e => handleSettingChange("secondaryColor", e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded-lg cursor-pointer"
+                    />
+                    <Input
+                      value={localSettings.secondaryColor}
+                      onChange={e => handleSettingChange("secondaryColor", e.target.value)}
+                      className="font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Accent Strip</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={localSettings.accentColor}
+                      onChange={e => handleSettingChange("accentColor", e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded-lg cursor-pointer"
+                    />
+                    <Input
+                      value={localSettings.accentColor}
+                      onChange={e => handleSettingChange("accentColor", e.target.value)}
+                      className="font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Background Cream</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={localSettings.lightColor}
+                      onChange={e => handleSettingChange("lightColor", e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded-lg cursor-pointer"
+                    />
+                    <Input
+                      value={localSettings.lightColor}
+                      onChange={e => handleSettingChange("lightColor", e.target.value)}
+                      className="font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl col-span-2">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Ink Dark Text & Headings</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={localSettings.darkColor}
+                      onChange={e => handleSettingChange("darkColor", e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded-lg cursor-pointer"
+                    />
+                    <Input
+                      value={localSettings.darkColor}
+                      onChange={e => handleSettingChange("darkColor", e.target.value)}
+                      className="font-mono text-xs uppercase"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: MARKETING COPY CONTENT EDITING */}
+          {activeTab === "content" && (
+            <div className="space-y-6 pb-6">
+              {/* HERO SECTION EDIT */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("hero")}>
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Hero Section</h4>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Headline Copy</label>
+                  <Input
+                    value={localSettings.heroHeadline}
+                    onChange={e => handleSettingChange("heroHeadline", e.target.value)}
+                    placeholder="Defaults to Club Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Hero Subtitle</label>
+                  <Textarea
+                    value={localSettings.heroSubtitle}
+                    onChange={e => handleSettingChange("heroSubtitle", e.target.value)}
+                    placeholder="Defaults to Mission statement"
+                    rows={2}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">CTA text</label>
+                    <Input
+                      value={localSettings.heroCTA}
+                      onChange={e => handleSettingChange("heroCTA", e.target.value)}
+                      placeholder="e.g. Join Us Today"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">CTA Link</label>
+                    <Input
+                      value={localSettings.heroCTALink}
+                      onChange={e => handleSettingChange("heroCTALink", e.target.value)}
+                      placeholder="e.g. /join"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Secondary CTA text</label>
+                    <Input
+                      value={localSettings.heroSecondaryCTA}
+                      onChange={e => handleSettingChange("heroSecondaryCTA", e.target.value)}
+                      placeholder="e.g. Partner With Us"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Secondary CTA Link</label>
+                    <Input
+                      value={localSettings.heroSecondaryCTALink}
+                      onChange={e => handleSettingChange("heroSecondaryCTALink", e.target.value)}
+                      placeholder="e.g. /partner"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Hero Image</label>
+                  <p className="text-xs text-slate-400 -mt-1">The photo shown below the headline. Defaults to a stock photo if none is uploaded.</p>
+                  <FileUpload
+                    value={localSettings.heroImages[0] || ""}
+                    onChange={url => handleSettingChange("heroImages", url ? [url] : [])}
+                    accept="image/*"
+                    albumTitle="Homepage"
+                  />
+                </div>
+              </div>
+
+              {/* PRESIDENT'S MESSAGE COPY */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("president")}>
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">President's Message</h4>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Eyebrow Label</label>
+                  <Input
+                    value={localSettings.aboutEyebrow}
+                    onChange={e => handleSettingChange("aboutEyebrow", e.target.value)}
+                    placeholder="e.g. A Word From Our President"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">President's Name</label>
+                  <Input
+                    value={localSettings.presName}
+                    onChange={e => handleSettingChange("presName", e.target.value)}
+                    placeholder="e.g. Rtr. Prakash Dass"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">President message body</label>
+                  <Textarea
+                    value={localSettings.presMessage}
+                    onChange={e => handleSettingChange("presMessage", e.target.value)}
+                    placeholder="Add a personalized welcoming note..."
+                    rows={4}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">President's Quote/Theme</label>
+                  <Input
+                    value={localSettings.presQuote}
+                    onChange={e => handleSettingChange("presQuote", e.target.value)}
+                    placeholder="e.g. Leadership through fellowship"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">President Photo</label>
+                    <FileUpload
+                      value={localSettings.presPhoto}
+                      onChange={url => handleSettingChange("presPhoto", url)}
+                      accept="image/*"
+                      albumTitle="Homepage"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Signature Image</label>
+                    <FileUpload
+                      value={localSettings.presSignature}
+                      onChange={url => handleSettingChange("presSignature", url)}
+                      accept="image/*"
+                      albumTitle="Homepage"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* CORPORATE SPONSORSHIP CTA */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("sponsor")}>
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Sponsorship Card</h4>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Section Title</label>
+                  <Input
+                    value={localSettings.sponsorsTitle}
+                    onChange={e => handleSettingChange("sponsorsTitle", e.target.value)}
+                    placeholder="e.g. Partner for"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Sub-heading</label>
+                  <Input
+                    value={localSettings.sponsorsSubtitle}
+                    onChange={e => handleSettingChange("sponsorsSubtitle", e.target.value)}
+                    placeholder="e.g. Global Impact."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Mission Pitch</label>
+                  <Textarea
+                    value={localSettings.sponsorsMission}
+                    onChange={e => handleSettingChange("sponsorsMission", e.target.value)}
+                    placeholder="Support our community initiatives..."
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">CTA Label</label>
+                    <Input
+                      value={localSettings.sponsorsCTA}
+                      onChange={e => handleSettingChange("sponsorsCTA", e.target.value)}
+                      placeholder="e.g. View Packages"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">CTA Link</label>
+                    <Input
+                      value={localSettings.sponsorsCTALink}
+                      onChange={e => handleSettingChange("sponsorsCTALink", e.target.value)}
+                      placeholder="e.g. /partner"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Photo</label>
+                  <FileUpload
+                    value={localSettings.sponsorsImageUrl}
+                    onChange={url => handleSettingChange("sponsorsImageUrl", url)}
+                    accept="image/*"
+                    albumTitle="Homepage"
+                  />
+                </div>
+              </div>
+
+              {/* STATIC PAGES TEXT OVERRIDES */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4">
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Public Pages Texts</h4>
+                <p className="text-xs text-slate-400 -mt-2">
+                  About page story, mission, and vision text now live in the dedicated{" "}
+                  <a href="/admin/website/about" className="text-purple-600 hover:underline font-semibold">About Page Editor</a>.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Eyebrow</label>
+                    <Input
+                      value={localSettings.teamEyebrow}
+                      onChange={e => handleSettingChange("teamEyebrow", e.target.value)}
+                      placeholder="e.g. Our People"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Title</label>
+                    <Input
+                      value={localSettings.teamTitle}
+                      onChange={e => handleSettingChange("teamTitle", e.target.value)}
+                      placeholder="e.g. Meet the Team"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Subtitle</label>
+                  <Textarea
+                    value={localSettings.teamSubtitle}
+                    onChange={e => handleSettingChange("teamSubtitle", e.target.value)}
+                    placeholder="We are a community of young leaders..."
+                    rows={2}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Board Section Title</label>
+                    <Input
+                      value={localSettings.teamLeadershipTitle}
+                      onChange={e => handleSettingChange("teamLeadershipTitle", e.target.value)}
+                      placeholder="e.g. Our Board"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Members Section Title</label>
+                    <Input
+                      value={localSettings.teamMembersTitle}
+                      onChange={e => handleSettingChange("teamMembersTitle", e.target.value)}
+                      placeholder="e.g. Our Members"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Join Button Text</label>
+                    <Input
+                      value={localSettings.teamJoinCTA}
+                      onChange={e => handleSettingChange("teamJoinCTA", e.target.value)}
+                      placeholder="e.g. Become a Member"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Join Button Link</label>
+                    <Input
+                      value={localSettings.teamJoinCTALink}
+                      onChange={e => handleSettingChange("teamJoinCTALink", e.target.value)}
+                      placeholder="e.g. /join"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* HOMEPAGE NOTICE BOARD LABELS */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("events_news")}>
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Homepage Notice Board</h4>
+                <p className="text-xs text-slate-400 -mt-2">Labels for the announcements column inside the "Events & Notice Board" homepage section.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Eyebrow Label</label>
+                    <Input
+                      value={localSettings.noticeboardEyebrow}
+                      onChange={e => handleSettingChange("noticeboardEyebrow", e.target.value)}
+                      placeholder="e.g. Stay Updated"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Column Title</label>
+                    <Input
+                      value={localSettings.noticeboardTitle}
+                      onChange={e => handleSettingChange("noticeboardTitle", e.target.value)}
+                      placeholder="e.g. Notice Board"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* FOOTER PITCH */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("footer")}>
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Footer Setup</h4>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Footer Biography / Mission Pitch</label>
+                  <Textarea
+                    value={localSettings.footerDescription}
+                    onChange={e => handleSettingChange("footerDescription", e.target.value)}
+                    placeholder="RAC Coimbatore Nexus empowers students and young professionals..."
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Twitter / X URL</label>
+                    <Input
+                      value={localSettings.footerSocials?.twitter || ""}
+                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, twitter: e.target.value })}
+                      placeholder="https://x.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Instagram URL</label>
+                    <Input
+                      value={localSettings.footerSocials?.instagram || ""}
+                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, instagram: e.target.value })}
+                      placeholder="https://instagram.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">Facebook URL</label>
+                    <Input
+                      value={localSettings.footerSocials?.facebook || ""}
+                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, facebook: e.target.value })}
+                      placeholder="https://facebook.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">LinkedIn URL</label>
+                    <Input
+                      value={localSettings.footerSocials?.linkedin || ""}
+                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/..."
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Footer Quick Links</label>
+                  {(localSettings.footerQuickLinks || []).map((link: { label: string; url: string }, idx: number) => (
+                    <div key={idx} className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                      <Input
+                        value={link.label}
+                        onChange={e => {
+                          const updated = [...localSettings.footerQuickLinks];
+                          updated[idx] = { ...updated[idx], label: e.target.value };
+                          handleSettingChange("footerQuickLinks", updated);
+                        }}
+                        placeholder="Label"
+                      />
+                      <Input
+                        value={link.url}
+                        onChange={e => {
+                          const updated = [...localSettings.footerQuickLinks];
+                          updated[idx] = { ...updated[idx], url: e.target.value };
+                          handleSettingChange("footerQuickLinks", updated);
+                        }}
+                        placeholder="/some-path"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleSettingChange("footerQuickLinks", localSettings.footerQuickLinks.filter((_: any, i: number) => i !== idx))}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSettingChange("footerQuickLinks", [...(localSettings.footerQuickLinks || []), { label: "", url: "" }])}
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Link
+                  </Button>
+                </div>
+              </div>
+
+              {/* SEO */}
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4">
+                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">SEO</h4>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Site Title (browser tab / search results)</label>
+                  <Input
+                    value={localSettings.seoTitle}
+                    onChange={e => handleSettingChange("seoTitle", e.target.value)}
+                    placeholder="Defaults to app name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Site Description (search results)</label>
+                  <Textarea
+                    value={localSettings.seoDescription}
+                    onChange={e => handleSettingChange("seoDescription", e.target.value)}
+                    placeholder="A short description shown in search engine results"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: CUSTOM STATS AND METRICS */}
+          {activeTab === "metrics" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-black text-[#0B132B] mb-1">Homepage Metrics</h3>
+                  <p className="text-slate-400 text-xs font-medium">Add stats like total volunteers or project counts.</p>
+                </div>
+                <Button onClick={addMetric} size="sm" className="rounded-xl flex items-center gap-1.5 h-9">
+                  <Plus className="w-4 h-4" /> Add Row
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {localMetrics.map((m, idx) => (
+                  <div key={idx} className="bg-slate-50 p-4 border border-slate-100 rounded-2xl relative space-y-3">
+                    <button
+                      onClick={() => removeMetric(idx)}
+                      className="absolute top-4 right-4 p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1">
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Number/Stat</label>
+                        <Input
+                          value={m.number}
+                          onChange={e => updateMetric(idx, "number", e.target.value)}
+                          placeholder="e.g. 50+"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-[10px] font-bold text-slate-500 mb-1">Label</label>
+                        <Input
+                          value={m.label}
+                          onChange={e => updateMetric(idx, "label", e.target.value)}
+                          placeholder="e.g. Active Volunters"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1">Brief description (optional)</label>
+                      <Input
+                        value={m.description || ""}
+                        onChange={e => updateMetric(idx, "description", e.target.value)}
+                        placeholder="e.g. operating in Coimbatore region"
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                {localMetrics.length === 0 && (
+                  <div className="text-center py-12 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm">
+                    No custom stats metrics configured. Fallback auto counts will show on homepage.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action button footer */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#003DA5] hover:underline"
+          >
+            Visit Live Site <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+          <Button onClick={handleSave} disabled={loading} className="rounded-xl px-6 bg-[#0B132B] hover:bg-[#F7A800]">
+            {loading ? "Saving Changes..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
-        <h2 className="text-xl font-bold text-slate-900">Search Engine Optimization (SEO)</h2>
-        <p className="text-sm text-slate-500">How your website appears on Google and social media links.</p>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">SEO Title</label>
-            <Input name="seoTitle" defaultValue={settings.seoTitle || ""} placeholder="e.g. Rotaract Club of Coimbatore | Youth Leadership" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">SEO Description</label>
-            <Textarea name="seoDescription" defaultValue={settings.seoDescription || ""} placeholder="Brief description for search engines..." rows={2} />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <Button type="submit" disabled={loading} className="rounded-xl px-8">
-          {loading ? "Saving..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
-        </Button>
-      </div>
-    </form>
+      <CmsPreviewFrame
+        ref={previewRef}
+        previewUrl="/?preview=true"
+        channel="homepage"
+        payload={{ settings: settingsPayload, metrics: localMetrics }}
+        scrollTo={activeSection}
+      />
+    </div>
   );
 }

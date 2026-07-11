@@ -1,94 +1,110 @@
-import { getPublicGallery } from "@/features/public/queries/getPublicGallery";
+import { getPublicGalleryPhotos } from "@/features/public/queries/getPublicGalleryPhotos";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import Image from "next/image";
-import { Camera, Folder, ImageIcon } from "lucide-react";
+import { Camera } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { PublicHero } from "@/components/ui/public/PublicHero";
-import { PublicSection } from "@/components/ui/public/PublicSection";
+import { PageHero } from "@/components/ui/public/PageHero";
+import { CmsText } from "@/components/cms/CmsText";
+import { ArrowRight } from "lucide-react";
 
-export default async function GalleryPage() {
-  const data = await getPublicGallery();
+interface GalleryCopy {
+  galleryTitle?: string | null;
+  gallerySubtitle?: string | null;
+  galleryCTA?: string | null;
+  galleryCTALink?: string | null;
+}
+
+export default async function GalleryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const isPreview = resolvedParams?.preview === "true";
+
+  const data: any = await getPublicGalleryPhotos();
 
   if (data.error) {
-    return <div className="p-20 text-center text-slate-500">Failed to load gallery data.</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6] p-6">
+        <div className="text-center text-slate-500">Failed to load gallery.</div>
+      </div>
+    );
   }
 
-  const albums = data.albums || [];
+  const photos: any[] = data.photos || [];
+  const copy: GalleryCopy = data.settings || {};
 
   return (
-    <main className="min-h-screen bg-background pb-16">
-      <PublicHero 
-        badge="Our Memories"
-        title="Photo Gallery"
-        description="Explore photo albums from our community service projects and fellowship events."
-      />
-      <PublicSection background="white">
-        <div className="py-16 flex-1">
-        {albums.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {albums.map((album: any) => {
-              const coverImage = album.media?.[0]?.url;
-              return (
-                <div key={album.id} className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                  <div className="aspect-[4/3] bg-slate-100 flex items-center justify-center overflow-hidden relative">
-                    {coverImage ? (
-                      <Image
-                        src={coverImage}
-                        alt={album.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <Folder className="w-16 h-16 text-slate-300" />
-                    )}
-                  </div>
-                  
-                  <div className="p-5 relative">
-                    <div className="absolute -top-5 right-5 bg-white px-3 py-1 rounded-full text-xs font-bold text-slate-600 shadow-sm border border-slate-100 flex items-center gap-1.5">
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      {album._count.media} Photos
-                    </div>
-                    
-                    <h3 className="font-bold text-xl text-slate-900 group-hover:text-pink-600 transition-colors mb-2">
-                      {album.title}
-                    </h3>
-                    
-                    {album.description && (
-                      <p className="text-sm text-slate-500 line-clamp-2 mb-3">
-                        {album.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center gap-2 mt-auto">
-                      {album.project && (
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-50">
-                          {album.project.title}
-                        </Badge>
-                      )}
-                      {album.event && !album.project && (
-                        <Badge variant="secondary" className="bg-purple-50 text-purple-700 hover:bg-purple-50">
-                          {album.event.title}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="bg-white rounded-3xl p-16 text-center border border-slate-100 shadow-sm max-w-2xl mx-auto mt-12">
-            <Camera className="w-16 h-16 text-slate-200 mx-auto mb-6" />
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No Albums Yet</h3>
-            <p className="text-slate-500 font-medium leading-relaxed">
-              Photo albums will automatically appear here once created.
-            </p>
-          </div>
+    <main className="min-h-screen bg-[#FAF9F6] flex flex-col">
+      <PageHero
+        eyebrow="Archive"
+        title={<CmsText channel="gallery" initial={copy} field="galleryTitle" fallback="Moments & Memories." isPreview={isPreview} />}
+        subtitle={<CmsText channel="gallery" initial={copy} field="gallerySubtitle" fallback="Chronological snapshots of our fellowship, project drives, and installation ceremonies." isPreview={isPreview} />}
+      >
+        {copy.galleryCTALink && (
+          <Link
+            href={copy.galleryCTALink}
+            className="inline-flex items-center gap-2 bg-[#0B132B] hover:bg-[#F7A800] text-white hover:text-[#0B132B] font-black text-xs uppercase tracking-widest px-6 py-3 rounded-full transition-colors shadow-md"
+          >
+            {copy.galleryCTA || "Learn More"} <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         )}
-        </div>
-      </PublicSection>
+      </PageHero>
+
+      <section className="py-28 px-6 md:px-12">
+        <MaxWidthWrapper className="max-w-7xl mx-auto">
+          {photos.length > 0 ? (
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+              {photos.map((photo) => {
+                const label = photo.title || photo.event?.title || photo.project?.title;
+                return (
+                  <div
+                    key={photo.id}
+                    className="group relative overflow-hidden rounded-2xl break-inside-avoid bg-slate-100"
+                  >
+                    <Image
+                      src={photo.url}
+                      alt={label || "Club memory"}
+                      width={600}
+                      height={400}
+                      className="w-full h-auto object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                    />
+                    {/* Hover overlay with title */}
+                    {label && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <p className="text-white font-black text-sm leading-tight line-clamp-2 tracking-wide">
+                            {label}
+                          </p>
+                          {photo.event && (
+                            <span className="text-[#F7A800] text-[10px] font-black uppercase tracking-widest mt-1 block">
+                              Event Memory
+                            </span>
+                          )}
+                          {photo.project && !photo.event && (
+                            <span className="text-[#F7A800] text-[10px] font-black uppercase tracking-widest mt-1 block">
+                              Initiative
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl p-20 text-center border border-dashed border-slate-200 max-w-2xl mx-auto shadow-sm">
+              <Camera className="w-12 h-12 text-[#F7A800] mx-auto mb-6 opacity-80" />
+              <h3 className="text-2xl font-black text-[#0B132B] mb-3">Every great journey starts somewhere.</h3>
+              <p className="text-slate-500 font-medium">
+                Photo memories from events and projects will appear here as they are uploaded.
+              </p>
+            </div>
+          )}
+        </MaxWidthWrapper>
+      </section>
     </main>
   );
 }

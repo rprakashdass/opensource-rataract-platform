@@ -2,14 +2,10 @@ import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PALETTE = [
-  "bg-purple-500",
-  "bg-pink-500",
-  "bg-blue-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-indigo-500",
-  "bg-teal-500",
+  "bg-gradient-to-br from-slate-100 to-slate-250 text-[#0B132B] border border-slate-200/60 shadow-inner",
+  "bg-gradient-to-br from-stone-100 to-stone-250 text-[#0B132B] border border-stone-200/60 shadow-inner",
+  "bg-gradient-to-br from-zinc-100 to-zinc-250 text-[#0B132B] border border-zinc-200/60 shadow-inner",
+  "bg-gradient-to-br from-neutral-100 to-neutral-250 text-[#0B132B] border border-neutral-200/60 shadow-inner",
 ];
 
 function getInitials(name?: string | null): string {
@@ -46,7 +42,7 @@ export function MemberAvatar({ name, avatarUrl, className, fill = false, textCla
       {avatarUrl ? (
         <img src={avatarUrl} alt={name || "Member"} className="w-full h-full object-cover" />
       ) : initials ? (
-        <div className={cn("w-full h-full flex items-center justify-center text-white font-bold", getColor(name), textClassName)}>
+        <div className={cn("w-full h-full flex items-center justify-center font-black", getColor(name), textClassName)}>
           {initials}
         </div>
       ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +8,12 @@ import { Milestone } from "@prisma/client";
 import { toast } from "sonner";
 import { saveMilestone, deleteMilestone } from "@/features/public/actions/manageMilestones";
 import { Plus, Trash2, Edit2, X, Flag } from "lucide-react";
+import CmsPreviewFrame, { CmsPreviewFrameHandle } from "@/components/cms/CmsPreviewFrame";
 
 export default function MilestoneList({ initialMilestones, clubId }: { initialMilestones: Milestone[], clubId: string }) {
   const [milestones, setMilestones] = useState(initialMilestones);
   useEffect(() => setMilestones(initialMilestones), [initialMilestones]);
+  const previewRef = useRef<CmsPreviewFrameHandle>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -68,6 +70,7 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
       }
       
       handleCancel();
+      previewRef.current?.reload();
     }
   };
 
@@ -83,11 +86,13 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
     } else {
       toast.success("Milestone deleted");
       setMilestones(prev => prev.filter(m => m.id !== id));
+      previewRef.current?.reload();
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div className="lg:col-span-5 space-y-6 max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
       {!isAdding && !editingId && (
         <div className="flex justify-end">
           <Button onClick={handleAddNew} className="rounded-xl">
@@ -172,6 +177,15 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
           </div>
         )}
       </div>
+    </div>
+
+      <CmsPreviewFrame
+        ref={previewRef}
+        previewUrl="/about?preview=true"
+        channel="about"
+        scrollTo="about-milestones"
+        payload={{ milestones }}
+      />
     </div>
   );
 }

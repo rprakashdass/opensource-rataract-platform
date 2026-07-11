@@ -4,7 +4,7 @@ import { useLoadingToast } from "@/hooks/useLoadingToast";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Key, UserCheck } from "lucide-react";
+import { Pencil, Trash2, Key, UserCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import FilterBar from "@/components/admin/FilterBar";
 import { ROUTES } from "@/lib/constants";
@@ -26,8 +26,6 @@ export default function AccountsAdmin() {
   const search = searchParams.get("search") || "";
   const status = searchParams.get("status") || "";
 
-  const [submitting, setSubmitting] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   const { data: accounts = [], isLoading: loading, error: queryError } = useQuery<UserAccount[]>({
     queryKey: ['admin-accounts'],

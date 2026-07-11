@@ -1,15 +1,14 @@
 import { getBoardHistory } from "@/features/members/queries/getBoard";
 import Link from "next/link";
-import { ArrowLeft, Shield, Clock, Plus, Settings } from "lucide-react";
+import { Shield, Clock, Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function BoardManagementPage({
-  searchParams,
-}: {
-  searchParams: { year?: string };
+export default async function BoardManagementPage(props: {
+  searchParams: Promise<{ year?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const { financialYears, currentYear, board, error } = await getBoardHistory(searchParams.year);
 
   if (error) {
