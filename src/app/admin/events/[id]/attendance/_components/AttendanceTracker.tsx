@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2, XCircle, Clock, QrCode, Search, AlertTriangle, Users, Lock, Unlock, Download, MoreHorizontal, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +25,16 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
   const [qrToken, setQrToken] = useState<string | null>(null);
   const [checkInCode, setCheckInCode] = useState<string | null>(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
+
+  const checkInUrl = qrToken ? `${origin || "http://localhost:3000"}/attendance/checkin/${qrToken}` : "";
+  const qrImageUrl = checkInUrl ? `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(checkInUrl)}` : "";
 
   const isLocked = event.isAttendanceLocked;
 
@@ -386,12 +396,31 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                       </div>
 
                       <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
-                          <QrCode className="w-32 h-32 text-slate-900 opacity-80 mb-4" />
+                          {qrToken ? (
+                              <img 
+                                  src={qrImageUrl}
+                                  alt="Check-in QR Code"
+                                  className="w-32 h-32 mb-4 bg-white border border-slate-200 p-1 rounded-xl shadow-sm select-none"
+                              />
+                          ) : (
+                              <div className="flex flex-col items-center justify-center text-center p-2 mb-2">
+                                  <QrCode className="w-16 h-16 text-slate-300 mb-2" />
+                                  <p className="text-[10px] text-amber-600 font-bold max-w-[200px] leading-relaxed">
+                                      QR Code hidden for security. To display a new QR code to members, please stop and restart the session.
+                                  </p>
+                              </div>
+                          )}
                           <p className="text-xs font-bold text-slate-500 uppercase">Scan to check in</p>
                           {qrToken && (
-                              <a href={`/attendance/checkin/${qrToken}`} target="_blank" rel="noreferrer" className="text-purple-600 font-bold hover:underline break-all mt-2 text-xs">
+                              <button 
+                                  onClick={() => {
+                                      navigator.clipboard.writeText(checkInUrl);
+                                      toast.success("Check-in link copied to clipboard");
+                                  }} 
+                                  className="text-purple-600 font-bold hover:underline mt-2 text-xs"
+                              >
                                   Copy Link
-                              </a>
+                              </button>
                           )}
                       </div>
                       
