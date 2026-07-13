@@ -17,6 +17,17 @@ import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { getFallbackImage } from "@/lib/fallbacks";
 import { formatDistanceToNow } from "date-fns";
 
+const formatDate = (dateInput: any) => {
+  if (!dateInput) return "";
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return "";
+  const day = String(d.getDate()).padStart(2, "0");
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month} ${year}`;
+};
+
 interface ProfileJourneyClientProps {
   member: any;
   user: any;
@@ -391,7 +402,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                 <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-[#F7A800]" />
                 <span className="text-[10px] font-black text-[#F7A800] uppercase tracking-wider block">Beginning</span>
                 <h4 className="text-sm font-bold text-[#0B132B] mt-1">Joined the Club</h4>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">{new Date(member.createdAt).toLocaleDateString()}</p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">{formatDate(member.createdAt)}</p>
               </div>
 
               {/* First Event */}
@@ -403,7 +414,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                     Attended {member.attendance[member.attendance.length - 1].event.title}
                   </h4>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    {new Date(member.attendance[member.attendance.length - 1].checkedInAt).toLocaleDateString()}
+                    {formatDate(member.attendance[member.attendance.length - 1].checkedInAt)}
                   </p>
                 </div>
               )}
@@ -417,7 +428,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                     Assigned in {member.projectRoles[member.projectRoles.length - 1].project.title}
                   </h4>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    {new Date(member.projectRoles[member.projectRoles.length - 1].joinedAt).toLocaleDateString()}
+                    {formatDate(member.projectRoles[member.projectRoles.length - 1].joinedAt)}
                   </p>
                 </div>
               )}
@@ -431,7 +442,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                     Appointed as {member.boardMemberships[member.boardMemberships.length - 1].position.replaceAll("_", " ")}
                   </h4>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    {new Date(member.boardMemberships[member.boardMemberships.length - 1].joinedAt).toLocaleDateString()}
+                    {formatDate(member.boardMemberships[member.boardMemberships.length - 1].joinedAt)}
                   </p>
                 </div>
               )}
@@ -576,7 +587,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                         <div>
                           <h4 className="font-bold text-sm text-[#0B132B] line-clamp-1">{att.event.title}</h4>
                           <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                            {new Date(att.checkedInAt).toLocaleDateString()}
+                            {formatDate(att.checkedInAt)}
                           </p>
                         </div>
                         <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[10px] font-black text-emerald-800 uppercase tracking-wider">
