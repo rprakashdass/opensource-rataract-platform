@@ -34,6 +34,8 @@ export default async function MemberProfilePage() {
 
     if (!member) return <div className="text-center py-20 text-slate-500">Profile not found.</div>;
 
+    const serializedMember = JSON.parse(JSON.stringify(member));
+
     return (
         <div className="space-y-8 pb-10 max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -62,7 +64,7 @@ export default async function MemberProfilePage() {
                                 {member.phone && <Phone className="w-5 h-5 hover:text-purple-600 cursor-pointer transition-colors" />}
                             </div>
 
-                            <ProfileEditDialog member={member} />
+                            <ProfileEditDialog member={serializedMember} />
                         </div>
                     </div>
 
