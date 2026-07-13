@@ -27,7 +27,7 @@ export function QuoteCard({
 }: QuoteCardProps) {
   return (
     <div className={cn(
-      "flex flex-col justify-between p-8 md:p-10 rounded-3xl h-full shadow-sm hover:shadow-md transition-shadow",
+      "flex flex-col justify-between p-8 md:p-10 rounded-3xl h-full shadow-sm motion-card",
       themeStyles[colorTheme]
     )}>
       <blockquote className="text-lg md:text-xl font-medium leading-snug mb-12">

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { getFallbackImage } from "@/lib/fallbacks";
 import { CmsText } from "@/components/cms/CmsText";
+import { AnimatedGrid, AnimatedImage } from "@/components/ui/motion/AnimatedLayouts";
 
 interface ProjectsCopy {
   projectsSubtitle?: string | null;
@@ -99,22 +100,22 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
           </div>
 
           {activeProjects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {activeProjects.map((project: any) => {
                 const coverImage = getGoogleDriveDirectLink(project.media?.[0]?.url) || getFallbackImage(project.category);
                 return (
                   <Link 
                     key={project.id}
                     href={`/projects/${project.slug}`}
-                    className="group flex flex-col h-[550px] bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 relative"
+                    className="group flex flex-col h-[550px] bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] motion-card relative"
                   >
                     <div className="h-[280px] w-full bg-slate-50 relative overflow-hidden shrink-0">
-                      <Image
+                      <AnimatedImage
                         src={coverImage}
                         alt={project.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover group-hover:scale-[1.08] transition-transform duration-1000"
+                        className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
                       />
                       {/* Glassmorphism Badge */}
                       <div className="absolute top-6 left-6 bg-white/20 backdrop-blur-md border border-white/40 text-white text-[11px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2">
@@ -139,7 +140,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                           {project.events?.length || 0} Phases
                         </span>
-                        <span className="w-10 h-10 rounded-full bg-slate-50 group-hover:bg-[#0B132B] text-slate-400 group-hover:text-white flex items-center justify-center transition-all duration-300">
+                        <span className="w-10 h-10 rounded-full bg-slate-50 group-hover:bg-[#0B132B] text-slate-400 group-hover:text-white flex items-center justify-center transition-all duration-350">
                           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </span>
                       </div>
@@ -147,7 +148,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
                   </Link>
                 );
               })}
-            </div>
+            </AnimatedGrid>
           ) : (
             <div className="bg-white rounded-3xl p-24 text-center border border-slate-100 shadow-sm max-w-2xl mx-auto">
               <Sparkles className="w-12 h-12 text-[#F7A800] mx-auto mb-6 opacity-80" />
@@ -178,22 +179,22 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
           </div>
 
           {completedProjects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {completedProjects.map((project: any) => {
                 const coverImage = getGoogleDriveDirectLink(project.media?.[0]?.url) || getFallbackImage(project.category);
                 return (
                   <Link 
                     key={project.id}
                     href={`/projects/${project.slug}`}
-                    className="group flex flex-col h-[500px] bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-200 hover:border-slate-300 transition-all duration-500 hover:-translate-y-2 relative"
+                    className="group flex flex-col h-[500px] bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm motion-card relative"
                   >
                     <div className="h-[240px] w-full bg-slate-200 relative overflow-hidden shrink-0">
-                      <Image
+                      <AnimatedImage
                         src={coverImage}
                         alt={project.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover opacity-60 group-hover:scale-[1.08] group-hover:opacity-90 transition-all duration-1000 mix-blend-luminosity group-hover:mix-blend-normal"
+                        className="object-cover opacity-60 group-hover:scale-[1.03] group-hover:opacity-90 transition-all duration-700 mix-blend-luminosity group-hover:mix-blend-normal"
                       />
                       <div className="absolute top-6 left-6 bg-white/80 backdrop-blur-md border border-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full flex items-center gap-2 shadow-sm">
                         <Archive className="w-3.5 h-3.5" /> Completed
@@ -217,7 +218,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                           {project.events?.length || 0} Archives
                         </span>
-                        <span className="w-10 h-10 rounded-full bg-white group-hover:bg-[#0B132B] text-slate-400 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm border border-slate-200 group-hover:border-transparent">
+                        <span className="w-10 h-10 rounded-full bg-white group-hover:bg-[#0B132B] text-slate-400 group-hover:text-white flex items-center justify-center transition-all duration-350 shadow-sm border border-slate-200 group-hover:border-transparent">
                           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </span>
                       </div>
@@ -225,7 +226,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
                   </Link>
                 );
               })}
-            </div>
+            </AnimatedGrid>
           ) : (
             <div className="text-slate-400 font-medium text-center py-20 text-lg">
               No completed projects archived yet.

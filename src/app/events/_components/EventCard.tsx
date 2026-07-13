@@ -3,9 +3,9 @@
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { CalendarIcon } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { AnimatedImage } from "@/components/ui/motion/AnimatedLayouts";
 
 const MotionCard = motion(Card);
 
@@ -47,21 +47,21 @@ export default function EventCard({
   return (
     <MotionCard
       key={event.id}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 * index, duration: 0.5 }}
-      className="overflow-hidden group cursor-pointer h-full"
+      transition={{ delay: 0.04 * index, type: "spring", stiffness: 100, damping: 20 }}
+      className="overflow-hidden group cursor-pointer h-full motion-card"
     >
       <Link href={`/events/${event.slug}`} prefetch>
         <div className="relative aspect-square">
-          <Image
+          <AnimatedImage
             src={event.coverImage}
             alt={event.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
             <h2 className="text-2xl font-bold mb-2">{event.title}</h2>
             <p className="text-sm opacity-90 mb-2 line-clamp-1">

@@ -99,7 +99,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
           <Link 
             href="/auth/login" 
             className={cn(
-              "hidden md:block text-sm font-bold transition-colors relative group",
+              "hidden md:block text-sm font-bold relative group motion-link",
               !scrolled && pathname === "/partner" ? "text-slate-300 hover:text-white" : "text-slate-500 hover:text-[#0B132B]"
             )}
           >
@@ -110,7 +110,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
             )} />
           </Link>
           <Link href="/join" className="hidden md:block">
-            <Button className="font-bold rounded-full px-7 h-11 bg-[#F7A800] hover:bg-[#e09700] text-[#0B132B] shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
+            <Button className="font-bold rounded-full px-7 h-11 bg-[#F7A800] hover:bg-[#e09700] text-[#0B132B] shadow-md hover:shadow-lg motion-button">
               Join Us
             </Button>
           </Link>

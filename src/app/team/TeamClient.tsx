@@ -7,6 +7,7 @@ import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { EditorialSection } from "@/components/ui/public/EditorialSection";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AnimatedGrid, AnimatedImage } from "@/components/ui/motion/AnimatedLayouts";
 
 interface BoardMember {
   id: string;
@@ -64,7 +65,7 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            <AnimatedGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
               {board.map((m, idx) => (
                 <div key={m.id} className="min-h-[400px]">
                   <QuoteCard
@@ -76,7 +77,7 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
                   />
                 </div>
               ))}
-            </div>
+            </AnimatedGrid>
           </MaxWidthWrapper>
         </section>
       )}
@@ -88,7 +89,7 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
         background="white"
       >
         {hasMembers ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-16 mt-8">
+          <AnimatedGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-16 mt-8">
             {members.map((member, idx) => {
               const activeBoard = member.boardMemberships?.find(
                 b => b.financialYear?.status === "ACTIVE" || !b.leftAt
@@ -98,10 +99,10 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
                   {/* Huge Image Focus */}
                   <div className="aspect-square w-full rounded-3xl overflow-hidden bg-slate-50 mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 group-hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500">
                     {member.avatar ? (
-                      <img 
+                      <AnimatedImage 
                         src={member.avatar} 
                         alt={member.name || ""} 
-                        className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" 
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" 
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-serif italic text-6xl">
@@ -120,7 +121,7 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
                 </div>
               );
             })}
-          </div>
+          </AnimatedGrid>
         ) : (
           <div className="text-center py-32 bg-slate-50 rounded-3xl border border-dashed border-slate-200 max-w-2xl mx-auto shadow-sm">
             <Sparkles className="w-12 h-12 text-[#F7A800] mx-auto mb-4 opacity-80" />

@@ -1,24 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ProfileForm from "./ProfileForm";
+import { AnimatedDialog } from "@/components/ui/motion/AnimatedLayouts";
 
 export default function ProfileEditDialog({ member }: { member: any }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">Edit Profile</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
-        <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
-        </DialogHeader>
-        <ProfileForm member={member} onSuccess={() => { setOpen(false); window.location.reload(); }} />
-      </DialogContent>
-    </Dialog>
+    <>
+      <Button variant="outline" className="w-full motion-button" onClick={() => setOpen(true)}>
+        Edit Profile
+      </Button>
+      <AnimatedDialog isOpen={open} onClose={() => setOpen(false)}>
+        <div className="p-6 md:p-8 max-h-[90vh] overflow-y-auto bg-white">
+          <h2 className="text-2xl font-bold text-[#0B132B] mb-6 border-b pb-2">Edit Profile</h2>
+          <ProfileForm member={member} onSuccess={() => { setOpen(false); window.location.reload(); }} />
+        </div>
+      </AnimatedDialog>
+    </>
   );
 }

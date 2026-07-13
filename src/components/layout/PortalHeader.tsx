@@ -7,6 +7,8 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import { useState, useRef, useEffect } from "react";
 import { ROUTES } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
+import { AnimatePresence, LazyMotion, domMax, m } from "framer-motion";
+import { motionVariants } from "@/lib/motion-tokens";
 
 export type NotificationItem = {
   id: string;
@@ -157,65 +159,75 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                 )}
               </button>
 
-              {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
-                  <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h3 className="font-semibold text-slate-900">Notifications</h3>
-                    {hasUnread && (
-                      <button 
-                        onClick={markAllAsRead}
-                        className="text-xs text-purple-600 hover:text-purple-700 font-medium bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors"
-                      >
-                        Mark all as read
-                      </button>
-                    )}
-                  </div>
-                  <div className="max-h-[360px] overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="p-8 text-center text-slate-500 text-sm">
-                        No recent updates
+              <AnimatePresence>
+                {notifOpen && (
+                  <LazyMotion features={domMax}>
+                    <m.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      variants={motionVariants.dropdown}
+                      className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50 origin-top-right"
+                    >
+                      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <h3 className="font-semibold text-slate-900">Notifications</h3>
+                        {hasUnread && (
+                          <button 
+                            onClick={markAllAsRead}
+                            className="text-xs text-purple-600 hover:text-purple-700 font-medium bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <div className="divide-y divide-slate-100">
-                        {notifications.map((n) => {
-                          const isRead = readNotifIds.includes(n.id);
-                          return (
-                            <Link
-                              key={n.id}
-                              href={n.href}
-                              onClick={() => setNotifOpen(false)}
-                              className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${isRead ? 'opacity-70' : 'bg-slate-50/30'}`}
-                            >
-                              <div className="mt-0.5 flex-shrink-0 relative">
-                                <NotifIcon type={n.type} />
-                                {!isRead && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-900 truncate">{n.title}</p>
-                                {n.description && (
-                                  <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{n.description}</p>
-                                )}
-                                <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
-                                  {formatDistanceToNow(n.date, { addSuffix: true })}
-                                </p>
-                              </div>
-                              {!isRead && (
-                                <button
-                                  onClick={(e) => markAsRead(e, n.id)}
-                                  className="self-center p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
-                                  title="Mark as read"
+                      <div className="max-h-[360px] overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <div className="p-8 text-center text-slate-500 text-sm">
+                            No recent updates
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-slate-100">
+                            {notifications.map((n) => {
+                              const isRead = readNotifIds.includes(n.id);
+                              return (
+                                <Link
+                                  key={n.id}
+                                  href={n.href}
+                                  onClick={() => setNotifOpen(false)}
+                                  className={`p-4 hover:bg-slate-50 transition-colors flex gap-3 ${isRead ? 'opacity-70' : 'bg-slate-50/30'}`}
                                 >
-                                  <Check className="w-4 h-4" />
-                                </button>
-                              )}
-                            </Link>
-                          );
-                        })}
+                                  <div className="mt-0.5 flex-shrink-0 relative">
+                                    <NotifIcon type={n.type} />
+                                    {!isRead && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 truncate">{n.title}</p>
+                                    {n.description && (
+                                      <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{n.description}</p>
+                                    )}
+                                    <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
+                                      {formatDistanceToNow(n.date, { addSuffix: true })}
+                                    </p>
+                                  </div>
+                                  {!isRead && (
+                                    <button
+                                      onClick={(e) => markAsRead(e, n.id)}
+                                      className="self-center p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                      title="Mark as read"
+                                    >
+                                      <Check className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                    </m.div>
+                  </LazyMotion>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="w-px h-6 bg-slate-200 hidden md:block mx-1" />
@@ -234,83 +246,93 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                 </div>
               </button>
 
-              {profileOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
-                  <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                    <p className="font-bold text-slate-900 truncate">{user.name}</p>
-                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {user.roles.slice(0, 2).map((role) => (
-                        <span key={role} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold uppercase">
-                          {role.replace("_", " ")}
-                        </span>
-                      ))}
-                      {user.roles.length > 2 && (
-                        <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-semibold">
-                          +{user.roles.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-1">
-                    <Link
-                      href={`${ROUTES.DASHBOARD}/profile`}
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
+              <AnimatePresence>
+                {profileOpen && (
+                  <LazyMotion features={domMax}>
+                    <m.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      variants={motionVariants.dropdown}
+                      className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50 origin-top-right"
                     >
-                      <UserIcon className="w-4 h-4 text-slate-400" />
-                      My Profile
-                    </Link>
+                      <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                        <p className="font-bold text-slate-900 truncate">{user.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {user.roles.slice(0, 2).map((role) => (
+                            <span key={role} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold uppercase">
+                              {role.replace("_", " ")}
+                            </span>
+                          ))}
+                          {user.roles.length > 2 && (
+                            <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-semibold">
+                              +{user.roles.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
-                    {isAdminContext ? (
-                      <Link
-                        href={ROUTES.DASHBOARD}
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
-                      >
-                        <ArrowRightLeft className="w-4 h-4 text-slate-400" />
-                        Switch to Member Portal
-                      </Link>
-                    ) : hasAdminRole ? (
-                      <Link
-                        href={ROUTES.ADMIN}
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
-                      >
-                        <ArrowRightLeft className="w-4 h-4 text-slate-400" />
-                        Switch to Admin Portal
-                      </Link>
-                    ) : null}
+                      <div className="p-1">
+                        <Link
+                          href={`${ROUTES.DASHBOARD}/profile`}
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
+                        >
+                          <UserIcon className="w-4 h-4 text-slate-400" />
+                          My Profile
+                        </Link>
 
-                    <div className="h-px bg-slate-100 my-1 mx-2" />
+                        {isAdminContext ? (
+                          <Link
+                            href={ROUTES.DASHBOARD}
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
+                          >
+                            <ArrowRightLeft className="w-4 h-4 text-slate-400" />
+                            Switch to Member Portal
+                          </Link>
+                        ) : hasAdminRole ? (
+                          <Link
+                            href={ROUTES.ADMIN}
+                            onClick={() => setProfileOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
+                          >
+                            <ArrowRightLeft className="w-4 h-4 text-slate-400" />
+                            Switch to Admin Portal
+                          </Link>
+                        ) : null}
 
-                    <Link
-                      href="/"
-                      onClick={() => setProfileOpen(false)}
-                      className="md:hidden flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
-                    >
-                      <ExternalLink className="w-4 h-4 text-slate-400" />
-                      Visit Website
-                    </Link>
+                        <div className="h-px bg-slate-100 my-1 mx-2" />
 
-                    <Link
-                      href={hasAdminRole ? `${ROUTES.ADMIN}/settings` : `${ROUTES.DASHBOARD}/profile`}
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
-                    >
-                      <Settings className="w-4 h-4 text-slate-400" />
-                      Settings
-                    </Link>
+                        <Link
+                          href="/"
+                          onClick={() => setProfileOpen(false)}
+                          className="md:hidden flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
+                        >
+                          <ExternalLink className="w-4 h-4 text-slate-400" />
+                          Visit Website
+                        </Link>
 
-                    <div className="h-px bg-slate-100 my-1 mx-2" />
+                        <Link
+                          href={hasAdminRole ? `${ROUTES.ADMIN}/settings` : `${ROUTES.DASHBOARD}/profile`}
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
+                        >
+                          <Settings className="w-4 h-4 text-slate-400" />
+                          Settings
+                        </Link>
 
-                    <div className="px-3 py-2 w-full text-left" onClick={() => setProfileOpen(false)}>
-                      <LogoutButton />
-                    </div>
-                  </div>
-                </div>
-              )}
+                        <div className="h-px bg-slate-100 my-1 mx-2" />
+
+                        <div className="px-3 py-2 w-full text-left" onClick={() => setProfileOpen(false)}>
+                          <LogoutButton />
+                        </div>
+                      </div>
+                    </m.div>
+                  </LazyMotion>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

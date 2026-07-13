@@ -61,7 +61,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
             placeholder="+91 9876543210"
           />
         </div>
@@ -72,7 +72,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
             name="bloodGroup"
             value={formData.bloodGroup}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500 bg-white"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white motion-input"
           >
             <option value="">Select Blood Group</option>
             {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
@@ -88,7 +88,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
             name="profession"
             value={formData.profession}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
             placeholder="e.g. Software Engineer, Student"
           />
         </div>
@@ -100,7 +100,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
             name="companyName"
             value={formData.companyName}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
             placeholder="e.g. Google, Anna University"
           />
         </div>
@@ -113,7 +113,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
           name="location"
           value={formData.location}
           onChange={handleChange}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
           placeholder="e.g. Chennai, TN"
         />
       </div>
@@ -125,7 +125,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
           value={formData.bio}
           onChange={handleChange}
           rows={3}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
           placeholder="Tell us a little bit about yourself..."
         />
       </div>
@@ -138,7 +138,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
           value={formData.websiteQuote}
           onChange={handleChange}
           rows={2}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
           placeholder="e.g. Serving as President allows me to build the future of Coimbatore..."
         />
       </div>
@@ -161,7 +161,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 disabled:opacity-50 transition"
+          className="rounded-md bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 disabled:opacity-50 transition motion-button"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
