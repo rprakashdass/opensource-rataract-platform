@@ -31,6 +31,7 @@ export default function EventForm() {
   const [posterMediaId, setPosterMediaId] = useState<string>("");
   const [sendToAll, setSendToAll] = useState(true);
   const [sendToBoard, setSendToBoard] = useState(false);
+  const [submitAction, setSubmitAction] = useState<string>("DRAFT");
 
   useEffect(() => {
     getActiveProjects().then((res) => {
@@ -43,6 +44,18 @@ export default function EventForm() {
       })
       .catch(console.error);
   }, []);
+
+  function getCleanErrorMessage(errStr: string) {
+    try {
+      if (errStr.startsWith("[") && errStr.endsWith("]")) {
+        const parsed = JSON.parse(errStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed[0].message || errStr;
+        }
+      }
+    } catch (_) {}
+    return errStr;
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,9 +79,9 @@ export default function EventForm() {
       registrationEnabled: formData.get("registrationEnabled") === "on",
       isFeatured: formData.get("isFeatured") === "on",
       visibility: formData.get("visibility") || "PUBLIC",
-      publishStatus: (e.nativeEvent as any).submitter?.getAttribute("value") || "DRAFT",
+      publishStatus: submitAction,
       publishAt: formData.get("publishAt") ? new Date(formData.get("publishAt") as string).toISOString() : null,
-      publishedAt: ((e.nativeEvent as any).submitter?.getAttribute("value") === "PUBLISHED") ? new Date().toISOString() : null,
+      publishedAt: (submitAction === "PUBLISHED") ? new Date().toISOString() : null,
       sendEmailNotification: formData.get("sendEmailNotification") === "on",
       sendEmailToBoard: formData.get("sendEmailToBoard") === "on",
       attachCalendarInvite: formData.get("attachCalendarInvite") === "on",
@@ -81,7 +94,7 @@ export default function EventForm() {
       const res = await createEvent(parsed);
       
       if (res.error) {
-        toast.error(res.error);
+        toast.error(getCleanErrorMessage(res.error));
       } else {
         toast.success("Event created successfully!");
         router.push("/admin");
@@ -93,7 +106,7 @@ export default function EventForm() {
       } else if (err.errors && err.errors.length > 0) {
         toast.error("Validation error: " + err.errors[0].message);
       } else {
-        toast.error(err.message || "Failed to create event");
+        toast.error(getCleanErrorMessage(err.message || "Failed to create event"));
       }
     } finally {
       setLoading(false);
@@ -371,9 +384,9 @@ export default function EventForm() {
         <CardFooter className="bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
           <div className="flex flex-col sm:flex-row gap-3 w-full justify-end">
             <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">Cancel</Button>
-            <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
-            <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
-            <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
+            <Button type="submit" onClick={() => setSubmitAction("DRAFT")} variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
+            <Button type="submit" onClick={() => setSubmitAction("SCHEDULED")} variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
+            <Button type="submit" onClick={() => setSubmitAction("PUBLISHED")} disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
           </div>
         </CardFooter>
       </form>
