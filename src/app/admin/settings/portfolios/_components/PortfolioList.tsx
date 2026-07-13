@@ -151,17 +151,19 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
 
       <div className="space-y-4">
         {portfolios.map((portfolio, index) => (
-          <div key={portfolio.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm transition-all hover:shadow-md flex gap-4">
+          <div key={portfolio.id} className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm transition-all hover:shadow-md flex gap-3 sm:gap-4">
             
             {/* Drag Handle & Ordering */}
-            <div className="flex flex-col items-center justify-center gap-1 text-slate-300">
-              <button onClick={() => moveUp(index)} disabled={index === 0 || isEditing !== null} className="hover:text-slate-600 disabled:opacity-30">▲</button>
-              <GripVertical className="w-5 h-5 cursor-move opacity-50" />
-              <button onClick={() => moveDown(index)} disabled={index === portfolios.length - 1 || isEditing !== null} className="hover:text-slate-600 disabled:opacity-30">▼</button>
-            </div>
+            {isEditing !== portfolio.id && (
+              <div className="flex flex-col items-center justify-center gap-1 text-slate-300 shrink-0 select-none">
+                <button onClick={() => moveUp(index)} disabled={index === 0 || isEditing !== null} className="hover:text-slate-600 disabled:opacity-30">▲</button>
+                <GripVertical className="w-5 h-5 cursor-move opacity-50" />
+                <button onClick={() => moveDown(index)} disabled={index === portfolios.length - 1 || isEditing !== null} className="hover:text-slate-600 disabled:opacity-30">▼</button>
+              </div>
+            )}
 
             {/* Content Area */}
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 min-w-0 space-y-4">
               {isEditing === portfolio.id ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -177,15 +179,16 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
                     </div>
                     <div>
                       <label className="text-xs font-bold text-slate-500 uppercase">Icon</label>
-                      <div className="flex flex-wrap gap-2 mt-1">
+                      <div className="grid grid-cols-6 gap-2 mt-1 w-fit max-w-full">
                         {ICON_OPTIONS.map(opt => {
                           const IconComp = opt.icon;
                           const isSelected = editForm.icon === opt.name;
                           return (
                             <button 
                               key={opt.name}
+                              type="button"
                               onClick={() => setEditForm({...editForm, icon: opt.name})}
-                              className={`p-2 rounded-lg border ${isSelected ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                              className={`p-2 rounded-lg border flex items-center justify-center ${isSelected ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                               title={opt.name}
                             >
                               <IconComp className="w-4 h-4" />
