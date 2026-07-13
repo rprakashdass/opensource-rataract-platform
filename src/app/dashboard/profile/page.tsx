@@ -82,7 +82,10 @@ export default async function MemberProfilePage() {
                     
                     {/* Personal Information */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">Personal Information</h3>
+                        <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                            <h3 className="font-bold text-slate-900">Personal Information</h3>
+                            <ProfileEditDialog member={serializedMember} triggerType="link" />
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Full Name</p>
