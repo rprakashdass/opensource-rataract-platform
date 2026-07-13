@@ -389,6 +389,15 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                           <h3 className="text-2xl font-black text-slate-900">Attendance Session</h3>
                           <p className="text-slate-500 mt-2 font-medium">Members can scan the QR code or enter the 6-digit PIN on their dashboard to check in.</p>
                       </div>
+
+                      {origin && (origin.includes("localhost") || origin.includes("127.0.0.1")) && (
+                          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-3 text-xs font-medium text-left leading-relaxed flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                              <div>
+                                  <span className="font-bold">Local Development:</span> Mobile scanners cannot resolve "localhost". Access this admin page using your network IP (e.g. from the terminal `npm run dev` output) so phones on the same Wi-Fi can scan successfully.
+                              </div>
+                          </div>
+                      )}
                       
                       <div className="bg-purple-50 rounded-2xl p-6 border border-purple-100">
                           <p className="text-purple-700 font-bold uppercase tracking-wider text-xs mb-2">Check-in PIN</p>
