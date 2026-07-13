@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import ProfileEditDialog from "./_components/ProfileEditDialog";
+import PasswordChangeForm from "./_components/PasswordChangeForm";
 
 export default async function MemberProfilePage() {
     const session = await getSession();
@@ -72,6 +73,8 @@ export default async function MemberProfilePage() {
                             <p className="text-xs text-slate-500">Certificates earned from events and projects will appear here.</p>
                         </div>
                     </div>
+
+                    <PasswordChangeForm />
                 </div>
 
                 {/* Right Column: Details */}
