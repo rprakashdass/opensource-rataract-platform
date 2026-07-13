@@ -78,16 +78,17 @@ export default function PasswordChangeForm() {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-      <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-        <KeyRound className="w-5 h-5 text-[#F7A800]" />
-        <h2 className="text-xl font-bold text-[#0B132B]">Account Credentials</h2>
-      </div>
+    <LazyMotion features={domMax}>
+      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <KeyRound className="w-5 h-5 text-[#F7A800]" />
+          <h2 className="text-xl font-bold text-[#0B132B]">Account Credentials</h2>
+        </div>
 
-      <AnimatePresence mode="wait">
-        {step === "request" ? (
-          <LazyMotion features={domMax} key="request-step">
+        <AnimatePresence mode="wait">
+          {step === "request" ? (
             <m.div
+              key="request-step"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -113,10 +114,9 @@ export default function PasswordChangeForm() {
                 {loading ? "Requesting OTP..." : "Send Verification OTP"}
               </button>
             </m.div>
-          </LazyMotion>
-        ) : (
-          <LazyMotion features={domMax} key="verify-step">
+          ) : (
             <m.form
+              key="verify-step"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -187,9 +187,9 @@ export default function PasswordChangeForm() {
                 </button>
               </div>
             </m.form>
-          </LazyMotion>
-        )}
-      </AnimatePresence>
-    </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </LazyMotion>
   );
 }

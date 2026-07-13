@@ -75,8 +75,6 @@ export default async function MemberProfilePage() {
                             <p className="text-xs text-slate-500">Certificates earned from events and projects will appear here.</p>
                         </div>
                     </div>
-
-                    <PasswordChangeForm />
                 </div>
 
                 {/* Right Column: Details */}
@@ -108,6 +106,8 @@ export default async function MemberProfilePage() {
                             </div>
                         </div>
                     </div>
+
+                    <PasswordChangeForm />
 
                     {/* Skills & Emergency */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
