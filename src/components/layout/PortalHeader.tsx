@@ -87,7 +87,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
   }, []);
 
   const hasAdminRole = user.roles.some((r) =>
-    ["SUPER_ADMIN", "ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "EVENTS_ADMIN", "CONTENT_ADMIN"].includes(r)
+    ["SUPER_ADMIN", "CLUB_ADMIN"].includes(r)
   );
 
   const getInitials = (name: string) => {
@@ -315,7 +315,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                         </Link>
 
                         <Link
-                          href={hasAdminRole ? `${ROUTES.ADMIN}/settings` : `${ROUTES.DASHBOARD}/profile`}
+                          href={`${ROUTES.DASHBOARD}/profile`}
                           onClick={() => setProfileOpen(false)}
                           className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors w-full"
                         >
