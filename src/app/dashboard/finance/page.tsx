@@ -30,7 +30,7 @@ export default async function MemberFinancePage() {
   if (member) {
     const allRequests = await prisma.paymentRequest.findMany({
       where: {
-        clubId: club.id,
+        clubId: member.clubId,
         OR: [
           { isGlobal: true },
           { assignees: { some: { memberId: member.id } } }

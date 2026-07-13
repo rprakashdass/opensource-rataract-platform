@@ -6,7 +6,7 @@ import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 // Helper to get logged in user
 async function getSessionUser() {
   const session = await getSession();
-  if (!session || !canManageFinance(session)) return null;
+  if (!session) return null;
 
   return prisma.user.findUnique({
     where: { id: session.id },
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     const transaction = await prisma.transaction.create({
       data: {
-        clubId: club.id,
+        clubId: user.member?.clubId || club.id,
         userId: user.id,
         memberId: user.member?.id || null,
         title: payload.title || description.substring(0, 50),

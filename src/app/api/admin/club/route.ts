@@ -13,23 +13,33 @@ export async function getOrCreateDefaultClub() {
   const appName = getRequiredAppName();
 
   try {
-    let club = await prisma.club.findFirst();
+    let club = await prisma.club.findFirst({
+      where: { name: appName }
+    });
     if (!club) {
-      club = await prisma.club.create({
-        data: {
-          name: appName,
-          shortName: appName,
-          district: null,
-          email: null,
-          description: null,
-          tenureYear: "2026-27",
-          foundedYear: new Date().getFullYear(),
-          meetingDay: null,
-          meetingTime: null,
-          meetingVenue: null,
-          presidentMessage: null,
-        },
-      });
+      club = await prisma.club.findFirst();
+      if (club) {
+        club = await prisma.club.update({
+          where: { id: club.id },
+          data: { name: appName, shortName: appName }
+        });
+      } else {
+        club = await prisma.club.create({
+          data: {
+            name: appName,
+            shortName: appName,
+            district: null,
+            email: null,
+            description: null,
+            tenureYear: "2026-27",
+            foundedYear: new Date().getFullYear(),
+            meetingDay: null,
+            meetingTime: null,
+            meetingVenue: null,
+            presidentMessage: null,
+          },
+        });
+      }
     }
     return club;
   } catch (err) {
