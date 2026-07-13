@@ -68,7 +68,7 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
           </div>
         </div>
 
-        {(upiId || paymentQr) && (
+        {(upiId || paymentQr) ? (
           <div className="bg-white rounded-lg p-4 border border-purple-100 flex flex-col items-center justify-center text-center">
             {paymentQr ? (
               <a 
@@ -83,12 +83,24 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
                   <Smartphone className="h-4 w-4" />
                 </div>
               </a>
-            ) : (
-              <div className="w-32 h-32 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400 mb-3">
-                <QrCode className="h-8 w-8 mb-2 opacity-50" />
-                <span className="text-[10px] uppercase font-bold tracking-wider">No QR Set</span>
-              </div>
-            )}
+            ) : upiId ? (
+              <a 
+                href={`upi://pay?pa=${upiId}&pn=${encodeURIComponent(clubName)}`} 
+                className="group relative block transition-transform hover:scale-105 active:scale-95"
+                title="Tap to pay with UPI app"
+              >
+                <div className="w-32 h-32 relative border-4 border-white shadow-sm rounded-lg overflow-hidden bg-white p-1 flex items-center justify-center">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${encodeURIComponent(clubName)}`)}`}
+                    alt="Club Payment QR"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg group-hover:bg-emerald-600 transition-colors">
+                  <Smartphone className="h-4 w-4" />
+                </div>
+              </a>
+            ) : null}
             
             {upiId && (
               <div className="mt-4 flex flex-col items-center">
@@ -101,6 +113,13 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
             <p className="text-[10px] text-gray-400 mt-3 max-w-[200px]">
               Tap the QR code on mobile devices to pay directly via installed UPI apps.
             </p>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-xs font-medium text-left leading-relaxed flex items-start gap-2">
+            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold">No payment credentials set:</span> The club has not configured its UPI ID or payment QR code yet. Please contact your club treasurer to set up payment details in the admin settings portal.
+            </div>
           </div>
         )}
       </div>
