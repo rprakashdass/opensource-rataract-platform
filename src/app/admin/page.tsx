@@ -1,7 +1,8 @@
 import Link from "next/link";
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { getAttentionSummary } from "@/features/admin/queries/getAttentionSummary";
-import { getSession } from "@/lib/auth/session";
+import { getSession, canViewFinance } from "@/lib/auth/session";
 import { 
   Plus, 
   Calendar, 
@@ -43,34 +44,37 @@ export default async function AdminPage() {
     activeProjectsCount = await prisma.project.count({ where: { status: "ACTIVE" } });
     upcomingEventsCount = await prisma.event.count({ where: { status: "UPCOMING" } });
     
-    // Finance Calculations
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+    // Finance Calculations (Only if authorized)
+    const viewFinance = canViewFinance(session);
+    if (viewFinance) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
 
-    const [incomeAgg, expenseAgg, monthlyExpenseAgg, pendingCount] = await Promise.all([
-      prisma.transaction.aggregate({
-        where: { type: "INCOME", status: "APPROVED" },
-        _sum: { amount: true }
-      }),
-      prisma.transaction.aggregate({
-        where: { type: "EXPENSE", status: "APPROVED" },
-        _sum: { amount: true }
-      }),
-      prisma.transaction.aggregate({
-        where: { type: "EXPENSE", status: "APPROVED", createdAt: { gte: startOfMonth } },
-        _sum: { amount: true }
-      }),
-      prisma.transaction.count({
-        where: { status: "PENDING_APPROVAL" }
-      })
-    ]);
+      const [incomeAgg, expenseAgg, monthlyExpenseAgg, pendingCount] = await Promise.all([
+        prisma.transaction.aggregate({
+          where: { type: "INCOME", status: "APPROVED" },
+          _sum: { amount: true }
+        }),
+        prisma.transaction.aggregate({
+          where: { type: "EXPENSE", status: "APPROVED" },
+          _sum: { amount: true }
+        }),
+        prisma.transaction.aggregate({
+          where: { type: "EXPENSE", status: "APPROVED", createdAt: { gte: startOfMonth } },
+          _sum: { amount: true }
+        }),
+        prisma.transaction.count({
+          where: { status: "PENDING_APPROVAL" }
+        })
+      ]);
 
-    totalIncome = incomeAgg._sum.amount ? Number(incomeAgg._sum.amount) : 0;
-    totalExpenses = expenseAgg._sum.amount ? Number(expenseAgg._sum.amount) : 0;
-    balance = totalIncome - totalExpenses;
-    monthlyExpenses = monthlyExpenseAgg._sum.amount ? Number(monthlyExpenseAgg._sum.amount) : 0;
-    pendingApprovalsCount = pendingCount;
+      totalIncome = incomeAgg._sum.amount ? Number(incomeAgg._sum.amount) : 0;
+      totalExpenses = expenseAgg._sum.amount ? Number(expenseAgg._sum.amount) : 0;
+      balance = totalIncome - totalExpenses;
+      monthlyExpenses = monthlyExpenseAgg._sum.amount ? Number(monthlyExpenseAgg._sum.amount) : 0;
+      pendingApprovalsCount = pendingCount;
+    }
 
     // Upcoming Events
     upcomingEvents = await prisma.event.findMany({
@@ -224,13 +228,15 @@ export default async function AdminPage() {
           <p className="text-3xl font-bold text-slate-900 mt-2">{upcomingEventsCount}</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Monthly Expenses</span>
-            <IndianRupee className="w-4 h-4 text-slate-400" />
+        {canViewFinance(session) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Monthly Expenses</span>
+              <IndianRupee className="w-4 h-4 text-slate-400" />
+            </div>
+            <p className="text-3xl font-bold text-slate-900 mt-2">₹{monthlyExpenses.toLocaleString()}</p>
           </div>
-          <p className="text-3xl font-bold text-slate-900 mt-2">₹{monthlyExpenses.toLocaleString()}</p>
-        </div>
+        )}
 
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between">
@@ -317,31 +323,33 @@ export default async function AdminPage() {
         {/* Right 1 Column */}
         <div className="space-y-6">
           {/* Finance Snapshot */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-slate-900">Finance Snapshot</h2>
-            
-            <div className="space-y-3">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Treasury Balance</span>
-                <p className="text-2xl font-black text-slate-900 mt-0.5">₹{balance.toLocaleString()}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
+          {canViewFinance(session) && (
+            <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <h2 className="text-sm font-semibold text-slate-900">Finance Snapshot</h2>
+              
+              <div className="space-y-3">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-0.5">
-                    Income <ArrowUpRight className="w-3 h-3 text-emerald-500" />
-                  </span>
-                  <p className="text-sm font-bold text-slate-900 mt-0.5">₹{totalIncome.toLocaleString()}</p>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Treasury Balance</span>
+                  <p className="text-2xl font-black text-slate-900 mt-0.5">₹{balance.toLocaleString()}</p>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-0.5">
-                    Expenses <ArrowDownRight className="w-3 h-3 text-rose-500" />
-                  </span>
-                  <p className="text-sm font-bold text-slate-900 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-0.5">
+                      Income <ArrowUpRight className="w-3 h-3 text-emerald-500" />
+                    </span>
+                    <p className="text-sm font-bold text-slate-900 mt-0.5">₹{totalIncome.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-0.5">
+                      Expenses <ArrowDownRight className="w-3 h-3 text-rose-500" />
+                    </span>
+                    <p className="text-sm font-bold text-slate-900 mt-0.5">₹{totalExpenses.toLocaleString()}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Recent Activity */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">

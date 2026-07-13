@@ -33,3 +33,30 @@ export async function createAlbum(data: { title: string; description: string }) 
     return { error: "An error occurred while creating the album." };
   }
 }
+
+export async function deleteAlbum(albumId: string) {
+  const session = await getSession();
+  const club = await getCurrentClub();
+
+  if (!session || !club) return { error: "Unauthorized" };
+  if (!canManageWebsite(session)) return { error: "Permission denied" };
+
+  try {
+    // Detach media first to avoid cascading delete
+    await prisma.media.updateMany({
+      where: { albumId, clubId: club.id },
+      data: { albumId: null }
+    });
+    
+    // Delete the album
+    await prisma.album.delete({
+      where: { id: albumId, clubId: club.id }
+    });
+    
+    revalidatePath("/admin/gallery");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete album:", error);
+    return { error: "Failed to delete album" };
+  }
+}

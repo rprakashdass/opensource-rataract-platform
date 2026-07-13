@@ -20,6 +20,7 @@ const getCachedPublicTeam = unstable_cache(
                             name: true,
                             profession: true,
                             joinedAt: true,
+                            websiteQuote: true,
                             portfolioAssignments: { select: { portfolio: { select: { id: true, name: true } } } }
                         }
                     }

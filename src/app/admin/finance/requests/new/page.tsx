@@ -5,6 +5,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { TRANSACTION_CATEGORIES } from "@/lib/constants";
 
 export default function NewPaymentRequestPage() {
   const router = useRouter();
@@ -125,10 +126,9 @@ export default function NewPaymentRequestPage() {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              <option value="DUES">Membership Dues</option>
-              <option value="EVENT_FEE">Event Registration Fee</option>
-              <option value="DONATION">General Donation</option>
-              <option value="OTHER">Other</option>
+              {Object.entries(TRANSACTION_CATEGORIES).map(([key, val]) => (
+                <option key={key} value={key}>{val}</option>
+              ))}
             </select>
           </div>
           <div>

@@ -48,12 +48,13 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
 
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link href="/admin/events" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          Back to Events
+          <span className="hidden sm:inline">Back to Events</span>
+          <span className="sm:hidden">Back</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <EventSettingsButton event={event} />
           <EventPublishButton event={event} template={{ subject: renderedSubject, body: renderedBody }} />
         </div>
@@ -61,7 +62,7 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
 
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{event.title}</h1>
-        {event.description && <p className="text-gray-500 max-w-3xl leading-relaxed">{event.description}</p>}
+        {event.description && <p className="text-gray-500 max-w-3xl leading-relaxed whitespace-pre-wrap">{event.description}</p>}
       </div>
 
       {event.initiative && (

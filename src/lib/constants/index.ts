@@ -90,3 +90,15 @@ export const ADMIN_NAV_ITEMS = [
   { label: "Gallery", href: `${ROUTES.ADMIN}/gallery` },
   { label: "Settings", href: `${ROUTES.ADMIN}/settings` },
 ] as const;
+
+// Transaction categories
+export const TRANSACTION_CATEGORIES = {
+  DUES: "Membership Dues",
+  EVENT_FEE: "Event Registration Fee",
+  DONATION: "General Donation",
+  SPONSORSHIP: "Sponsorship",
+  CATERING: "Catering",
+  LOGISTICS: "Logistics",
+  MARKETING: "Marketing",
+  OTHER: "Other"
+} as const;

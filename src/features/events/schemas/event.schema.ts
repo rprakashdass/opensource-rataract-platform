@@ -13,7 +13,7 @@ export const eventSchema = z.object({
     "MEETING",
     "FELLOWSHIP"
   ]),
-  status: z.enum(["UPCOMING", "ONGOING", "COMPLETED", "CANCELLED"]).default("UPCOMING"),
+  status: z.enum(["DRAFT", "UPCOMING", "ONGOING", "COMPLETED", "CANCELLED"]).default("DRAFT"),
   publishStatus: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   publishAt: z.string().optional().nullable(),
   publishedAt: z.string().optional().nullable(),
@@ -33,6 +33,10 @@ export const eventSchema = z.object({
   registrationEnabled: z.boolean().default(false),
   isFeatured: z.boolean().default(false),
   visibility: z.enum(["PUBLIC", "INTERNAL", "MEMBERS_ONLY", "BOARD_ONLY"]).default("PUBLIC"),
+  
+  sendEmailNotification: z.boolean().default(false),
+  sendEmailToBoard: z.boolean().default(false),
+  attachCalendarInvite: z.boolean().default(false),
   
   tags: z.string().optional(), // Will be split by comma
   

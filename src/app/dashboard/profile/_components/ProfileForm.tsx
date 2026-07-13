@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { FileUpload } from "@/components/ui/file-upload";
 
-export default function ProfileForm({ member }: { member: any }) {
+export default function ProfileForm({ member, onSuccess }: { member: any; onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     phone: member.phone || "",
@@ -13,6 +13,7 @@ export default function ProfileForm({ member }: { member: any }) {
     companyName: member.companyName || "",
     location: member.location || "",
     bio: member.bio || "",
+    websiteQuote: member.websiteQuote || "",
     avatar: member.avatar || "",
     showOnWebsite: member.showOnWebsite || false,
   });
@@ -33,6 +34,7 @@ export default function ProfileForm({ member }: { member: any }) {
 
       if (!res.ok) throw new Error("Failed to update profile");
       toast.success("Profile updated successfully!");
+      if (onSuccess) onSuccess();
     } catch (err: any) {
       toast.error(err.message || "Something went wrong.");
     } finally {
@@ -125,6 +127,19 @@ export default function ProfileForm({ member }: { member: any }) {
           rows={3}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
           placeholder="Tell us a little bit about yourself..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Website Quote (Public Testimonial)</label>
+        <p className="text-xs text-gray-500 mb-1.5">For Board Members: This quote is displayed publicly alongside your picture on the Team page.</p>
+        <textarea
+          name="websiteQuote"
+          value={formData.websiteQuote}
+          onChange={handleChange}
+          rows={2}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+          placeholder="e.g. Serving as President allows me to build the future of Coimbatore..."
         />
       </div>
 

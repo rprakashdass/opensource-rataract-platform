@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Upload, FileType, QrCode, Smartphone, Info } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import { TRANSACTION_CATEGORIES } from "@/lib/constants";
 
 export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiId: string | null, paymentQr: string | null, clubName: string }) {
   const router = useRouter();
@@ -113,10 +114,9 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Payment Category</label>
         <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500">
-          <option value="DUES">Membership Dues</option>
-          <option value="EVENT_FEE">Event Registration Fee</option>
-          <option value="DONATION">General Donation</option>
-          <option value="OTHER">Other</option>
+          {Object.entries(TRANSACTION_CATEGORIES).map(([key, val]) => (
+            <option key={key} value={key}>{val}</option>
+          ))}
         </select>
       </div>
 

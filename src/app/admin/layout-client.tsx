@@ -7,7 +7,7 @@ import { ROUTES } from "@/lib/constants";
 import { 
   LayoutDashboard, Users, Calendar, Image as ImageIcon, Settings, 
   Banknote, Bell, Briefcase, ClipboardCheck, Globe, ArrowLeftRight, 
-  PieChart, FileSpreadsheet, Lightbulb, UserCircle, Mail
+  PieChart, FileSpreadsheet, Lightbulb, UserCircle, Mail, HandCoins
 } from "lucide-react";
 
 interface AdminLayoutClientProps {
@@ -81,6 +81,7 @@ export default function AdminLayoutClient({ children, club, user, notifications,
       items: [
         { label: "Overview", href: `${ROUTES.ADMIN}/finance`, icon: Banknote },
         { label: "Transactions", href: `${ROUTES.ADMIN}/finance/transactions`, icon: ArrowLeftRight, badgeCount: attentionSummary.finance.count },
+        { label: "Payment Requests", href: `${ROUTES.ADMIN}/finance/requests`, icon: HandCoins },
         { label: "Budgets", href: `${ROUTES.ADMIN}/finance/budgets`, icon: PieChart },
         { label: "Reports", href: `${ROUTES.ADMIN}/finance/reports`, icon: FileSpreadsheet },
       ]

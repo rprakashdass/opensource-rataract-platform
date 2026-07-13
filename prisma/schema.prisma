@@ -131,6 +131,9 @@ model WebsiteSettings {
   heroSecondaryCTA     String?
   heroSecondaryCTALink String?
   heroImages        Json?    // Array of string URLs
+  
+  // Finance Settings
+  upiId             String?
 
   // President Section
   presName          String?
@@ -650,6 +653,7 @@ model Member {
   companyName      String?
   location         String?
   bio              String?
+  websiteQuote     String?  @db.Text
   emergencyContact String?
   skills           String[]
   membershipStatus String   @default("ACTIVE") // ACTIVE, ALUMNI, HONORARY, SUSPENDED

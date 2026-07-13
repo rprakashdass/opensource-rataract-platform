@@ -21,10 +21,10 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
   const customQuickLinks = (settings?.footerQuickLinks as { label: string; url: string }[]) || [];
 
   return (
-    <footer id="footer" className="bg-[#0B132B] text-slate-300 pt-24 pb-8 border-t border-[#F7A800]">
+    <footer id="footer" className="bg-[#0B132B] text-slate-300 pt-24 pb-8 border-t border-slate-800/80">
       <MaxWidthWrapper>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
-          {/* Left Column: Description */}
+          {/* Left Column: Description & Social Icons */}
           <div className="lg:col-span-5 space-y-6">
             <span className="text-xl font-black tracking-tighter uppercase text-white">
               {club.name}
@@ -33,10 +33,33 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
             <p className="text-sm text-slate-400 leading-relaxed font-medium">
               {footerDesc}
             </p>
+            {/* Social Connect Icons */}
+            <div className="flex flex-wrap gap-3 pt-2">
+              {club?.email && (
+                <a href={`mailto:${club.email}`} className="text-slate-400 hover:text-[#F7A800] transition-all duration-300 p-2 bg-slate-800/40 hover:bg-slate-800 border border-slate-800/50 rounded-xl" title="Email">
+                  <Mail className="w-4 h-4" />
+                </a>
+              )}
+              {orgLinkedin && (
+                <a href={orgLinkedin} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[#F7A800] transition-all duration-300 p-2 bg-slate-800/40 hover:bg-slate-800 border border-slate-800/50 rounded-xl" title="LinkedIn">
+                  <Linkedin className="w-4 h-4" />
+                </a>
+              )}
+              {orgInstagram && (
+                <a href={orgInstagram} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[#F7A800] transition-all duration-300 p-2 bg-slate-800/40 hover:bg-slate-800 border border-slate-800/50 rounded-xl" title="Instagram">
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {orgYoutube && (
+                <a href={orgYoutube} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[#F7A800] transition-all duration-300 p-2 bg-slate-800/40 hover:bg-slate-800 border border-slate-800/50 rounded-xl" title="YouTube">
+                  <Youtube className="w-4 h-4" />
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Right Columns: Links Grid */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-12 lg:gap-8">
+          <div className="lg:col-span-6 lg:col-start-7 grid grid-cols-2 gap-12 lg:gap-8">
             {customQuickLinks.length > 0 ? (
               <div className="space-y-6 col-span-2">
                 <h4 className="text-white font-bold text-sm tracking-widest uppercase">Quick Links</h4>
@@ -81,38 +104,6 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
                 </div>
               </>
             )}
-
-            {/* Connect */}
-            <div className="space-y-6 col-span-2 md:col-span-1">
-              <h4 className="text-white font-bold text-sm tracking-widest uppercase mb-2">Connect</h4>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 block">Follow our journey</p>
-              <div className="space-y-4 text-sm font-medium text-slate-400 flex flex-col">
-                {club?.email && (
-                  <a href={`mailto:${club.email}`} className="w-fit hover:text-[#F7A800] transition-colors flex items-center gap-3">
-                    <Mail className="w-4 h-4" />
-                    Email
-                  </a>
-                )}
-                {orgLinkedin && (
-                  <a href={orgLinkedin} target="_blank" rel="noopener noreferrer" className="w-fit hover:text-[#F7A800] transition-colors flex items-center gap-3">
-                    <Linkedin className="w-4 h-4" />
-                    LinkedIn
-                  </a>
-                )}
-                {orgInstagram && (
-                  <a href={orgInstagram} target="_blank" rel="noopener noreferrer" className="w-fit hover:text-[#F7A800] transition-colors flex items-center gap-3">
-                    <Instagram className="w-4 h-4" />
-                    Instagram
-                  </a>
-                )}
-                {orgYoutube && (
-                  <a href={orgYoutube} target="_blank" rel="noopener noreferrer" className="w-fit hover:text-[#F7A800] transition-colors flex items-center gap-3">
-                    <Youtube className="w-4 h-4" />
-                    YouTube
-                  </a>
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -120,17 +111,17 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
 
         {/* Copyright */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-xs font-medium text-slate-500 pb-4 text-center md:text-left">
-          <div>
-            <p className="font-bold text-slate-400 mb-1.5">&copy; {new Date().getFullYear()} {club?.name || appName}</p>
+          <div className="space-y-1">
+            <p className="text-slate-400 font-bold">&copy; {new Date().getFullYear()} {club?.name || appName}. All rights reserved.</p>
             <p className="text-[10px] text-slate-500 font-bold">
-              Solely created with ❤️ by{" "}
+              Developed with ❤️ by{" "}
               <a
                 href="https://www.rprakashdass.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#F7A800] hover:underline"
+                className="text-slate-400 hover:text-[#F7A800] transition-colors"
               >
-                @rprakashdass
+                Prakash Dass R
               </a>
             </p>
           </div>

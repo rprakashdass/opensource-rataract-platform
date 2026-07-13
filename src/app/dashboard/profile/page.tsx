@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import ProfileEditDialog from "./_components/ProfileEditDialog";
 
 export default async function MemberProfilePage() {
     const session = await getSession();
@@ -60,7 +61,7 @@ export default async function MemberProfilePage() {
                                 {member.phone && <Phone className="w-5 h-5 hover:text-purple-600 cursor-pointer transition-colors" />}
                             </div>
 
-                            <Button variant="outline" className="w-full">Edit Profile</Button>
+                            <ProfileEditDialog member={member} />
                         </div>
                     </div>
 

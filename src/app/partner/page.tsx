@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import Link from "next/link";
 import { IndianRupee, ArrowRight, TreePine, Users, Droplets, Heart } from "lucide-react";
+import PartnerCTAButton from "./_components/PartnerCTAButton";
 
 // Map impact keywords to icons
 function getImpactIcon(text: string) {
@@ -74,31 +75,17 @@ export default async function PartnerPage() {
             clean water for families.
           </p>
 
-          {/* Stats row */}
-          {packages.length > 0 && (
-            <div className="flex flex-wrap gap-8 mb-14">
-              {packages.map((pkg) => {
-                const Icon = getImpactIcon(pkg.impactText);
-                return (
-                  <div key={pkg.id} className="flex items-center gap-2 text-white/80">
-                    <Icon className="w-4 h-4 text-[#F7A800] shrink-0" />
-                    <span className="font-black text-sm">{pkg.impactText}</span>
-                    <span className="text-white/30 text-xs font-medium">
-                      @ ₹{pkg.amount.toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
 
-          <a
-            href={`mailto:${contactEmail}?subject=Partnership Inquiry — ${club.name}`}
+
+          <PartnerCTAButton
+            contactEmail={contactEmail}
+            clubName={club.name}
+            subject={`Partnership Inquiry — ${club.name}`}
             className="inline-flex items-center gap-3 bg-[#F7A800] hover:bg-[#e09700] text-[#0B132B] font-black text-sm uppercase tracking-widest px-8 py-4 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             Start a conversation
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </PartnerCTAButton>
         </div>
 
         {/* Scroll hint */}
@@ -193,9 +180,10 @@ export default async function PartnerPage() {
                     </div>
                   </div>
 
-                  {/* CTA */}
-                  <a
-                    href={`mailto:${contactEmail}?subject=Sponsoring: ${pkg.title}`}
+                  <PartnerCTAButton
+                    contactEmail={contactEmail}
+                    clubName={club.name}
+                    subject={`Sponsoring: ${pkg.title}`}
                     className={`
                       relative z-10 mt-8 w-full flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all duration-200
                       ${isHighlighted
@@ -206,7 +194,7 @@ export default async function PartnerPage() {
                   >
                     Pledge this cause
                     <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
+                  </PartnerCTAButton>
                 </div>
               );
             })}
@@ -302,13 +290,15 @@ export default async function PartnerPage() {
             Drop us an email and we'll share our active campaign brief and impact deck.
             No corporate formalities — just a conversation.
           </p>
-          <a
-            href={`mailto:${contactEmail}?subject=Partnership Inquiry — ${club.name}`}
+          <PartnerCTAButton
+            contactEmail={contactEmail}
+            clubName={club.name}
+            subject={`Partnership Inquiry — ${club.name}`}
             className="inline-flex items-center gap-3 bg-[#0B132B] hover:bg-[#1a2645] text-white font-black text-sm uppercase tracking-widest px-10 py-5 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             {contactEmail}
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </PartnerCTAButton>
         </div>
       </section>
 

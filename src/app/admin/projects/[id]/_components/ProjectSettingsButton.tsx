@@ -31,6 +31,7 @@ interface ProjectSettingsButtonProps {
     endDate: Date | null;
     media: { url: string }[];
     visibility: string;
+    publishStatus: string;
     impactMetrics: any;
   };
 }
@@ -67,6 +68,7 @@ export default function ProjectSettingsButton({ project }: ProjectSettingsButton
       endDate: formData.get("endDate") ? new Date(formData.get("endDate") as string).toISOString() : null,
       coverMediaId: formData.get("coverMediaId") || undefined,
       visibility: formData.get("visibility"),
+      publishStatus: formData.get("publishStatus"),
       impactMetrics: rawMetrics || null,
     };
 
@@ -215,6 +217,20 @@ export default function ProjectSettingsButton({ project }: ProjectSettingsButton
                   <SelectItem value="PUBLIC">Public (Visible on website)</SelectItem>
                   <SelectItem value="MEMBERS_ONLY">Members Only</SelectItem>
                   <SelectItem value="BOARD_ONLY">Board Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="publishStatus">Publish Status</Label>
+              <Select name="publishStatus" defaultValue={project.publishStatus}>
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Publish Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DRAFT">Draft (Hidden)</SelectItem>
+                  <SelectItem value="PUBLISHED">Published (Visible)</SelectItem>
+                  <SelectItem value="ARCHIVED">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>

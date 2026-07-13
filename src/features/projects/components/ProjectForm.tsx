@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { createProject } from "../actions/createProject";
 import { MediaUpload } from "@/components/ui/media-upload";
+import { Plus, X } from "lucide-react";
 
 export default function ProjectForm() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function ProjectForm() {
   const [members, setMembers] = useState<{id: string, name: string}[]>([]);
   const [team, setTeam] = useState<{memberId: string, role: string}[]>([]);
   const [coverMediaId, setCoverMediaId] = useState<string>("");
+  const [metrics, setMetrics] = useState<{key: string, value: string}[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/members")
@@ -37,6 +39,15 @@ export default function ProjectForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    const impactMetricsObj = metrics.reduce((acc, curr) => {
+      if (curr.key.trim() !== '') {
+        const val = curr.value.trim();
+        acc[curr.key.trim()] = isNaN(Number(val)) || val === "" ? val : Number(val);
+      }
+      return acc;
+    }, {} as Record<string, any>);
+    const impactMetricsJson = Object.keys(impactMetricsObj).length > 0 ? JSON.stringify(impactMetricsObj) : null;
+
     const data = {
       title: formData.get("title"),
       slug: formData.get("slug") || undefined,
@@ -52,7 +63,7 @@ export default function ProjectForm() {
       publishStatus: (e.nativeEvent as any).submitter?.getAttribute("value") || "DRAFT",
       publishAt: formData.get("publishAt") ? new Date(formData.get("publishAt") as string).toISOString() : null,
       publishedAt: ((e.nativeEvent as any).submitter?.getAttribute("value") === "PUBLISHED") ? new Date().toISOString() : null,
-      impactMetrics: formData.get("impactMetrics") || null,
+      impactMetrics: impactMetricsJson,
       team: team,
     };
 
@@ -99,7 +110,7 @@ export default function ProjectForm() {
             <Textarea id="description" name="description" placeholder="What is this project about?" required className="min-h-[100px]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select name="category" defaultValue="COMMUNITY_SERVICE">
@@ -131,7 +142,7 @@ export default function ProjectForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input type="date" id="startDate" name="startDate" required />
@@ -182,16 +193,68 @@ export default function ProjectForm() {
             </Label>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="impactMetrics">Impact Metrics (JSON)</Label>
-            <Input id="impactMetrics" name="impactMetrics" placeholder='e.g., {"studentsReached": 500}' />
+          <div className="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-100">
+            <div className="flex items-center justify-between">
+              <Label>Impact Metrics</Label>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setMetrics([...metrics, { key: "", value: "" }])}
+                className="h-8 flex items-center gap-1 text-xs"
+              >
+                <Plus className="w-3 h-3" /> Add Metric
+              </Button>
+            </div>
+            {metrics.length === 0 ? (
+              <p className="text-sm text-slate-500 italic">No metrics added yet. (e.g. "Attendees: 50")</p>
+            ) : (
+              <div className="space-y-2">
+                {metrics.map((metric, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input 
+                      placeholder="Label (e.g. Trees Planted)" 
+                      value={metric.key} 
+                      onChange={e => {
+                        const newMetrics = [...metrics];
+                        newMetrics[idx].key = e.target.value;
+                        setMetrics(newMetrics);
+                      }} 
+                      className="flex-1"
+                    />
+                    <Input 
+                      placeholder="Value (e.g. 500)" 
+                      value={metric.value} 
+                      onChange={e => {
+                        const newMetrics = [...metrics];
+                        newMetrics[idx].value = e.target.value;
+                        setMetrics(newMetrics);
+                      }} 
+                      className="w-1/3"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => {
+                        const newMetrics = metrics.filter((_, i) => i !== idx);
+                        setMetrics(newMetrics);
+                      }}
+                      className="text-slate-400 hover:text-red-500 hover:bg-red-50 h-10 w-10 shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="border-t border-gray-100 pt-6 mt-6 space-y-4">
             <h3 className="text-lg font-bold">Team Assignments</h3>
             <p className="text-sm text-slate-500">Assign members to leadership and operational roles for this project.</p>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Project Chair</Label>
                 <Select onValueChange={(val) => {
@@ -240,14 +303,12 @@ export default function ProjectForm() {
           </div>
 
         </CardContent>
-        <CardFooter className="flex justify-end gap-2 bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
-          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full justify-end">
-            <div className="flex gap-2">
-              <Button variant="outline" type="button" onClick={() => router.back()}>Cancel</Button>
-              <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading}>Save Draft</Button>
-              <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600">Schedule</Button>
-              <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading}>Publish Now</Button>
-            </div>
+        <CardFooter className="bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row gap-3 w-full justify-end">
+            <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">Cancel</Button>
+            <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
+            <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
+            <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
           </div>
         </CardFooter>
       </form>

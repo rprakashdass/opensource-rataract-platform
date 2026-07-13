@@ -76,7 +76,7 @@ export default function HomeClientWrapper({
             const heroSubtitle = settings?.heroSubtitle || club.missionStatement || "Empowering students and young professionals through service and leadership.";
             const heroCTA = settings?.heroCTA || "Join Us Today";
             const heroCTALink = settings?.heroCTALink || "/join";
-            const heroSecCTA = settings?.heroSecondaryCTA || "Partner With Us";
+            const heroSecCTA = settings?.heroSecondaryCTA || "Sponsor Us";
             const heroSecCTALink = settings?.heroSecondaryCTALink || "/partner";
             const heroImages = (settings?.heroImages as string[]) || [];
 
@@ -191,7 +191,7 @@ export default function HomeClientWrapper({
                 background="navy"
                 className="border-t border-[#0B132B]"
               >
-                <div className="flex justify-end mb-8 -mt-20">
+                <div className="flex justify-start md:justify-end mb-8 mt-4 md:-mt-20 relative z-20">
                   <Link
                     href={settings?.galleryCTALink || "/gallery"}
                     className="text-white hover:text-[#F7A800] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative z-20"
@@ -213,7 +213,7 @@ export default function HomeClientWrapper({
                 heading={settings?.projectsTitle || "Ongoing impact."}
                 background="slate"
               >
-                <div className="flex justify-end mb-12 -mt-20">
+                <div className="flex justify-start md:justify-end mb-12 mt-4 md:-mt-20 relative z-20">
                   <Link
                     href={settings?.projectsCTALink || "/projects"}
                     className="text-primary hover:text-[#0B132B] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative z-20"

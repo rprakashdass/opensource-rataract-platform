@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
+import { getFallbackImage } from "@/lib/fallbacks";
 import { CmsText } from "@/components/cms/CmsText";
 
 interface ProjectsCopy {
@@ -100,7 +101,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
           {activeProjects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {activeProjects.map((project: any) => {
-                const coverImage = getGoogleDriveDirectLink(project.media?.[0]?.url) || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800";
+                const coverImage = getGoogleDriveDirectLink(project.media?.[0]?.url) || getFallbackImage(project.category);
                 return (
                   <Link 
                     key={project.id}
@@ -179,7 +180,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
           {completedProjects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {completedProjects.map((project: any) => {
-                const coverImage = getGoogleDriveDirectLink(project.media?.[0]?.url) || "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800";
+                const coverImage = getGoogleDriveDirectLink(project.media?.[0]?.url) || getFallbackImage(project.category);
                 return (
                   <Link 
                     key={project.id}

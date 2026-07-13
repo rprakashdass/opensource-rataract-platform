@@ -121,7 +121,12 @@ export default function Header({ layoutData }: { layoutData?: any }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden h-10 w-10 rounded-full text-slate-900 hover:bg-slate-100"
+                className={cn(
+                  "lg:hidden h-10 w-10 rounded-full transition-colors",
+                  !scrolled && pathname === "/partner"
+                    ? "text-white hover:bg-white/10"
+                    : "text-slate-900 hover:bg-slate-100"
+                )}
               >
                 <MenuIcon className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>

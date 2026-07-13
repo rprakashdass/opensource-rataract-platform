@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import * as ics from "ics";
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
@@ -18,32 +17,20 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   }
 
   const start = new Date(event.startDate);
-  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  // Default to 1 hour if no end time is provided
+  const end = event.endTime ? new Date(event.endTime) : new Date(start.getTime() + 60 * 60 * 1000);
 
-  const icsEvent: ics.EventAttributes = {
-    start: [start.getFullYear(), start.getMonth() + 1, start.getDate(), start.getHours(), start.getMinutes()],
-    end: [end.getFullYear(), end.getMonth() + 1, end.getDate(), end.getHours(), end.getMinutes()],
-    title: event.title,
-    description: event.description || "",
-    location: event.location || event.meetingLink || "",
-    status: "CONFIRMED",
-    busyStatus: "BUSY",
-    organizer: event.club ? {
-      name: event.club.name,
-      email: event.club.email || "noreply@club.com"
-    } : undefined
+  // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
+  const formatGCalDate = (date: Date) => {
+    return date.toISOString().replace(/-|:|\.\d\d\d/g, "");
   };
 
-  const { error, value } = ics.createEvent(icsEvent);
+  const gcalDates = `${formatGCalDate(start)}/${formatGCalDate(end)}`;
+  const gcalTitle = encodeURIComponent(event.title);
+  const gcalLocation = encodeURIComponent(event.location || event.meetingLink || "");
+  const gcalDetails = encodeURIComponent(event.description || "");
 
-  if (error || !value) {
-    return new NextResponse("Failed to generate calendar file", { status: 500 });
-  }
+  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalDates}&details=${gcalDetails}&location=${gcalLocation}`;
 
-  return new NextResponse(value, {
-    headers: {
-      "Content-Type": "text/calendar",
-      "Content-Disposition": `attachment; filename="event-${event.id}.ics"`,
-    },
-  });
+  return NextResponse.redirect(gcalUrl);
 }

@@ -29,12 +29,31 @@ export default async function EventsAdmin(props: {
   const search = searchParams.search || "";
   const tab = searchParams.tab || "upcoming";
 
-  // Filter events based on active tab
+  const now = new Date();
+  const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+
   let eventWhere: any = {};
   if (tab === "upcoming") {
-    eventWhere.status = "UPCOMING";
+    eventWhere = {
+        status: { in: ["UPCOMING", "ONGOING"] },
+        OR: [
+            { endTime: { gte: now } },
+            { endTime: null, startTime: { gte: fourHoursAgo } }
+        ]
+    };
   } else if (tab === "completed") {
-    eventWhere.status = "COMPLETED";
+    eventWhere = {
+        OR: [
+            { status: "COMPLETED" },
+            {
+                status: { in: ["UPCOMING", "ONGOING"] },
+                OR: [
+                    { endTime: { lt: now } },
+                    { endTime: null, startTime: { lt: fourHoursAgo } }
+                ]
+            }
+        ]
+    };
   } else if (tab === "drafts") {
     eventWhere.status = "DRAFT";
   }
@@ -73,8 +92,8 @@ export default async function EventsAdmin(props: {
       </div>
 
       {/* Tabs list */}
-      <div className="border-b border-slate-200 flex items-center justify-between">
-        <div className="flex gap-4 text-sm">
+      <div className="border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex gap-4 text-sm w-full overflow-x-auto hide-scrollbar">
           {[
             { id: "upcoming", label: "Upcoming" },
             { id: "completed", label: "Completed" },
@@ -88,7 +107,7 @@ export default async function EventsAdmin(props: {
               <Link 
                 key={t.id} 
                 href={url}
-                className={`pb-3 font-medium border-b-2 transition-all ${
+                className={`pb-3 font-medium border-b-2 transition-all whitespace-nowrap ${
                   active 
                     ? "border-slate-900 text-slate-900 font-semibold" 
                     : "border-transparent text-slate-500 hover:text-slate-900"
@@ -99,7 +118,7 @@ export default async function EventsAdmin(props: {
             );
           })}
         </div>
-        <div className="pb-2">
+        <div className="pb-2 w-full sm:w-auto">
           <FilterBar placeholder="Search events..." />
         </div>
       </div>
@@ -122,6 +141,15 @@ export default async function EventsAdmin(props: {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event) => {
             const thumb = event.media?.find((m) => m.id === event.bannerMediaId) || event.media?.[0];
+            
+            let displayStatus = event.status;
+            if (event.status === "UPCOMING" || event.status === "ONGOING") {
+               const eventEndTime = event.endTime ? new Date(event.endTime) : null;
+               const eventStartTime = new Date(event.startTime);
+               if (eventEndTime && eventEndTime < now) displayStatus = "COMPLETED" as any;
+               else if (!eventEndTime && eventStartTime < fourHoursAgo) displayStatus = "COMPLETED" as any;
+            }
+
             return (
             <div key={event.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col group hover:shadow-md transition-all">
               {/* Event Cover Image Placeholder / Color Block */}
@@ -142,13 +170,13 @@ export default async function EventsAdmin(props: {
                     {event.type.replace(/_/g, " ")}
                   </Badge>
                   <Badge className={`shadow-sm border-none ${
-                    event.status === "UPCOMING" 
+                    displayStatus === "UPCOMING" 
                       ? "bg-sky-500 text-white" 
-                      : event.status === "COMPLETED" 
+                      : displayStatus === "COMPLETED" 
                       ? "bg-emerald-500 text-white" 
                       : "bg-slate-500 text-white"
                   }`}>
-                    {event.status}
+                    {displayStatus}
                   </Badge>
                 </div>
               </div>

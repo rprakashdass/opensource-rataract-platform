@@ -12,14 +12,15 @@ import {
   XCircle,
   FileText,
   UserCircle,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 
 export default async function MemberDashboardPage() {
-  const { member, profileCompletion, stats, upcomingEvents, checkInEvents, timeline, error } = await getMemberDashboard();
+  const { member, profileCompletion, stats, upcomingEvents, checkInEvents, pendingPaymentRequests, timeline, error } = await getMemberDashboard();
 
   if (error || !member) {
       if (error === "Unauthorized") redirect("/auth/login");
@@ -95,6 +96,54 @@ export default async function MemberDashboardPage() {
               </div>
           )}
       </section>
+
+      {/* Pending Payments Section */}
+      {pendingPaymentRequests && pendingPaymentRequests.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-slate-900 px-1">Payment Requests</h2>
+          <div className="space-y-3">
+            {pendingPaymentRequests.map((pr: any) => {
+              // Generate UPI link
+              const upiId = member.club.upiId || "club@upi";
+              const clubName = encodeURIComponent(member.club.name || "Club");
+              const amount = pr.amount.toString();
+              const note = encodeURIComponent(`Payment: ${pr.title}`);
+              const upiLink = `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${note}`;
+
+              return (
+                <div key={pr.id} className="bg-rose-50 border border-rose-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-1 text-rose-700">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-wide">Pending Payment</span>
+                      </div>
+                      <h3 className="font-bold text-slate-900 leading-tight">{pr.title}</h3>
+                      {pr.description && <p className="text-xs text-slate-600 mt-1">{pr.description}</p>}
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xl font-black text-rose-700">₹{pr.amount}</span>
+                      {pr.dueDate && (
+                        <p className="text-[10px] text-slate-500 font-semibold mt-0.5 whitespace-nowrap">
+                          Due {new Date(pr.dueDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-1">
+                    <Button asChild className="w-full bg-rose-600 hover:bg-rose-700 font-bold rounded-xl shadow-sm">
+                      <a href={upiLink}>Pay via UPI App</a>
+                    </Button>
+                    <Button variant="outline" className="w-full border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl font-bold bg-white" asChild>
+                       <Link href="/dashboard/finance">Submit Receipt</Link>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Next Actions (Scrollable Pills) */}
       <section className="space-y-3">

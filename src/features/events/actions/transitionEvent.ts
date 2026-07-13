@@ -32,7 +32,7 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
           isValid = newStatus === "UPCOMING";
           break;
         case "UPCOMING":
-          isValid = newStatus === "ONGOING";
+          isValid = newStatus === "ONGOING" || newStatus === "COMPLETED";
           break;
         case "ONGOING":
           isValid = newStatus === "COMPLETED";

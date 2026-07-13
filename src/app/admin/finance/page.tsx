@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import TreasurerWorkspace from "./_components/TreasurerWorkspace";
-import { getSession } from "@/lib/auth/session";
+import { getSession, canViewFinance } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { HandCoins } from "lucide-react";
 
@@ -12,7 +12,7 @@ export default async function AdminFinancePage() {
     redirect("/login");
   }
 
-  const canView = session.roles.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER"].includes(r));
+  const canView = canViewFinance(session);
   
   if (!canView) {
     return (

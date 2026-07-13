@@ -5,6 +5,7 @@ import { X, Save, PlusCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { TRANSACTION_CATEGORIES } from "@/lib/constants";
 
 export function TransactionCreateDialog() {
   const router = useRouter();
@@ -113,14 +114,9 @@ export function TransactionCreateDialog() {
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
-                  <option value="DUES">Membership Dues</option>
-                  <option value="EVENT_FEE">Event Fee</option>
-                  <option value="DONATION">Donation</option>
-                  <option value="SPONSORSHIP">Sponsorship</option>
-                  <option value="CATERING">Catering</option>
-                  <option value="LOGISTICS">Logistics</option>
-                  <option value="MARKETING">Marketing</option>
-                  <option value="OTHER">Other</option>
+                  {Object.entries(TRANSACTION_CATEGORIES).map(([key, val]) => (
+                    <option key={key} value={key}>{val}</option>
+                  ))}
                 </select>
               </div>
 

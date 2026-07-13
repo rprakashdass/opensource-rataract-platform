@@ -7,12 +7,19 @@ const getCachedPublicEvents = unstable_cache(
         const club = await getCurrentClub();
         if (!club) return null;
 
+        const now = new Date();
+        const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+
         const upcomingEvents = await prisma.event.findMany({
             where: {
                 clubId: club.id,
                 status: { in: ["UPCOMING", "ONGOING"] },
                 publishStatus: "PUBLISHED",
                 visibility: "PUBLIC",
+                OR: [
+                    { endTime: { gte: now } },
+                    { endTime: null, startTime: { gte: fourHoursAgo } }
+                ]
             },
             orderBy: { startDate: "asc" },
             select: {
@@ -34,9 +41,20 @@ const getCachedPublicEvents = unstable_cache(
         const completedEvents = await prisma.event.findMany({
             where: {
                 clubId: club.id,
-                status: "COMPLETED",
                 publishStatus: "PUBLISHED",
                 visibility: "PUBLIC",
+                OR: [
+                    { status: "COMPLETED" },
+                    {
+                        status: { in: ["UPCOMING", "ONGOING"] },
+                        endTime: { lt: now }
+                    },
+                    {
+                        status: { in: ["UPCOMING", "ONGOING"] },
+                        endTime: null,
+                        startTime: { lt: fourHoursAgo }
+                    }
+                ]
             },
             orderBy: { startDate: "desc" },
             select: {

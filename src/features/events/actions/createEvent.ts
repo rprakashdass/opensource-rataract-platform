@@ -27,11 +27,18 @@ export async function createEvent(data: EventFormData) {
       slug = `${baseSlug}-${++suffix}`;
     }
 
-    const { team, bannerMediaId, posterMediaId, ...eventData } = parsed;
+    const { team, bannerMediaId, posterMediaId, sendEmailNotification, sendEmailToBoard, attachCalendarInvite, ...eventData } = parsed;
 
     const event = await prisma.event.create({
       data: {
         ...eventData,
+        status: eventData.publishStatus === "DRAFT" 
+          ? "DRAFT" 
+          : (() => {
+              const start = new Date(eventData.startTime);
+              const end = eventData.endTime ? new Date(eventData.endTime) : new Date(start.getTime() + 4 * 60 * 60 * 1000);
+              return end < new Date() ? "COMPLETED" : "UPCOMING";
+            })(),
         slug,
         tags: eventData.tags ? eventData.tags.split(',').map(t => t.trim()) : [],
         startDate: new Date(eventData.startTime),
@@ -57,6 +64,32 @@ export async function createEvent(data: EventFormData) {
         where: { id: { in: linkedMediaIds } },
         data: { eventId: event.id }
       });
+    }
+
+    if (eventData.publishStatus !== "DRAFT" && (sendEmailNotification || sendEmailToBoard)) {
+        let whereClause: any = { member: { isNot: null } };
+        if (sendEmailToBoard) {
+            whereClause = { member: { boardMemberships: { some: {} } } };
+        }
+        
+        const users = await prisma.user.findMany({
+            where: whereClause,
+            select: { email: true }
+        });
+        
+        const emails = users.map(u => u.email).filter(Boolean) as string[];
+        
+        if (emails.length > 0) {
+            // Lazy import to avoid circular dependencies or heavy server logic on load
+            const { dispatchNotification } = await import("@/features/notifications/service");
+            await dispatchNotification({
+                trigger: "EVENT_CREATED",
+                recipients: emails,
+                eventId: event.id,
+                sendEmailFlag: true,
+                attachCalendarFlag: attachCalendarInvite
+            });
+        }
     }
 
     // Create Drive Folder if env is configured

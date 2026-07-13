@@ -18,6 +18,7 @@ interface BoardMember {
     avatar: string | null;
     profession: string | null;
     joinedAt: Date | string;
+    websiteQuote: string | null;
     portfolioAssignments: Array<{ portfolio: { id: string; name: string } }>;
   };
 }
@@ -67,7 +68,7 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
               {board.map((m, idx) => (
                 <div key={m.id} className="min-h-[400px]">
                   <QuoteCard
-                    quote={`Serving as ${m.position} allows me to connect deeply with our community and push the boundaries of what we can build together this year.`}
+                    quote={m.member.websiteQuote || `Serving as ${m.position} allows me to connect deeply with our community and push the boundaries of what we can build together this year.`}
                     authorName={m.member.name || "Member"}
                     authorRole={m.position}
                     avatarUrl={m.member.avatar || undefined}

@@ -43,6 +43,13 @@ export async function getMemberDashboard() {
         boardMemberships: {
             include: { financialYear: true },
             orderBy: { joinedAt: 'desc' }
+        },
+        paymentRequests: {
+            include: { 
+                paymentRequest: {
+                    include: { transactions: { where: { memberId: basicMember.id } } }
+                }
+            }
         }
       }
     });
@@ -132,6 +139,32 @@ export async function getMemberDashboard() {
     // Sort timeline descending
     timeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+    // Find Pending Payment Requests (both Global and explicitly Assigned)
+    const allRequests = await prisma.paymentRequest.findMany({
+        where: {
+            clubId: member.clubId,
+            OR: [
+                { isGlobal: true },
+                { assignees: { some: { memberId: member.id } } }
+            ]
+        },
+        include: {
+            transactions: {
+                where: { memberId: member.id }
+            }
+        },
+        orderBy: { createdAt: "desc" }
+    });
+
+    const pendingPaymentRequests = allRequests.filter(pr => {
+        if (pr.dismissedBy.includes(member.id)) return false;
+        // Check if there's any transaction that is APPROVED or PENDING_APPROVAL
+        const hasPaidOrPending = pr.transactions.some(tx => 
+            tx.status === "APPROVED" || tx.status === "PENDING_APPROVAL"
+        );
+        return !hasPaidOrPending;
+    });
+
     return { 
         member,
         profileCompletion,
@@ -143,6 +176,7 @@ export async function getMemberDashboard() {
         },
         upcomingEvents,
         checkInEvents,
+        pendingPaymentRequests,
         timeline: timeline.slice(0, 20) // Latest 20 activities
     };
   } catch (error: any) {

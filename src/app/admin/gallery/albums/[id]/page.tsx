@@ -7,6 +7,7 @@ import { ArrowLeft, Folder, Image as ImageIcon, CalendarDays, Layers } from "luc
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlbumUploadButton } from "./AlbumUploadButton";
+import { DeleteAlbumButton } from "./DeleteAlbumButton";
 import { MediaThumbnail } from "../../_components/MediaThumbnail";
 
 interface AlbumDetailPageProps {
@@ -81,7 +82,8 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
         </div>
 
         {/* Upload button */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <DeleteAlbumButton albumId={album.id} albumTitle={album.title} />
           <AlbumUploadButton albumId={album.id} albumTitle={album.title} />
         </div>
       </div>

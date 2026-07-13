@@ -267,7 +267,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                     <div>
                       <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Participants</span>
-                      <span className="text-2xl font-black text-[#0B132B]">{eventAny.registeredCount || 24}</span>
+                      <span className="text-2xl font-black text-[#0B132B]">{eventAny.registeredCount ?? 0}</span>
                     </div>
                     {eventAny.volunteerHours && (
                       <div>

@@ -103,7 +103,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
   };
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm h-[56px] md:h-[64px] flex flex-col justify-center">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm pt-[env(safe-area-inset-top)] h-[calc(56px+env(safe-area-inset-top))] md:h-[calc(64px+env(safe-area-inset-top))] flex flex-col justify-center">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center w-full">
           {/* Left: Branding */}

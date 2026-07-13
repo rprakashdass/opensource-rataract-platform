@@ -24,6 +24,7 @@ const getCachedPublicProjects = unstable_cache(
                 description: true,
                 category: true,
                 status: true,
+                endDate: true,
                 events: { select: { id: true } },
                 media: { where: { isFeatured: true }, take: 1, select: { id: true } }
             }
@@ -61,6 +62,8 @@ export async function getPublicProjects() {
           : [];
 
       const urlMap = new Map(mediaData.map(m => [m.id, m.url]));
+
+      const now = new Date();
 
       const projects = base.projects.map(p => ({
           ...p,

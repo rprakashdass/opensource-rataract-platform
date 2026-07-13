@@ -135,7 +135,7 @@ export default function AccountsAdmin() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-slate-50/50">
                   <tr>
                     <th className="px-8 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Account</th>
@@ -172,7 +172,7 @@ export default function AccountsAdmin() {
                           ))}
                         </div>
                       </td>
-                      <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-medium space-x-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-medium space-x-3">
                         <Link
                           href={`${ROUTES.ADMIN}/accounts/new?edit=${acc.id}`}
                           className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors cursor-pointer"

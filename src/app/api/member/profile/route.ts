@@ -28,6 +28,7 @@ export async function PUT(req: Request) {
         companyName: data.companyName,
         location: data.location,
         bio: data.bio,
+        websiteQuote: data.websiteQuote,
         avatar: data.avatar,
         showOnWebsite: data.showOnWebsite,
       },

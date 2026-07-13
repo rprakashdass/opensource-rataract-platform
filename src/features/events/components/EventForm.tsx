@@ -159,7 +159,7 @@ export default function EventForm() {
             <Textarea id="description" name="description" placeholder="Event details..." required className="min-h-[100px]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Event Type</Label>
               <Select name="type" defaultValue="COMMUNITY_SERVICE">
@@ -192,7 +192,7 @@ export default function EventForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startTime">Start Date & Time</Label>
               <Input type="datetime-local" id="startTime" name="startTime" required />
@@ -203,7 +203,7 @@ export default function EventForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="location">Venue / Location</Label>
               <Input id="location" name="location" placeholder="e.g., Marina Beach" />
@@ -245,7 +245,7 @@ export default function EventForm() {
             <h3 className="text-lg font-bold">Team Assignments</h3>
             <p className="text-sm text-slate-500">Assign members to leadership and operational roles for this event.</p>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Event Chair</Label>
                 <Select onValueChange={(val) => {
@@ -297,7 +297,7 @@ export default function EventForm() {
               <Label htmlFor="registrationEnabled">Enable Public Registration (Show "Register Now" button on public site)</Label>
             </div>
 
-            <div className="space-y-2 w-1/2">
+            <div className="space-y-2 w-full sm:w-1/2">
               <Label htmlFor="capacity">Capacity (Optional max attendees)</Label>
               <Input type="number" id="capacity" name="capacity" placeholder="e.g., 50" min="1" />
             </div>
@@ -306,7 +306,7 @@ export default function EventForm() {
           <div className="border-t border-gray-100 pt-6 mt-6">
             <h3 className="font-bold text-gray-900 mb-4">Website Visibility</h3>
             
-            <div className="space-y-2 mb-4 w-1/2">
+            <div className="space-y-2 mb-4 w-full sm:w-1/2">
               <Label htmlFor="visibility">Visibility</Label>
               <Select name="visibility" defaultValue="PUBLIC">
                 <SelectTrigger>
@@ -368,14 +368,12 @@ export default function EventForm() {
           </div>
 
         </CardContent>
-        <CardFooter className="flex justify-end gap-2 bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
-          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full justify-end">
-            <div className="flex gap-2">
-              <Button variant="outline" type="button" onClick={() => router.back()}>Cancel</Button>
-              <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading}>Save Draft</Button>
-              <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600">Schedule</Button>
-              <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading}>Publish Now</Button>
-            </div>
+        <CardFooter className="bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row gap-3 w-full justify-end">
+            <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">Cancel</Button>
+            <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
+            <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
+            <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
           </div>
         </CardFooter>
       </form>

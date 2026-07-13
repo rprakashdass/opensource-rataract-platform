@@ -42,7 +42,7 @@ export const getHomeBaseData = unstable_cache(
         }
     },
     ['home-base-data'],
-    { tags: ['homepage', 'club', 'website-settings', 'events', 'projects', 'gallery', 'team', 'announcements'], revalidate: 3600 }
+    { tags: ['homepage', 'club', 'website-settings', 'events', 'projects', 'gallery', 'team', 'announcements'], revalidate: 60 }
 );
 
 export const getHomeImpact = unstable_cache(
@@ -63,7 +63,7 @@ export const getHomeImpact = unstable_cache(
         }
     },
     ['home-impact-data'],
-    { tags: ['homepage', 'events', 'projects', 'team', 'gallery', 'announcements'], revalidate: 3600 }
+    { tags: ['homepage', 'events', 'projects', 'team', 'gallery', 'announcements'], revalidate: 60 }
 );
 
 export const getHomeNews = unstable_cache(
@@ -81,5 +81,5 @@ export const getHomeNews = unstable_cache(
         }
     },
     ['home-news-data'],
-    { tags: ['homepage', 'announcements', 'events', 'projects', 'gallery', 'team'], revalidate: 3600 }
+    { tags: ['homepage', 'announcements', 'events', 'projects', 'gallery', 'team'], revalidate: 60 }
 );

@@ -109,16 +109,34 @@ export async function publishContent(input: PublishActionInput) {
 
           const users = await prisma.user.findMany({
             where: whereClause,
-            select: { email: true }
+            select: { email: true, name: true }
           });
 
-          const emails = users.map(u => u.email).filter(Boolean) as string[];
+          const htmlSkeleton = (body: string) => `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+            <div style="background-color: #6d28d9; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h2 style="margin: 0; color: #ffffff;">Club Update</h2>
+            </div>
+            <div style="padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none;">
+              ${body}
+            </div>
+            <div style="background-color: #f9fafb; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb; border-top: none;">
+              You are receiving this email because you are a member of our club.
+            </div>
+          </div>`;
 
-          if (emails.length > 0) {
+          // Send individually so we can replace {{memberName}}
+          for (const u of users) {
+            if (!u.email) continue;
+            let personalBody = comm.body;
+            if (personalBody) {
+              personalBody = personalBody.replace(/{{memberName}}/g, u.name || "Member");
+            }
+            
             await sendEmail({
-              to: emails,
+              to: u.email,
               subject: comm.subject,
-              html: comm.body,
+              html: htmlSkeleton(personalBody),
             });
           }
 

@@ -158,7 +158,7 @@ export default function TreasurerWorkspace({
           <h2 className="text-lg font-bold mt-1">Treasurer Workstation</h2>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
           <Button
             onClick={() => setShowTransferModal(true)}
             variant="outline"
@@ -180,7 +180,7 @@ export default function TreasurerWorkspace({
             >
               <Receipt className="w-4 h-4" /> Payment Requests
             </Button>
-          </Link>
+          </Link> 
           <Link href="/admin/finance/transactions/new">
             <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-1.5">
               <Plus className="w-4 h-4" /> Add Transaction

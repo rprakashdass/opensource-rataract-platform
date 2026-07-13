@@ -99,6 +99,7 @@ export async function qrCheckIn(rawToken: string) {
                 memberId: member.id,
                 status: "PRESENT",
                 method: "QR_CODE",
+                volunteerHours: attendanceSession.event.volunteerHours,
             }
         });
 
@@ -173,6 +174,7 @@ export async function memberPinCheckIn(eventId: string, pin: string) {
                 memberId: member.id,
                 status: "PRESENT",
                 method: "QR_CODE", // or "PIN" but we don't have PIN in the enum, so QR_CODE or MANUAL
+                volunteerHours: attendanceSession.event.volunteerHours,
             }
         });
 

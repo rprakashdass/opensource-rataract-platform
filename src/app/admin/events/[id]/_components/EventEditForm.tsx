@@ -26,6 +26,7 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
   const [bannerMediaId, setBannerMediaId] = useState(initialData.bannerMediaId || "");
   const [posterMediaId, setPosterMediaId] = useState(initialData.posterMediaId || "");
   const [status, setStatus] = useState(initialData.status || "upcoming");
+  const [publishStatus, setPublishStatus] = useState(initialData.publishStatus || "DRAFT");
   const [projectId, setProjectId] = useState(initialData.projectId || "");
   const [visibility, setVisibility] = useState(initialData.visibility || "PUBLIC");
   const [registrationEnabled, setRegistrationEnabled] = useState(initialData.registrationEnabled || false);
@@ -65,6 +66,7 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
         visibility,
         registrationEnabled,
         isFeatured,
+        publishStatus,
         id: eventId,
       };
 
@@ -131,6 +133,14 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
             <option value="ONGOING">Ongoing</option>
             <option value="COMPLETED">Completed</option>
             <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Publish Status</label>
+          <select value={publishStatus} onChange={(e) => setPublishStatus(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white">
+            <option value="DRAFT">Draft (Hidden)</option>
+            <option value="PUBLISHED">Published (Visible)</option>
+            <option value="ARCHIVED">Archived</option>
           </select>
         </div>
         <div>

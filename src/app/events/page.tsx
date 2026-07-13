@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
+import { getFallbackImage } from "@/lib/fallbacks";
 import { CmsText } from "@/components/cms/CmsText";
 
 interface EventsCopy {
@@ -52,7 +53,7 @@ export default async function EventsPage({
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF9F6] flex flex-col">
+    <main className="min-h-screen bg-[#FAF9F6] flex flex-col overflow-x-hidden">
       <PageHero
         eyebrow={<CmsText channel="events" initial={heroCopy} field="eventsEyebrow" fallback="Calendar" isPreview={isPreview} />}
         title="Join us in action."
@@ -108,7 +109,7 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
               {upcomingEvents.map((event: any) => {
                 const eventDate = new Date(event.startDate);
                 const poster = event.media?.find((m: any) => m.id === event.bannerMediaId) || event.media?.[0];
-                const imageUrl = getGoogleDriveDirectLink(poster?.url) || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800";
+                const imageUrl = getGoogleDriveDirectLink(poster?.url) || getFallbackImage(event.type);
                 
                 return (
                   <Link 
@@ -207,7 +208,7 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {completedEvents.map((event: any) => {
                 const poster = event.media?.find((m: any) => m.id === event.bannerMediaId) || event.media?.[0];
-                const imageUrl = getGoogleDriveDirectLink(poster?.url) || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=800";
+                const imageUrl = getGoogleDriveDirectLink(poster?.url) || getFallbackImage(event.type);
                 const photoPreview = event.media?.slice(0, 4) || [];
                 const eventDate = new Date(event.startDate);
                 
