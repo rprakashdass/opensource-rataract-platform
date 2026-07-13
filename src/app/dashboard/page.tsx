@@ -105,10 +105,11 @@ export default async function MemberDashboardPage() {
             {pendingPaymentRequests.map((pr: any) => {
               // Generate UPI link
               const upiId = member.club?.upiId;
-              const clubName = encodeURIComponent(member.club?.name || "Club");
+              const clubName = member.club?.name || "Club";
               const amount = pr.amount.toString();
-              const note = encodeURIComponent(`Payment: ${pr.title}`);
-              const upiLink = upiId ? `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${note}` : "";
+              // Format category label, e.g. EVENT_FEE -> Event Fee
+              const categoryLabel = pr.category.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());
+              const upiLink = upiId ? `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${categoryLabel}` : "";
 
               return (
                 <div key={pr.id} className="bg-rose-50 border border-rose-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3 animate-in fade-in duration-300">
