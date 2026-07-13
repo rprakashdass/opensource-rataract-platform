@@ -104,14 +104,14 @@ export default async function MemberDashboardPage() {
           <div className="space-y-3">
             {pendingPaymentRequests.map((pr: any) => {
               // Generate UPI link
-              const upiId = member.club.upiId || "club@upi";
-              const clubName = encodeURIComponent(member.club.name || "Club");
+              const upiId = member.club?.upiId;
+              const clubName = encodeURIComponent(member.club?.name || "Club");
               const amount = pr.amount.toString();
               const note = encodeURIComponent(`Payment: ${pr.title}`);
-              const upiLink = `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${note}`;
+              const upiLink = upiId ? `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${note}` : "";
 
               return (
-                <div key={pr.id} className="bg-rose-50 border border-rose-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+                <div key={pr.id} className="bg-rose-50 border border-rose-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3 animate-in fade-in duration-300">
                   <div className="flex justify-between items-start gap-4">
                     <div>
                       <div className="flex items-center gap-1.5 mb-1 text-rose-700">
@@ -131,12 +131,20 @@ export default async function MemberDashboardPage() {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-1">
-                    <Button asChild className="w-full bg-rose-600 hover:bg-rose-700 font-bold rounded-xl shadow-sm">
-                      <a href={upiLink}>Pay via UPI App</a>
-                    </Button>
-                    <Button variant="outline" className="w-full border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl font-bold bg-white" asChild>
-                       <Link href="/dashboard/finance">Submit Receipt</Link>
-                    </Button>
+                    {upiId ? (
+                      <>
+                        <Button asChild className="w-full bg-rose-600 hover:bg-rose-700 font-bold rounded-xl shadow-sm flex-1">
+                          <a href={upiLink}>Pay via UPI App</a>
+                        </Button>
+                        <Button variant="outline" className="w-full border-rose-200 text-rose-700 hover:bg-rose-100 rounded-xl font-bold bg-white flex-1" asChild>
+                          <Link href={`/dashboard/finance/submit?amount=${pr.amount}&desc=${encodeURIComponent(pr.title)}&requestId=${pr.id}`}>Submit Receipt</Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button className="w-full bg-rose-600 hover:bg-rose-700 font-bold rounded-xl shadow-sm" asChild>
+                        <Link href={`/dashboard/finance/submit?amount=${pr.amount}&desc=${encodeURIComponent(pr.title)}&requestId=${pr.id}`}>Submit Receipt</Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
