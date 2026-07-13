@@ -23,18 +23,24 @@ export default async function AdminFinancePage() {
     );
   }
 
+  const adminUser = await prisma.user.findUnique({
+    where: { id: session.id },
+    include: { member: true }
+  });
+
   const club = await getOrCreateDefaultClub();
+  const activeClubId = adminUser?.member?.clubId || club.id;
 
   // 1. Seed default active Financial Year if none exists
   let fy = await prisma.financialYear.findFirst({
-    where: { clubId: club.id, status: "ACTIVE" }
+    where: { clubId: activeClubId, status: "ACTIVE" }
   });
   if (!fy) {
     fy = await prisma.financialYear.upsert({
       where: { name: "RY 2026-27" },
       update: { status: "ACTIVE" },
       create: {
-        clubId: club.id,
+        clubId: activeClubId,
         name: "RY 2026-27",
         startDate: new Date("2026-07-01"),
         endDate: new Date("2027-06-30"),
@@ -45,12 +51,12 @@ export default async function AdminFinancePage() {
   }
 
   // 2. Seed default Accounts if none exist
-  const accountsCount = await prisma.account.count({ where: { clubId: club.id } });
+  const accountsCount = await prisma.account.count({ where: { clubId: activeClubId } });
   if (accountsCount === 0) {
     await prisma.account.createMany({
       data: [
-        { clubId: club.id, name: "Cash Account", type: "CASH", currentBalance: 0 },
-        { clubId: club.id, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0 },
+        { clubId: activeClubId, name: "Cash Account", type: "CASH", currentBalance: 0 },
+        { clubId: activeClubId, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0 },
       ]
     });
   }
@@ -59,11 +65,11 @@ export default async function AdminFinancePage() {
   // none of these depend on each other's results.
   const [rawAccounts, rawTransactions, rawBudgets, rawContributors, rawTransfers, auditLogs] = await Promise.all([
     prisma.account.findMany({
-      where: { clubId: club.id },
+      where: { clubId: activeClubId },
       orderBy: { type: "asc" }
     }),
     prisma.transaction.findMany({
-      where: { clubId: club.id },
+      where: { clubId: activeClubId },
       orderBy: { date: "desc" },
       include: {
         member: { select: { name: true, email: true } },
@@ -75,17 +81,17 @@ export default async function AdminFinancePage() {
       }
     }),
     prisma.budget.findMany({
-      where: { clubId: club.id },
+      where: { clubId: activeClubId },
       include: {
         project: { select: { title: true } },
         event: { select: { title: true } }
       }
     }),
     prisma.contributor.findMany({
-      where: { clubId: club.id }
+      where: { clubId: activeClubId }
     }),
     prisma.transfer.findMany({
-      where: { clubId: club.id },
+      where: { clubId: activeClubId },
       orderBy: { date: "desc" },
       include: {
         fromAccount: { select: { name: true } },
@@ -144,7 +150,7 @@ export default async function AdminFinancePage() {
       </div>
 
       <TreasurerWorkspace 
-        clubId={club.id}
+        clubId={activeClubId}
         financialYear={fySerialized}
         accounts={accountsSerialized}
         transactions={transactionsSerialized}
