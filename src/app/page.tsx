@@ -32,9 +32,12 @@ export default async function HomePage({
 
   const clubId = data.club.id;
   const gallerySettings = (data.settings as any) || {};
-  const galleryWhere: any = { clubId, type: "IMAGE" };
+  const galleryWhere: any = { 
+    clubId, 
+    type: "IMAGE",
+    albumId: gallerySettings.galleryAlbumId ? gallerySettings.galleryAlbumId : { not: null }
+  };
   if (gallerySettings.galleryShowFeatured) galleryWhere.isFeatured = true;
-  if (gallerySettings.galleryAlbumId) galleryWhere.albumId = gallerySettings.galleryAlbumId;
 
   // Run database queries in parallel on the server
   const [impact, photos, projectsData, eventsData, news] = await Promise.all([
