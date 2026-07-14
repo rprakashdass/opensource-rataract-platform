@@ -24,6 +24,7 @@ export default function ProjectForm() {
   const [team, setTeam] = useState<{memberId: string, role: string}[]>([]);
   const [coverMediaId, setCoverMediaId] = useState<string>("");
   const [metrics, setMetrics] = useState<{key: string, value: string}[]>([]);
+  const [submitAction, setSubmitAction] = useState<string>("DRAFT");
 
   useEffect(() => {
     fetch("/api/admin/members")
@@ -33,6 +34,18 @@ export default function ProjectForm() {
       })
       .catch(console.error);
   }, []);
+
+  function getCleanErrorMessage(errStr: string) {
+    try {
+      if (errStr.startsWith("[") && errStr.endsWith("]")) {
+        const parsed = JSON.parse(errStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed[0].message || errStr;
+        }
+      }
+    } catch (_) {}
+    return errStr;
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,13 +69,13 @@ export default function ProjectForm() {
       status: formData.get("status"),
       startDate: formData.get("startDate") ? new Date(formData.get("startDate") as string).toISOString() : "",
       endDate: formData.get("endDate") ? new Date(formData.get("endDate") as string).toISOString() : null,
-      coverMediaId: formData.get("coverMediaId") || undefined,
+      coverMediaId: coverMediaId || undefined,
       isFeatured: formData.get("isFeatured") === "on",
       impactSummary: formData.get("impactSummary") || undefined,
       visibility: formData.get("visibility"),
-      publishStatus: (e.nativeEvent as any).submitter?.getAttribute("value") || "DRAFT",
+      publishStatus: submitAction,
       publishAt: formData.get("publishAt") ? new Date(formData.get("publishAt") as string).toISOString() : null,
-      publishedAt: ((e.nativeEvent as any).submitter?.getAttribute("value") === "PUBLISHED") ? new Date().toISOString() : null,
+      publishedAt: (submitAction === "PUBLISHED") ? new Date().toISOString() : null,
       impactMetrics: impactMetricsJson,
       team: team,
     };
@@ -73,7 +86,7 @@ export default function ProjectForm() {
       const res = await createProject(parsed);
       
       if (res.error) {
-        toast.error(res.error);
+        toast.error(getCleanErrorMessage(res.error));
       } else {
         toast.success("Project created successfully!");
         router.push("/admin");
@@ -85,7 +98,7 @@ export default function ProjectForm() {
       } else if (err.errors && err.errors.length > 0) {
         toast.error("Validation error: " + err.errors[0].message);
       } else {
-        toast.error(err.message || "Failed to create project");
+        toast.error(getCleanErrorMessage(err.message || "Failed to create project"));
       }
     } finally {
       setLoading(false);
@@ -306,9 +319,9 @@ export default function ProjectForm() {
         <CardFooter className="bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
           <div className="flex flex-col sm:flex-row gap-3 w-full justify-end">
             <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">Cancel</Button>
-            <Button type="submit" name="publishAction" value="DRAFT" variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
-            <Button type="submit" name="publishAction" value="SCHEDULED" variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
-            <Button type="submit" name="publishAction" value="PUBLISHED" disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
+            <Button type="submit" onClick={() => setSubmitAction("DRAFT")} variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
+            <Button type="submit" onClick={() => setSubmitAction("SCHEDULED")} variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
+            <Button type="submit" onClick={() => setSubmitAction("PUBLISHED")} disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
           </div>
         </CardFooter>
       </form>
