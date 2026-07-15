@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { registerForEvent } from "@/features/events/actions/registerForEvent";
 
 interface Props {
@@ -20,16 +19,16 @@ export default function PublicEventRegister({ eventId, memberId, isRegistered, i
 
   if (isRegistered) {
     return (
-      <div className="w-full rounded-full py-4 text-center bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold flex items-center justify-center gap-2">
-        <CheckCircle2 className="w-5 h-5" /> You're registered!
+      <div className="w-full rounded-full py-3.5 px-6 text-center bg-paper border border-hairline text-ink text-[15px] font-semibold flex items-center justify-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-ochre-deep" /> You&rsquo;re registered
       </div>
     );
   }
 
   if (isFull) {
     return (
-      <div className="w-full rounded-full py-4 text-center bg-slate-100 border border-slate-200 text-slate-500 font-bold">
-        Event Full
+      <div className="w-full rounded-full py-3.5 px-6 text-center bg-paper border border-hairline text-ink-faint text-[15px] font-semibold">
+        This event is full
       </div>
     );
   }
@@ -49,12 +48,13 @@ export default function PublicEventRegister({ eventId, memberId, isRegistered, i
   };
 
   return (
-    <Button
+    <button
+      type="button"
       onClick={handleRegister}
       disabled={loading}
-      className="w-full rounded-full py-6 text-base font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-1"
+      className="motion-button w-full inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-ochre text-white hover:bg-ochre-deep transition-colors disabled:opacity-60 disabled:pointer-events-none"
     >
-      {loading ? "Registering..." : "Register for this Event"}
-    </Button>
+      {loading ? "Registering…" : "Register for this event"}
+    </button>
   );
 }

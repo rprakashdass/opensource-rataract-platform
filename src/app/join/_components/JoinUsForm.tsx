@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitInquiry } from "@/features/public/actions/submitInquiry";
-import { CheckCircle2, Heart } from "lucide-react";
+import { QuietLink } from "@/components/ui/public/v2";
+
+const INPUT_CLASSES =
+  "w-full bg-paper border border-hairline rounded-xl px-4 py-3 text-ink placeholder:text-ink-faint focus:outline-none focus:border-ochre motion-input";
+
+const LABEL_CLASSES = "block text-sm font-medium text-ink-soft mb-1.5";
 
 export default function JoinUsForm({
   clubId,
-  successTitle = "Thank you for your interest!",
+  successTitle = "Your first footprint is down. We'll be in touch.",
   successDesc = "We have received your details. A member of our board will reach out to you shortly.",
 }: {
   clubId: string;
@@ -23,7 +25,7 @@ export default function JoinUsForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     setLoading(true);
     const res = await submitInquiry({
       clubId,
@@ -44,12 +46,14 @@ export default function JoinUsForm({
 
   if (success) {
     return (
-      <div className="text-center py-8">
-        <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-black text-slate-900 mb-2">{successTitle}</h2>
-        <p className="text-slate-500 text-lg">
-          {successDesc}
+      <div className="py-8 text-center">
+        <p className="font-display font-medium italic text-2xl md:text-3xl text-ink text-balance">
+          {successTitle}
         </p>
+        <p className="mt-4 text-ink-soft leading-relaxed">{successDesc}</p>
+        <div className="mt-8">
+          <QuietLink href="/events">See what's coming up</QuietLink>
+        </div>
       </div>
     );
   }
@@ -58,35 +62,45 @@ export default function JoinUsForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Full Name *</label>
-          <Input name="name" required placeholder="John Doe" className="h-12 bg-slate-50" />
+          <label className={LABEL_CLASSES}>Full name *</label>
+          <input name="name" required placeholder="John Doe" className={INPUT_CLASSES} />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address *</label>
-            <Input name="email" type="email" required placeholder="john@example.com" className="h-12 bg-slate-50" />
+            <label className={LABEL_CLASSES}>Email address *</label>
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="john@example.com"
+              className={INPUT_CLASSES}
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number (Optional)</label>
-            <Input name="phone" placeholder="+91 98765 43210" className="h-12 bg-slate-50" />
+            <label className={LABEL_CLASSES}>Phone number (optional)</label>
+            <input name="phone" placeholder="+91 98765 43210" className={INPUT_CLASSES} />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Why do you want to join? (Optional)</label>
-          <Textarea 
-            name="interestMessage" 
-            placeholder="Tell us a little bit about yourself and why you're interested in joining..." 
-            rows={4} 
-            className="bg-slate-50"
+          <label className={LABEL_CLASSES}>Why do you want to join? (optional)</label>
+          <textarea
+            name="interestMessage"
+            placeholder="Tell us a little bit about yourself and why you're interested in joining..."
+            rows={4}
+            className={INPUT_CLASSES}
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="w-full rounded-xl h-14 text-lg font-bold">
-        {loading ? "Submitting..." : <><Heart className="w-5 h-5 mr-2" /> Submit Application</>}
-      </Button>
+      <button
+        type="submit"
+        disabled={loading}
+        className="motion-button w-full rounded-full bg-ochre text-white hover:bg-ochre-deep disabled:opacity-60 text-[15px] font-semibold py-3.5 transition-colors"
+      >
+        {loading ? "Submitting..." : "Submit application"}
+      </button>
     </form>
   );
 }

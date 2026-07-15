@@ -1,21 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MenuIcon, Heart } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Initiatives", href: "/projects" },
+  { label: "Our Work", href: "/projects" },
   { label: "Events", href: "/events" },
-  { label: "Team", href: "/team" },
+  { label: "People", href: "/team" },
   { label: "Sponsor Us", href: "/partner" },
 ];
+
+// Pages that open on a dark or full-bleed-photo hero: header text starts light.
+const DARK_HERO_PATHS = ["/", "/partner", "/join"];
 
 export default function Header({ layoutData }: { layoutData?: any }) {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -25,97 +28,102 @@ export default function Header({ layoutData }: { layoutData?: any }) {
   const settings = layoutData?.settings;
 
   const appName = club?.shortName || club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
-  const logoUrl = club?.logoUrl;
+  const wordmark = appName.replace("Rotaract Club of ", "").replace("RAC ", "");
+  const logoUrl = club?.logoUrl ? getGoogleDriveDirectLink(club.logoUrl) : null;
 
-  const navLinks = layoutData?.navigationItems && layoutData.navigationItems.length > 0
-    ? layoutData.navigationItems.map((item: any) => ({ label: item.label, href: item.url }))
-    : NAV_LINKS.filter(link => {
-        // Filter out if pages are disabled in CMS
-        if (link.href === "/partner" && settings?.enablePartner === false) return false;
-        if (link.href === "/join" && settings?.enableJoin === false) return false;
-        if (link.href === "/our-archive" && settings?.enableArchive === false) return false;
-        return true;
-      });
+  const navLinks =
+    layoutData?.navigationItems && layoutData.navigationItems.length > 0
+      ? layoutData.navigationItems.map((item: any) => ({ label: item.label, href: item.url }))
+      : NAV_LINKS.filter((link) => {
+          if (link.href === "/partner" && settings?.enablePartner === false) return false;
+          if (link.href === "/join" && settings?.enableJoin === false) return false;
+          if (link.href === "/our-archive" && settings?.enableArchive === false) return false;
+          return true;
+        });
 
   React.useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 24);
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const onDarkHero = !scrolled && DARK_HERO_PATHS.includes(pathname);
+
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 z-50 transition-all duration-500",
+        "fixed inset-x-0 top-0 z-50 transition-all duration-500",
         scrolled
-          ? "top-4 mx-4 md:mx-12 lg:mx-auto max-w-[1400px] bg-white/90 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/50 rounded-3xl py-2"
-          : "top-0 mx-0 bg-transparent py-6"
+          ? "bg-paper/85 backdrop-blur-md border-b border-hairline py-3"
+          : "bg-transparent py-5"
       )}
     >
-      <div className={cn(
-        "w-full mx-auto flex items-center justify-between",
-        scrolled ? "px-6 sm:px-8" : "max-w-[1400px] px-6 sm:px-12"
-      )}>
-        {/* Logo Replacement: Elegant Typography */}
-        <Link href="/" className="flex items-center select-none flex-shrink-0 group">
-          <span className={cn(
-            "text-xl md:text-2xl font-black tracking-tighter uppercase",
-            !scrolled && pathname === "/partner" ? "text-white" : "text-[#0B132B]"
-          )}>
-            {appName.replace("Rotaract Club of ", "").replace("RAC ", "")}
-            <span className="text-[#F7A800]">.</span>
+      <div className="max-w-[1280px] mx-auto flex items-center justify-between px-6 lg:px-10">
+        {/* Wordmark / logo */}
+        <Link href="/" className="flex items-center gap-3 select-none shrink-0 group">
+          {logoUrl && (
+            <span className="relative w-9 h-9 rounded-full overflow-hidden bg-white/90">
+              <Image src={logoUrl} alt={`${appName} logo`} fill sizes="36px" className="object-contain p-0.5" />
+            </span>
+          )}
+          <span
+            className={cn(
+              "font-display font-semibold text-xl md:text-[22px] tracking-[-0.01em] transition-colors",
+              onDarkHero ? "text-parchment" : "text-ink"
+            )}
+          >
+            {wordmark}
+            <span className="text-ochre">.</span>
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center space-x-8">
+        {/* Desktop navigation */}
+        <nav className="hidden lg:flex items-center gap-8">
           {navLinks.map((item: any) => {
             const isActive = pathname === item.href;
-            const isDarkHero = !scrolled && pathname === "/partner";
             return (
-              <Link key={item.label} href={item.href} className="group relative py-2">
-                <span
-                  className={cn(
-                    "text-sm font-bold transition-all duration-300",
-                    isActive
-                      ? (isDarkHero ? "text-white" : "text-[#0B132B]")
-                      : (isDarkHero ? "text-slate-300 group-hover:text-white" : "text-slate-500 group-hover:text-[#0B132B]")
-                  )}
-                >
-                  {item.label}
-                </span>
-                {/* Numiko style hover underline */}
-                <span className={cn(
-                  "absolute bottom-0 left-0 h-0.5 bg-[#F7A800] transition-all duration-300",
-                  isActive ? "w-full" : "w-0 group-hover:w-full"
-                )} />
+              <Link
+                key={item.label}
+                href={item.href}
+                className={cn(
+                  "thadam-link text-[15px] font-medium transition-colors",
+                  isActive
+                    ? onDarkHero
+                      ? "text-parchment"
+                      : "text-ink"
+                    : onDarkHero
+                      ? "text-parchment/70 hover:text-parchment"
+                      : "text-ink-soft hover:text-ink"
+                )}
+              >
+                {item.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* CTA & Mobile */}
+        {/* Portal link, Join pill, mobile menu */}
         <div className="flex items-center gap-6">
-          <Link 
-            href="/auth/login" 
+          <Link
+            href="/auth/login"
             className={cn(
-              "hidden md:block text-sm font-bold relative group motion-link",
-              !scrolled && pathname === "/partner" ? "text-slate-300 hover:text-white" : "text-slate-500 hover:text-[#0B132B]"
+              "hidden md:block thadam-link text-[15px] font-medium transition-colors",
+              onDarkHero ? "text-parchment/70 hover:text-parchment" : "text-ink-soft hover:text-ink"
             )}
           >
             Member Portal
-            <span className={cn(
-              "absolute bottom-0 left-0 h-0.5 w-0 transition-all duration-300 group-hover:w-full",
-              !scrolled && pathname === "/partner" ? "bg-white" : "bg-[#0B132B]"
-            )} />
           </Link>
-          <Link href="/join" className="hidden md:block">
-            <Button className="font-bold rounded-full px-7 h-11 bg-[#F7A800] hover:bg-[#e09700] text-[#0B132B] shadow-md hover:shadow-lg motion-button">
-              Join Us
-            </Button>
-          </Link>
+          {settings?.enableJoin !== false && (
+            <Link
+              href="/join"
+              className="hidden md:inline-flex motion-button items-center rounded-full bg-ochre px-7 py-2.5 text-[15px] font-semibold text-white hover:bg-ochre-deep transition-colors"
+            >
+              Join us
+            </Link>
+          )}
 
-          {/* Mobile Navigation */}
+          {/* Mobile navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button
@@ -123,37 +131,33 @@ export default function Header({ layoutData }: { layoutData?: any }) {
                 size="icon"
                 className={cn(
                   "lg:hidden h-10 w-10 rounded-full transition-colors",
-                  !scrolled && pathname === "/partner"
-                    ? "text-white hover:bg-white/10"
-                    : "text-slate-900 hover:bg-slate-100"
+                  onDarkHero
+                    ? "text-parchment hover:bg-white/10"
+                    : "text-ink hover:bg-wash"
                 )}
               >
                 <MenuIcon className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:w-[400px] border-l-0 bg-[#FAF9F6] p-0 flex flex-col">
-              <div className="p-8 pb-4 border-b border-slate-200">
-                <div className="flex items-center gap-3 mb-12 mt-2">
-                  <span className="text-xl font-black tracking-tighter text-[#0B132B] uppercase">
-                    {appName.replace("Rotaract Club of ", "").replace("RAC ", "")}
-                    <span className="text-[#F7A800]">.</span>
-                  </span>
-                </div>
-                <nav className="flex flex-col space-y-2">
+            <SheetContent side="right" className="w-full sm:w-[400px] border-l-0 bg-paper p-0 flex flex-col">
+              <div className="p-8 flex-1">
+                <span className="font-display font-semibold text-xl text-ink tracking-[-0.01em]">
+                  {wordmark}
+                  <span className="text-ochre">.</span>
+                </span>
+                <nav className="flex flex-col gap-1 mt-12">
                   {navLinks.map((item: any, index: number) => {
                     const isActive = pathname === item.href;
                     return (
                       <Link
                         key={index}
                         href={item.href}
-                        className={cn(
-                          "text-lg font-black transition-colors w-fit",
-                          isActive
-                            ? "text-[#F7A800]"
-                            : "text-slate-600 hover:text-[#0B132B]"
-                        )}
                         onClick={() => setIsOpen(false)}
+                        className={cn(
+                          "font-display font-medium text-3xl py-2 w-fit transition-colors",
+                          isActive ? "text-ochre-deep" : "text-ink hover:text-ochre-deep"
+                        )}
                       >
                         {item.label}
                       </Link>
@@ -161,19 +165,27 @@ export default function Header({ layoutData }: { layoutData?: any }) {
                   })}
                 </nav>
               </div>
-              <div className="pt-6 border-t border-slate-200/50 flex flex-col gap-4">
-                <Link href="/join" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full bg-[#F7A800] hover:bg-[#e09700] text-[#0B132B] font-bold rounded-xl h-12 shadow-md">
-                    Join The Club
-                  </Button>
-                </Link>
-                <Link href="/auth/login" onClick={() => setIsOpen(false)} className="w-full text-center text-sm font-bold text-slate-500 hover:text-[#0B132B] transition">
-                  Member Portal Login
+              <div className="p-8 pt-6 border-t border-hairline flex flex-col gap-5">
+                {settings?.enableJoin !== false && (
+                  <Link
+                    href="/join"
+                    onClick={() => setIsOpen(false)}
+                    className="motion-button inline-flex items-center justify-center rounded-full bg-ochre px-8 py-3.5 text-[15px] font-semibold text-white hover:bg-ochre-deep transition-colors"
+                  >
+                    Join us
+                  </Link>
+                )}
+                <Link
+                  href="/auth/login"
+                  onClick={() => setIsOpen(false)}
+                  className="text-center text-sm font-medium text-ink-soft hover:text-ink transition-colors"
+                >
+                  Member Portal
                 </Link>
               </div>
             </SheetContent>
-        </Sheet>
-      </div>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

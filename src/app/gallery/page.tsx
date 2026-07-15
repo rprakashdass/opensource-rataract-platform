@@ -1,17 +1,120 @@
 import { getPublicGalleryPhotos } from "@/features/public/queries/getPublicGalleryPhotos";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import Image from "next/image";
-import { Camera } from "lucide-react";
-import Link from "next/link";
-import { PageHero } from "@/components/ui/public/PageHero";
 import { CmsText } from "@/components/cms/CmsText";
-import { ArrowRight } from "lucide-react";
+import {
+  RevealBlock,
+  Eyebrow,
+  SectionHeader,
+  PillLink,
+  EmptyState,
+} from "@/components/ui/public/v2";
+import { format } from "date-fns";
 
 interface GalleryCopy {
   galleryTitle?: string | null;
   gallerySubtitle?: string | null;
   galleryCTA?: string | null;
   galleryCTALink?: string | null;
+}
+
+interface GalleryPhoto {
+  id: string;
+  url: string;
+  title?: string | null;
+  createdAt?: Date | string | null;
+  event?: { title: string } | null;
+  project?: { title: string } | null;
+}
+
+interface Shelf {
+  key: string;
+  heading: string;
+  eyebrow: string;
+  photos: GalleryPhoto[];
+}
+
+function groupIntoShelves(photos: GalleryPhoto[]): Shelf[] {
+  const shelves: Shelf[] = [];
+  const byKey = new Map<string, Shelf>();
+  const loose: GalleryPhoto[] = [];
+
+  for (const photo of photos) {
+    const groupTitle = photo.event?.title || photo.project?.title;
+    if (!groupTitle) {
+      loose.push(photo);
+      continue;
+    }
+    const eyebrow = photo.event ? "Event" : "Initiative";
+    const key = `${eyebrow}:${groupTitle}`;
+    let shelf = byKey.get(key);
+    if (!shelf) {
+      shelf = { key, heading: groupTitle, eyebrow, photos: [] };
+      byKey.set(key, shelf);
+      shelves.push(shelf);
+    }
+    shelf.photos.push(photo);
+  }
+
+  if (loose.length > 0) {
+    shelves.push({
+      key: "from-the-field",
+      heading: "From the field",
+      eyebrow: "Everyday moments",
+      photos: loose,
+    });
+  }
+
+  return shelves;
+}
+
+function shelfSupport(shelf: Shelf): string | undefined {
+  const dates = shelf.photos
+    .map((p) => (p.createdAt ? new Date(p.createdAt) : null))
+    .filter((d): d is Date => !!d && !isNaN(d.getTime()));
+  if (dates.length === 0) return undefined;
+  const newest = dates.reduce((a, b) => (a > b ? a : b));
+  const count = shelf.photos.length;
+  return `${format(newest, "MMMM yyyy")} · ${count} ${count === 1 ? "photograph" : "photographs"}`;
+}
+
+function Masonry({ photos }: { photos: GalleryPhoto[] }) {
+  return (
+    <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+      {photos.map((photo) => {
+        const label = photo.title || photo.event?.title || photo.project?.title;
+        const tag = photo.event ? "Event memory" : photo.project ? "Initiative" : null;
+        return (
+          <figure
+            key={photo.id}
+            className="group relative break-inside-avoid mb-4 rounded-xl overflow-hidden bg-wash"
+          >
+            <Image
+              src={photo.url}
+              alt={label || "Club memory"}
+              width={600}
+              height={400}
+              className="w-full h-auto object-cover thadam-grade"
+            />
+            {label && (
+              <figcaption
+                className="absolute inset-x-0 bottom-0 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none bg-[rgba(24,14,4,0.55)] px-4 pt-3 pb-3.5"
+              >
+                <p className="text-parchment font-display font-medium text-sm leading-snug line-clamp-2">
+                  {label}
+                </p>
+                {tag && (
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-ochre mt-1">
+                    {tag}
+                  </span>
+                )}
+              </figcaption>
+            )}
+          </figure>
+        );
+      })}
+    </div>
+  );
 }
 
 export default async function GalleryPage({
@@ -26,85 +129,83 @@ export default async function GalleryPage({
 
   if (data.error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6] p-6">
-        <div className="text-center text-slate-500">Failed to load gallery.</div>
-      </div>
+      <main className="min-h-screen flex items-center justify-center bg-paper p-6">
+        <EmptyState
+          title="The album wouldn't open this time."
+          detail="Something went wrong while loading the gallery. Please try again in a moment."
+        />
+      </main>
     );
   }
 
-  const photos: any[] = data.photos || [];
+  const photos: GalleryPhoto[] = data.photos || [];
   const copy: GalleryCopy = data.settings || {};
+  const shelves = groupIntoShelves(photos);
 
   return (
-    <main className="min-h-screen bg-[#FAF9F6] flex flex-col">
-      <PageHero
-        eyebrow="Archive"
-        title={<CmsText channel="gallery" initial={copy} field="galleryTitle" fallback="Moments & Memories." isPreview={isPreview} />}
-        subtitle={<CmsText channel="gallery" initial={copy} field="gallerySubtitle" fallback="Chronological snapshots of our fellowship, project drives, and installation ceremonies." isPreview={isPreview} />}
-      >
-        {copy.galleryCTALink && (
-          <Link
-            href={copy.galleryCTALink}
-            className="inline-flex items-center gap-2 bg-[#0B132B] hover:bg-[#F7A800] text-white hover:text-[#0B132B] font-black text-xs uppercase tracking-widest px-6 py-3 rounded-full transition-colors shadow-md"
-          >
-            {copy.galleryCTA || "Learn More"} <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        )}
-      </PageHero>
-
-      <section className="py-28 px-6 md:px-12">
-        <MaxWidthWrapper className="max-w-7xl mx-auto">
-          {photos.length > 0 ? (
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-              {photos.map((photo) => {
-                const label = photo.title || photo.event?.title || photo.project?.title;
-                return (
-                  <div
-                    key={photo.id}
-                    className="group relative overflow-hidden rounded-2xl break-inside-avoid bg-slate-100"
-                  >
-                    <Image
-                      src={photo.url}
-                      alt={label || "Club memory"}
-                      width={600}
-                      height={400}
-                      className="w-full h-auto object-cover group-hover:scale-[1.03] transition-transform duration-700"
-                    />
-                    {/* Hover overlay with title */}
-                    {label && (
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <p className="text-white font-black text-sm leading-tight line-clamp-2 tracking-wide">
-                            {label}
-                          </p>
-                          {photo.event && (
-                            <span className="text-[#F7A800] text-[10px] font-black uppercase tracking-widest mt-1 block">
-                              Event Memory
-                            </span>
-                          )}
-                          {photo.project && !photo.event && (
-                            <span className="text-[#F7A800] text-[10px] font-black uppercase tracking-widest mt-1 block">
-                              Initiative
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl p-20 text-center border border-dashed border-slate-200 max-w-2xl mx-auto shadow-sm">
-              <Camera className="w-12 h-12 text-[#F7A800] mx-auto mb-6 opacity-80" />
-              <h3 className="text-2xl font-black text-[#0B132B] mb-3">Every great journey starts somewhere.</h3>
-              <p className="text-slate-500 font-medium">
-                Photo memories from events and projects will appear here as they are uploaded.
-              </p>
-            </div>
-          )}
+    <main className="min-h-screen bg-paper flex flex-col">
+      {/* Compact hero */}
+      <section className="pt-40 md:pt-48 pb-14 md:pb-20 bg-paper">
+        <MaxWidthWrapper>
+          <RevealBlock>
+            <Eyebrow className="mb-5">Gallery</Eyebrow>
+            <h1 className="font-display font-medium text-ink tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,5.5vw,4rem)] text-balance max-w-3xl">
+              <CmsText
+                channel="gallery"
+                initial={copy}
+                field="galleryTitle"
+                fallback="Proof we were there."
+                isPreview={isPreview}
+              />
+            </h1>
+            <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-xl">
+              <CmsText
+                channel="gallery"
+                initial={copy}
+                field="gallerySubtitle"
+                fallback="Chronological snapshots of our fellowship, project drives, and installation ceremonies."
+                isPreview={isPreview}
+              />
+            </p>
+            {copy.galleryCTALink && (
+              <div className="mt-8">
+                <PillLink href={copy.galleryCTALink}>
+                  {copy.galleryCTA || "Learn more"}
+                </PillLink>
+              </div>
+            )}
+          </RevealBlock>
         </MaxWidthWrapper>
       </section>
+
+      {shelves.length > 0 ? (
+        shelves.map((shelf, i) => (
+          <section
+            key={shelf.key}
+            className={`py-20 md:py-28 ${i % 2 === 0 ? "bg-wash" : "bg-paper"}`}
+          >
+            <MaxWidthWrapper>
+              <SectionHeader
+                eyebrow={shelf.eyebrow}
+                heading={shelf.heading}
+                support={shelfSupport(shelf)}
+              />
+              <RevealBlock>
+                <Masonry photos={shelf.photos} />
+              </RevealBlock>
+            </MaxWidthWrapper>
+          </section>
+        ))
+      ) : (
+        <section className="py-20 md:py-28 bg-wash">
+          <MaxWidthWrapper>
+            <EmptyState
+              title="The camera roll is still warming up."
+              detail="Photographs from our events and project drives will be shelved here as soon as they're uploaded."
+            />
+          </MaxWidthWrapper>
+        </section>
+      )}
     </main>
   );
 }

@@ -1,18 +1,46 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Sparkles, Heart } from "lucide-react";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
-import { Hero } from "@/components/ui/public/Hero";
-import { MetricStrip } from "@/components/ui/public/MetricStrip";
-import { StoryCard } from "@/components/ui/public/StoryCard";
-import { GalleryMasonry } from "@/components/ui/public/GalleryMasonry";
-import { EditorialSection } from "@/components/ui/public/EditorialSection";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { normalizeHomepageSections } from "@/features/public/lib/homepageSections";
 import { useCmsPreview } from "@/hooks/useCmsPreview";
+import {
+  RevealLines,
+  RevealBlock,
+  Statement,
+  SectionHeader,
+  TrailRule,
+  PillLink,
+  QuietLink,
+  EditorialImage,
+  StoryCard,
+  VoiceBlock,
+  ImpactBand,
+  ListRow,
+  InvitePanel,
+  EmptyState,
+} from "@/components/ui/public/v2";
+import type { ImpactMetric } from "@/components/ui/public/v2";
+
+/** Split a headline into two visually balanced lines for the masked reveal. */
+function balanceLines(text: string): string[] {
+  const words = text.trim().split(/\s+/);
+  if (words.length < 3) return [text];
+  let best = 1;
+  let bestDiff = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(" ").length;
+    const b = words.slice(i).join(" ").length;
+    const diff = Math.abs(a - b);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = i;
+    }
+  }
+  return [words.slice(0, best).join(" "), words.slice(best).join(" ")];
+}
 
 export default function HomeClientWrapper({
   initialData,
@@ -44,24 +72,22 @@ export default function HomeClientWrapper({
   const { club, settings, metrics } = data;
 
   const sectionsConfig = normalizeHomepageSections(settings?.homepageSections);
-
   const sortedSections = [...sectionsConfig]
     .filter((s) => s.enabled)
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
+  const tenure = club.tenureYear || "2026–27";
+
   return (
-    <main className="min-h-screen bg-[#FAF9F6] flex flex-col overflow-x-hidden">
-      {/* Brand dynamic style overrides specifically for live preview / customized theme */}
+    <main className="min-h-screen bg-paper font-body text-ink flex flex-col overflow-x-hidden">
       {isPreview && (
         <style
           dangerouslySetInnerHTML={{
             __html: `
               :root {
-                --color-primary: ${settings?.primaryColor || "#F7A800"};
-                --color-secondary: ${settings?.secondaryColor || "#003DA5"};
-                --color-accent: ${settings?.accentColor || "#FAF9F6"};
-                --color-foreground: ${settings?.darkColor || "#0B132B"};
-                --color-background: ${settings?.lightColor || "#FAF9F6"};
+                --color-ochre: ${settings?.primaryColor || "#C4881A"};
+                --color-ink: ${settings?.darkColor || "#2E2014"};
+                --color-paper: ${settings?.lightColor || "#FBF6ED"};
               }
             `,
           }}
@@ -70,360 +96,301 @@ export default function HomeClientWrapper({
 
       {sortedSections.map((sec) => {
         const content = (() => {
-        switch (sec.id) {
-          case "hero":
-            const heroHeadline = settings?.heroHeadline || club.name;
-            const heroSubtitle = settings?.heroSubtitle || club.missionStatement || "Empowering students and young professionals through service and leadership.";
-            const heroCTA = settings?.heroCTA || "Join Us Today";
-            const heroCTALink = settings?.heroCTALink || "/join";
-            const heroSecCTA = settings?.heroSecondaryCTA || "Sponsor Us";
-            const heroSecCTALink = settings?.heroSecondaryCTALink || "/partner";
-            const heroImages = (settings?.heroImages as string[]) || [];
+          switch (sec.id) {
+            /* ── ACT 1 · AWARENESS — full-bleed hero, real members ── */
+            case "hero": {
+              const heroHeadline = settings?.heroHeadline || "We're the ones who show up.";
+              const heroSubtitle =
+                settings?.heroSubtitle ||
+                club.missionStatement ||
+                "Students and young professionals serving the city we call home.";
+              const heroCTA = settings?.heroCTA || "Join us";
+              const heroCTALink = settings?.heroCTALink || "/join";
+              const heroSecCTA = settings?.heroSecondaryCTA || "See our work";
+              const heroSecCTALink = settings?.heroSecondaryCTALink || "/projects";
+              const heroImages = (settings?.heroImages as string[]) || [];
+              const heroImage = heroImages[0] ? getGoogleDriveDirectLink(heroImages[0]) : null;
+              const lines = balanceLines(heroHeadline);
 
-            const displayPhotos = heroImages && heroImages.length > 0
-              ? heroImages.map((url, i) => ({ id: `hero-img-${i}`, url, title: null }))
-              : [];
-
-            return (
-              <Hero
-                key="hero"
-                clubName={heroHeadline}
-                missionStatement={heroSubtitle}
-                tenureYear={club.tenureYear}
-                ctaText={heroCTA}
-                ctaLink={heroCTALink}
-                secondaryCtaText={heroSecCTA}
-                secondaryCtaLink={heroSecCTALink}
-                photos={displayPhotos}
-              />
-            );
-
-          case "president":
-            const presName = settings?.presName || "The President";
-            const presMessage = settings?.presMessage || club.presidentMessage || "We welcome you to our digital home. This year, we are focused on expanding our grassroots footprint, strengthening our fellowship networks, and delivering sustainable community service drives. Join us in making a real, human difference.";
-            const presQuote = settings?.presQuote;
-            const presPhoto = settings?.presPhoto;
-            const presSignature = settings?.presSignature;
-
-            return (
-              <EditorialSection
-                key="president"
-                eyebrow={settings?.aboutEyebrow || `Rotary Year ${club.tenureYear || "2026-27"}`}
-                heading={club.aboutTitle || "Growing together. Serving others."}
-                description={club.aboutSubtitle || club.visionStatement || undefined}
-                background="white"
-              >
-                <div className="max-w-3xl mx-auto pt-8">
-                  <div className="border-t-2 border-black pt-12 relative">
-                    <span className="absolute -top-6 left-0 text-6xl text-slate-200 font-serif leading-none select-none">
-                      "
-                    </span>
-                    <blockquote className="text-[#0B132B] font-medium text-xl md:text-2xl leading-relaxed italic relative z-10">
-                      {presMessage}
-                    </blockquote>
-
-                    {presQuote && (
-                      <p className="text-slate-400 mt-4 text-sm font-semibold">— {presQuote}</p>
-                    )}
-
-                    <div className="mt-12 flex items-center gap-5">
-                      {presPhoto ? (
-                        <div className="w-16 h-16 rounded-full overflow-hidden relative shadow-md shrink-0">
-                          <Image
-                            src={getGoogleDriveDirectLink(presPhoto)}
-                            alt={presName}
-                            fill
-                            sizes="64px"
-                            className="object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 bg-[#0B132B] rounded-full flex items-center justify-center text-[#F7A800] font-serif text-3xl italic shadow-md shrink-0">
-                          {presName.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-black text-[#0B132B] text-base uppercase tracking-wider">
-                          {presName}
-                        </p>
-                        <p className="text-sm text-slate-500 font-bold">{club.name}</p>
-                        {presSignature && (
-                          <div className="mt-2 relative w-32 h-12">
-                            <Image
-                              src={getGoogleDriveDirectLink(presSignature)}
-                              alt="Signature"
-                              fill
-                              sizes="128px"
-                              className="object-contain filter dark:invert"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </EditorialSection>
-            );
-
-          case "impact":
-            return (
-              <div key="impact" className="py-0">
-                {metrics && metrics.length > 0 ? (
-                  <MetricStrip customMetrics={metrics} />
-                ) : (
-                  <MetricStrip
-                    members={fallbackImpact.members}
-                    projects={fallbackImpact.projects}
-                    hours={fallbackImpact.hours}
-                    events={fallbackImpact.events}
-                  />
-                )}
-              </div>
-            );
-
-          case "gallery":
-            if (photos.length === 0) return null;
-            return (
-              <EditorialSection
-                key="gallery"
-                eyebrow={settings?.galleryTitle || "Club Memories"}
-                heading={settings?.gallerySubtitle || "Moments of impact."}
-                background="navy"
-                className="border-t border-[#0B132B]"
-              >
-                <div className="flex justify-start md:justify-end mb-8 mt-4 md:-mt-20 relative z-20">
-                  <Link
-                    href={settings?.galleryCTALink || "/gallery"}
-                    className="text-white hover:text-[#F7A800] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative z-20"
-                  >
-                    {settings?.galleryCTA || "Browse Archive"}{" "}
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-
-                <GalleryMasonry photos={photos} />
-              </EditorialSection>
-            );
-
-          case "projects":
-            return (
-              <EditorialSection
-                key="projects"
-                eyebrow={settings?.projectsEyebrow || "Flagship Initiatives"}
-                heading={settings?.projectsTitle || "Ongoing impact."}
-                background="slate"
-              >
-                <div className="flex justify-start md:justify-end mb-12 mt-4 md:-mt-20 relative z-20">
-                  <Link
-                    href={settings?.projectsCTALink || "/projects"}
-                    className="text-primary hover:text-[#0B132B] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-colors relative z-20"
-                  >
-                    {settings?.projectsCTA || "All Initiatives"}{" "}
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-
-                {featuredProjects.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
-                    {featuredProjects.map((project: any) => (
-                      <StoryCard
-                        key={project.id}
-                        eyebrow={project.category.replace("_", " ")}
-                        title={project.title}
-                        imageUrl={
-                          getGoogleDriveDirectLink(project.media?.[0]?.url) ||
-                          "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800"
-                        }
-                        href={`/projects/${project.slug}`}
-                        meta={`${project.members?.length || 0} Volunteers • ${
-                          project.events?.reduce((acc: number, e: any) => acc + (e.volunteerHours || 0), 0) || 0
-                        } Hours`}
+              return (
+                <section key="hero" className="relative min-h-[92vh] flex items-end bg-chapter" data-thadam-dark aria-label="Homepage hero">
+                  {heroImage && (
+                    <>
+                      <Image
+                        src={heroImage}
+                        alt={heroHeadline}
+                        fill
+                        sizes="100vw"
+                        priority
+                        className="object-cover thadam-grade"
                       />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-3xl p-16 text-center border border-slate-200/60 max-w-2xl mx-auto shadow-sm">
-                    <Heart className="w-12 h-12 text-[#F7A800] mx-auto mb-4 opacity-80" />
-                    <h3 className="text-lg font-black text-[#0B132B] mb-2">
-                      {settings?.projectsEmptyTitle || "Every great journey starts somewhere."}
-                    </h3>
-                    <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
-                      {settings?.projectsEmptyDesc ||
-                        "Our first initiatives and community support projects are currently in the planning pipeline."}
-                    </p>
-                  </div>
-                )}
-              </EditorialSection>
-            );
+                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(24,14,4,0.72)] via-[rgba(24,14,4,0.18)] to-[rgba(24,14,4,0.22)]" />
+                    </>
+                  )}
+                  <MaxWidthWrapper className="relative z-10 pb-16 md:pb-24 pt-44 w-full">
+                    <div className="max-w-4xl">
+                      <h1 className="font-display font-medium text-parchment tracking-[-0.02em] leading-[1.02] text-[clamp(2.6rem,7vw,5.5rem)]">
+                        <RevealLines lines={lines} />
+                      </h1>
+                      {heroSubtitle && (
+                        <RevealBlock delay={0.35} className="mt-6 max-w-xl">
+                          <p className="text-parchment/85 text-lg md:text-xl leading-relaxed">{heroSubtitle}</p>
+                        </RevealBlock>
+                      )}
+                      <RevealBlock delay={0.5} className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+                        {heroCTA && <PillLink href={heroCTALink}>{heroCTA}</PillLink>}
+                        {heroSecCTA && (
+                          <QuietLink href={heroSecCTALink} onDark>
+                            {heroSecCTA}
+                          </QuietLink>
+                        )}
+                      </RevealBlock>
+                      <RevealBlock delay={0.65} className="mt-12">
+                        <p className="text-[13px] font-medium text-parchment/50">
+                          Rotary Year {tenure} · Rotaract Club
+                        </p>
+                      </RevealBlock>
+                    </div>
+                  </MaxWidthWrapper>
+                </section>
+              );
+            }
 
-          case "events_news":
-            return (
-              <section key="events_news" className="py-28 bg-white border-y border-slate-200/50">
-                <MaxWidthWrapper className="max-w-6xl mx-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
-                    {settings?.enableEvents !== false && (
-                      <div>
-                        <div className="flex justify-between items-end mb-8 border-b border-slate-200 pb-4">
-                          <div>
-                            <h2 className="text-3xl md:text-4xl font-black text-[#0B132B] tracking-tight leading-tight">
-                              {settings?.eventsTitle || "Join us this month."}
-                            </h2>
-                          </div>
-                          <Link
-                            href="/events"
-                            className="text-primary font-black hover:text-[#0B132B] text-xs flex items-center gap-1 uppercase tracking-widest pb-1"
-                          >
-                            {settings?.eventsRegisterCTA || "View All"}{" "}
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </Link>
-                        </div>
+            /* ── ACT 2 · BELIEF — why we exist, then the president's voice ── */
+            case "president": {
+              const presName = settings?.presName || "The President";
+              const presMessage =
+                settings?.presMessage ||
+                club.presidentMessage ||
+                "This year we walk further together — more hands, more service, more marks left on the city we love.";
+              const belief =
+                club.visionStatement ||
+                club.aboutSubtitle ||
+                "Leadership you practice. Friends you serve beside. A city that knows your club's name.";
 
-                        <div className="space-y-4">
-                          {upcomingEvents.length > 0 ? (
-                            upcomingEvents.map((event: any) => {
-                              const eventDate = new Date(event.startDate);
-                              const monthStr = eventDate.toLocaleString("default", { month: "short" });
-                              const dayStr = eventDate.getDate();
-                              return (
-                                <Link
-                                  key={event.id}
-                                  href={`/events/${event.slug}`}
-                                  className="group flex items-center gap-6 p-4 rounded-2xl hover:bg-[#FAF9F6] border border-transparent hover:border-slate-200/60 transition-all duration-300"
-                                >
-                                  <div className="flex flex-col items-center justify-center w-16 h-16 shrink-0 bg-[#0B132B] text-white rounded-2xl shadow-md group-hover:scale-105 transition-transform duration-300">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-[#F7A800]">
-                                      {monthStr}
-                                    </span>
-                                    <span className="text-2xl font-black leading-none">{dayStr}</span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <h3 className="text-lg font-black text-[#0B132B] group-hover:text-primary transition-colors">
-                                      {event.title}
-                                    </h3>
-                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mt-1 flex items-center gap-2">
-                                      {event.location}
-                                    </p>
-                                  </div>
-                                </Link>
-                              );
-                            })
-                          ) : (
-                            <div className="bg-[#FAF9F6] rounded-2xl p-8 text-center border border-slate-200/60 shadow-sm mt-4">
-                              <p className="text-slate-500 text-sm font-semibold">
-                                {settings?.eventsEmptyTitle ||
-                                  "Our calendar is clear. Check back soon for new gatherings."}
-                              </p>
-                            </div>
-                          )}
+              return (
+                <section key="president" className="py-24 md:py-36 bg-paper">
+                  <MaxWidthWrapper>
+                    <Statement eyebrow={settings?.aboutEyebrow || `Why we exist`}>{belief}</Statement>
+                    <RevealBlock delay={0.1} className="mt-10 flex flex-wrap gap-x-10 gap-y-2 text-ink-faint font-medium text-[15px]">
+                      <span>We serve</span>
+                      <span>We lead</span>
+                      <span>We grow</span>
+                    </RevealBlock>
+                    <TrailRule className="my-16 md:my-20 max-w-3xl" />
+                    <VoiceBlock
+                      eyebrow={`From the President · ${tenure}`}
+                      quote={presMessage}
+                      name={presName}
+                      role={settings?.presQuote || club.name}
+                      photoUrl={settings?.presPhoto}
+                      signatureUrl={settings?.presSignature}
+                    />
+                  </MaxWidthWrapper>
+                </section>
+              );
+            }
+
+            /* ── ACT 3a · PROOF — the impact band ── */
+            case "impact": {
+              const customMetrics: ImpactMetric[] =
+                metrics && metrics.length > 0
+                  ? metrics
+                      .map((m: any) => ({
+                        value: Number(String(m.value).replace(/[^\d.]/g, "")) || 0,
+                        label: m.label,
+                        suffix: /\+\s*$/.test(String(m.value)) ? "+" : undefined,
+                      }))
+                      .filter((m: ImpactMetric) => m.value > 0)
+                  : [];
+
+              const fallbackMetrics: ImpactMetric[] = [
+                { value: fallbackImpact.members, label: "Active members" },
+                { value: fallbackImpact.projects, label: "Projects delivered" },
+                { value: fallbackImpact.hours, label: "Volunteer hours" },
+                { value: fallbackImpact.events, label: "Events hosted" },
+              ].filter((m) => m.value > 0);
+
+              const shown = customMetrics.length > 0 ? customMetrics : fallbackMetrics;
+              if (shown.length === 0) return null;
+
+              return (
+                <ImpactBand
+                  key="impact"
+                  kicker={settings?.impactEyebrow || "The marks we've left"}
+                  statement={settings?.impactStatement || "Service isn't a line on our website. It's our calendar."}
+                  metrics={shown}
+                  provenance={`Figures from club records · Rotary year ${tenure}`}
+                />
+              );
+            }
+
+            /* ── ACT 3b · PROOF — flagship work ── */
+            case "projects": {
+              return (
+                <section key="projects" className="py-24 md:py-36 bg-paper">
+                  <MaxWidthWrapper>
+                    <SectionHeader
+                      eyebrow={settings?.projectsEyebrow || "Our work"}
+                      heading={settings?.projectsTitle || "Work that outlasts the photos."}
+                      linkText={settings?.projectsCTA || "All our work"}
+                      linkHref={settings?.projectsCTALink || "/projects"}
+                    />
+                    {featuredProjects.length > 0 ? (
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-14">
+                        <StoryCard
+                          className="lg:col-span-7"
+                          href={`/projects/${featuredProjects[0].slug}`}
+                          imageUrl={featuredProjects[0].media?.[0]?.url}
+                          eyebrow={featuredProjects[0].category?.replace(/_/g, " ")}
+                          title={featuredProjects[0].title}
+                          outcome={featuredProjects[0].summary || featuredProjects[0].description}
+                          ratio="3/2"
+                          large
+                        />
+                        <div className="lg:col-span-5 flex flex-col gap-12">
+                          {featuredProjects.slice(1, 3).map((project: any) => (
+                            <StoryCard
+                              key={project.id}
+                              href={`/projects/${project.slug}`}
+                              imageUrl={project.media?.[0]?.url}
+                              eyebrow={project.category?.replace(/_/g, " ")}
+                              title={project.title}
+                              ratio="3/2"
+                            />
+                          ))}
                         </div>
                       </div>
+                    ) : (
+                      <EmptyState
+                        title={settings?.projectsEmptyTitle || "Our first marks are being planned."}
+                        detail={
+                          settings?.projectsEmptyDesc ||
+                          "New service projects are in the pipeline — check back after Installation Day."
+                        }
+                      />
                     )}
+                  </MaxWidthWrapper>
+                </section>
+              );
+            }
 
-                    {settings?.enableAnnouncements !== false && (
-                      <div>
-                        <div className="flex justify-between items-end mb-10 border-b border-slate-200 pb-6">
-                          <div>
-                            <h2 className="text-3xl font-black text-[#0B132B] tracking-tight">
-                              {settings?.noticeboardTitle || "Notice Board"}
-                            </h2>
-                            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-2">
-                              {settings?.noticeboardEyebrow || "Announcements & Updates"}
-                            </p>
-                          </div>
-                          <Link
-                            href="/announcements"
-                            className="text-[#003DA5] font-black hover:text-[#0B132B] text-xs flex items-center gap-1 uppercase tracking-widest"
-                          >
-                            Board <ArrowRight className="w-3.5 h-3.5" />
-                          </Link>
-                        </div>
+            /* ── ACT 4b · BELONGING — life in the club, editorial strip ── */
+            case "gallery": {
+              if (photos.length === 0) return null;
+              const strip = photos.slice(0, 5);
+              const spans = ["lg:col-span-5", "lg:col-span-7", "lg:col-span-4", "lg:col-span-4", "lg:col-span-4"];
+              const ratios: ("4/5" | "3/2" | "square")[] = ["4/5", "3/2", "square", "square", "square"];
 
-                        <div className="space-y-4">
-                          {latestUpdates.length > 0 ? (
-                            latestUpdates.map((update: any) => (
-                              <Link
-                                href={`/announcements`}
-                                key={update.id}
-                                className="block group bg-[#FAF9F6] p-6 rounded-2xl border border-slate-200/60 hover:shadow-md transition-all duration-300"
-                              >
-                                <span className="text-[10px] font-black text-[#F7A800] uppercase tracking-widest">
-                                  {new Date(update.createdAt).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                                <h3 className="text-lg font-black text-[#0B132B] mt-2 group-hover:text-[#003DA5] transition-colors line-clamp-1">
-                                  {update.title}
-                                </h3>
-                                {update.description && (
-                                  <p className="text-slate-600 text-sm mt-2 line-clamp-2 leading-relaxed font-medium">
-                                    {update.description}
-                                  </p>
-                                )}
-                              </Link>
+              return (
+                <section key="gallery" className="py-24 md:py-36 bg-wash">
+                  <MaxWidthWrapper>
+                    <SectionHeader
+                      eyebrow={settings?.galleryTitle || "Life in the club"}
+                      heading={settings?.gallerySubtitle || "The moments between the projects."}
+                      linkText={settings?.galleryCTA || "Browse the archive"}
+                      linkHref={settings?.galleryCTALink || "/gallery"}
+                    />
+                    <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 md:gap-6 items-start">
+                      {strip.map((photo: any, i: number) => (
+                        <EditorialImage
+                          key={photo.id}
+                          src={photo.url}
+                          alt={photo.title || "Club moment"}
+                          ratio={ratios[i] || "square"}
+                          caption={photo.title}
+                          className={`col-span-1 ${spans[i] || "lg:col-span-4"}`}
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                        />
+                      ))}
+                    </div>
+                  </MaxWidthWrapper>
+                </section>
+              );
+            }
+
+            /* ── ACT 4c · BELONGING — this month: events + notices ── */
+            case "events_news": {
+              const showEvents = settings?.enableEvents !== false;
+              const showNotices = settings?.enableAnnouncements !== false;
+              if (!showEvents && !showNotices) return null;
+
+              return (
+                <section key="events_news" className="py-24 md:py-36 bg-paper">
+                  <MaxWidthWrapper>
+                    <SectionHeader
+                      eyebrow="This month"
+                      heading={settings?.eventsTitle || "Walk with us."}
+                      linkText={settings?.eventsRegisterCTA || "All events"}
+                      linkHref="/events"
+                    />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-16">
+                      {showEvents && (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint pb-4 border-b border-ink/60">
+                            Upcoming
+                          </p>
+                          {upcomingEvents.length > 0 ? (
+                            upcomingEvents.map((event: any) => (
+                              <ListRow
+                                key={event.id}
+                                href={`/events/${event.slug}`}
+                                date={event.startDate}
+                                title={event.title}
+                                meta={event.location}
+                              />
                             ))
                           ) : (
-                            <div className="bg-[#FAF9F6] rounded-2xl p-12 text-center border border-slate-200/60 shadow-sm">
-                              <Sparkles className="w-8 h-8 text-slate-300 mx-auto mb-4" />
-                              <p className="text-slate-500 text-sm font-semibold">
-                                Official updates will be pinned here.
-                              </p>
-                            </div>
+                            <EmptyState
+                              title={settings?.eventsEmptyTitle || "The calendar is catching its breath."}
+                              detail="New gatherings are announced here first."
+                            />
                           )}
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </MaxWidthWrapper>
-              </section>
-            );
-
-          case "sponsor":
-            return (
-              <section
-                key="sponsor"
-                className="py-24 md:py-32 px-6 md:px-12 bg-white relative overflow-hidden border-t border-slate-200"
-              >
-                <MaxWidthWrapper>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div className="space-y-8 relative z-10">
-                      <h2 className="text-4xl md:text-6xl font-black text-[#0B132B] leading-tight tracking-tight">
-                        {settings?.sponsorsTitle || "Partner for"} <br />
-                        <span className="text-[#F7A800]">{settings?.sponsorsSubtitle || "Global Impact."}</span>
-                      </h2>
-                      <p className="text-slate-500 font-medium text-lg leading-relaxed max-w-lg">
-                        {settings?.sponsorsMission ||
-                          "Support our community initiatives, elevate your brand, and create real impact by partnering with our club as a corporate sponsor."}
-                      </p>
-                      <div className="pt-4">
-                        <Link
-                          href={settings?.sponsorsCTALink || "/partner"}
-                          className="inline-flex items-center gap-3 bg-[#0B132B] hover:bg-[#F7A800] text-white hover:text-[#0B132B] font-black text-sm uppercase tracking-widest px-10 py-5 rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-md"
-                        >
-                          {settings?.sponsorsCTA || "View Sponsorship Packages"}
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      </div>
+                      )}
+                      {showNotices && (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint pb-4 border-b border-ink/60">
+                            {settings?.noticeboardTitle || "Notice board"}
+                          </p>
+                          {latestUpdates.length > 0 ? (
+                            latestUpdates.map((update: any) => (
+                              <ListRow
+                                key={update.id}
+                                href="/announcements"
+                                date={update.createdAt}
+                                title={update.title}
+                                description={update.description}
+                              />
+                            ))
+                          ) : (
+                            <EmptyState title="Official updates will be pinned here." />
+                          )}
+                        </div>
+                      )}
                     </div>
+                  </MaxWidthWrapper>
+                </section>
+              );
+            }
 
-                    <div className="relative h-[400px] rounded-3xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-700 hidden lg:block border-[8px] border-white/5">
-                      <Image
-                        src={settings?.sponsorsImageUrl || "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=800"}
-                        alt="Community members"
-                        fill
-                        sizes="50vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  </div>
-                </MaxWidthWrapper>
-              </section>
-            );
+            /* ── ACT 5 · ACTION — the single invitation ── */
+            case "sponsor": {
+              return (
+                <InvitePanel
+                  key="sponsor"
+                  statement={settings?.sponsorsTitle || "Leave your mark."}
+                  primaryText={settings?.heroCTA || "Join us"}
+                  primaryHref="/join"
+                  secondaryText={settings?.sponsorsCTA || "Partner with us"}
+                  secondaryHref={settings?.sponsorsCTALink || "/partner"}
+                />
+              );
+            }
 
-          default:
-            return null;
-        }
+            default:
+              return null;
+          }
         })();
 
         return content ? (

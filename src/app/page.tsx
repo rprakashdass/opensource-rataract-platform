@@ -3,7 +3,6 @@ import { getPublicProjects } from "@/features/public/queries/getPublicProjects";
 import { getPublicEvents } from "@/features/public/queries/getPublicEvents";
 import { prisma } from "@/lib/prisma";
 import React from "react";
-import { Sparkles } from "lucide-react";
 import HomeClientWrapper from "./_components/HomeClientWrapper";
 
 export default async function HomePage({
@@ -18,12 +17,14 @@ export default async function HomePage({
 
   if (data?.error === "Club not initialized" || !data?.club) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-[#FAF9F6]">
-        <div className="max-w-md text-center space-y-4">
-          <Sparkles className="w-12 h-12 text-[#F7A800] mx-auto opacity-80" />
-          <h1 className="text-2xl font-black text-[#0B132B]">Every great journey starts somewhere.</h1>
-          <p className="text-sm text-slate-600 leading-relaxed">
-            Welcome! This club platform is currently being set up. Check back soon for stories, events, and opportunities to make a difference.
+      <div className="min-h-screen flex items-center justify-center p-6 bg-paper font-body">
+        <div className="max-w-md text-center space-y-5">
+          <h1 className="font-display font-medium text-3xl text-ink text-balance">
+            The first footprint is coming.
+          </h1>
+          <p className="text-[15px] text-ink-soft leading-relaxed">
+            This club&apos;s home is being set up. Check back soon for stories, events, and ways to
+            walk with us.
           </p>
         </div>
       </div>

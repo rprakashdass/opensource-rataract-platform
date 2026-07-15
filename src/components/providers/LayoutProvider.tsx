@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
-import ScrollToTop from "../layout/ScrollToTop";
+import { FootprintTrail } from "@/components/ui/public/v2/FootprintTrail";
 
 export default function LayoutProvider({
   children,
@@ -20,8 +20,8 @@ export default function LayoutProvider({
   }
 
   return (
-    <div className="flex flex-col relative">
-      {/* <ScrollToTop /> */}
+    <div className="flex flex-col relative font-body bg-paper text-ink">
+      <FootprintTrail />
       <Header layoutData={layoutData} />
       <div className="flex-1">{children}</div>
       <Footer layoutData={layoutData} />

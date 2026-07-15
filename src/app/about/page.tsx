@@ -42,6 +42,7 @@ export default async function AboutPage({
       district: club.district ?? undefined,
       city: club.city ?? undefined,
       tenureYear: club.tenureYear,
+      foundedYear: (club as any).foundedYear ?? undefined,
     },
     settings: {
       aboutEyebrow: settings?.aboutEyebrow ?? undefined,

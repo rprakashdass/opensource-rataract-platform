@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Fraunces, Figtree } from "next/font/google";
 import "./globals.css";
 import LayoutProvider from "@/components/providers/LayoutProvider";
 import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
@@ -11,6 +11,20 @@ import TopLoader from "@/components/loaders/TopLoader";
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
+});
+
+// THADAM V2 public-site faces: Fraunces for statements, Figtree for everything else
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-fraunces",
+  axes: ["opsz", "SOFT"],
+});
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-figtree",
 });
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
@@ -52,7 +66,7 @@ export default async function RootLayout({
   const lightColor = settings?.lightColor || "#FAF9F6";
 
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={`h-full antialiased ${fraunces.variable} ${figtree.variable}`}>
       <head>
         <meta
           name="viewport"

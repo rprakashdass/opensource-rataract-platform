@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Copy, Check, X, Send, HeartHandshake } from "lucide-react";
+import { Copy, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { submitPartnerInquiry } from "../actions";
 
@@ -12,6 +12,11 @@ interface PartnerCTAButtonProps {
   className?: string;
   children: React.ReactNode;
 }
+
+const INPUT_CLASSES =
+  "w-full bg-wash border border-hairline rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-ochre motion-input";
+
+const LABEL_CLASSES = "block text-sm font-medium text-ink-soft mb-1.5";
 
 export default function PartnerCTAButton({
   contactEmail,
@@ -31,7 +36,7 @@ export default function PartnerCTAButton({
     email: "",
     phone: "",
     company: "",
-    message: subject.startsWith("Sponsoring:") 
+    message: subject.startsWith("Sponsoring:")
       ? `Hi! We are interested in pledging the support tier: "${subject.replace("Sponsoring: ", "")}". Please get in touch with us.`
       : "Hi! We are interested in partnering with your club. Please send us your campaign briefs and active pitch decks."
   });
@@ -83,7 +88,7 @@ export default function PartnerCTAButton({
         email: "",
         phone: "",
         company: "",
-        message: subject.startsWith("Sponsoring:") 
+        message: subject.startsWith("Sponsoring:")
           ? `Hi! We are interested in pledging the support tier: "${subject.replace("Sponsoring: ", "")}". Please get in touch with us.`
           : "Hi! We are interested in partnering with your club. Please send us your campaign briefs and active pitch decks."
       });
@@ -98,10 +103,11 @@ export default function PartnerCTAButton({
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-slate-100 relative animate-in zoom-in-95 duration-200 text-slate-900 my-8">
+          <div className="bg-paper rounded-xl p-6 md:p-8 max-w-lg w-full border border-hairline relative animate-in zoom-in-95 duration-200 text-ink my-8">
             <button
               onClick={handleClose}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors z-10"
+              aria-label="Close"
+              className="absolute top-6 right-6 text-ink-faint hover:text-ink transition-colors z-10"
             >
               <X className="w-5 h-5" />
             </button>
@@ -109,54 +115,59 @@ export default function PartnerCTAButton({
             {submitted ? (
               // Success View
               <div className="text-center py-8 space-y-6">
-                <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto border border-emerald-100 shadow-sm">
-                  <HeartHandshake className="w-8 h-8" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-[#0B132B]">Inquiry Received!</h3>
-                  <p className="text-sm text-slate-500 max-w-sm mx-auto leading-relaxed font-medium">
-                    Thank you for reaching out! Our relations team has been notified and we will follow up with our sponsorship deck within 24 hours.
+                <div className="space-y-3 max-w-sm mx-auto">
+                  <h3 className="font-display font-medium italic text-2xl text-ink text-balance">
+                    Your note is on its way.
+                  </h3>
+                  <p className="text-sm text-ink-soft leading-relaxed">
+                    Thank you for reaching out. Our relations team has been notified and we will
+                    follow up with our sponsorship deck within 24 hours.
                   </p>
                 </div>
                 <button
                   onClick={handleClose}
-                  className="w-full bg-[#0B132B] hover:bg-[#1a2645] text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-colors shadow-lg"
+                  className="motion-button w-full rounded-full bg-ochre text-white hover:bg-ochre-deep text-[15px] font-semibold py-3.5 transition-colors"
                 >
-                  Back to website
+                  Back to the site
                 </button>
               </div>
             ) : (
               // Form View
               <div className="space-y-6">
                 <div>
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#F7A800]">Sponsorship & Partner Form</span>
-                  <h3 className="text-2xl font-black text-[#0B132B] mt-1">Start a Partnership</h3>
-                  <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                    Fill in this quick form to send an inquiry directly to the club's relations deck.
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-ochre-deep">
+                    Sponsorship
+                  </span>
+                  <h3 className="font-display font-medium text-2xl text-ink tracking-[-0.01em] mt-2">
+                    Start a partnership
+                  </h3>
+                  <p className="text-sm text-ink-soft mt-2 leading-relaxed">
+                    Fill in this quick form to send an inquiry directly to the club's relations
+                    team.
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Your Name *</label>
+                      <label className={LABEL_CLASSES}>Your name *</label>
                       <input
                         required
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#F7A800]/50"
+                        className={INPUT_CLASSES}
                         placeholder="Prakash"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email Address *</label>
+                      <label className={LABEL_CLASSES}>Email address *</label>
                       <input
                         required
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#F7A800]/50"
+                        className={INPUT_CLASSES}
                         placeholder="prakash@company.com"
                       />
                     </div>
@@ -164,56 +175,55 @@ export default function PartnerCTAButton({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Phone (Optional)</label>
+                      <label className={LABEL_CLASSES}>Phone (optional)</label>
                       <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#F7A800]/50"
+                        className={INPUT_CLASSES}
                         placeholder="9876543210"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Company / Brand (Optional)</label>
+                      <label className={LABEL_CLASSES}>Company / brand (optional)</label>
                       <input
                         type="text"
                         value={formData.company}
                         onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#F7A800]/50"
+                        className={INPUT_CLASSES}
                         placeholder="Nexus Corp"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Message / Details *</label>
+                    <label className={LABEL_CLASSES}>Message / details *</label>
                     <textarea
                       required
                       rows={3}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#F7A800]/50"
+                      className={INPUT_CLASSES}
                     />
                   </div>
 
                   <button
                     disabled={submitting}
                     type="submit"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-[#0B132B] hover:bg-[#1a2645] disabled:bg-slate-300 text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all shadow-md shrink-0"
+                    className="motion-button w-full rounded-full bg-ochre text-white hover:bg-ochre-deep disabled:opacity-60 text-[15px] font-semibold py-3.5 transition-colors"
                   >
-                    <Send className="w-3.5 h-3.5" />
-                    {submitting ? "Sending Inquiry..." : "Submit Inquiry"}
+                    {submitting ? "Sending inquiry..." : "Submit inquiry"}
                   </button>
                 </form>
 
                 {/* Direct copy footer */}
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-                  <span>Or copy official email:</span>
+                <div className="pt-4 border-t border-hairline flex items-center justify-between gap-3 text-xs text-ink-faint">
+                  <span>Or copy our email:</span>
                   <button
                     onClick={handleCopy}
-                    className="inline-flex items-center gap-1.5 text-[#0B132B] hover:text-[#F7A800] transition-colors font-bold uppercase tracking-wider"
+                    className="inline-flex items-center gap-1.5 text-ink hover:text-ochre-deep transition-colors font-semibold"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? <Check className="w-3.5 h-3.5 text-trail" /> : <Copy className="w-3.5 h-3.5" />}
                     {contactEmail}
                   </button>
                 </div>

@@ -19,8 +19,8 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionConfig[] = [
   { id: "hero", label: SECTION_LABELS.hero, enabled: true, order: 0 },
   { id: "president", label: SECTION_LABELS.president, enabled: true, order: 1 },
   { id: "impact", label: SECTION_LABELS.impact, enabled: true, order: 2 },
-  { id: "gallery", label: SECTION_LABELS.gallery, enabled: true, order: 3 },
-  { id: "projects", label: SECTION_LABELS.projects, enabled: true, order: 4 },
+  { id: "projects", label: SECTION_LABELS.projects, enabled: true, order: 3 },
+  { id: "gallery", label: SECTION_LABELS.gallery, enabled: true, order: 4 },
   { id: "events_news", label: SECTION_LABELS.events_news, enabled: true, order: 5 },
   { id: "sponsor", label: SECTION_LABELS.sponsor, enabled: true, order: 6 },
 ];

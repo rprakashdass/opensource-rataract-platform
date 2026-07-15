@@ -70,6 +70,21 @@
   --radius-md: calc(var(--radius) - 3px);
   --radius-sm: calc(var(--radius) - 6px);
 
+  /* ─── THADAM public design language (V2) ─── */
+  --color-paper: #FBF6ED;
+  --color-wash: #F3EADA;
+  --color-parchment: #F6EEDD;
+  --color-ink: #2E2014;
+  --color-ink-soft: #5F4B36;
+  --color-ink-faint: #98836B;
+  --color-ochre: #C4881A;
+  --color-ochre-deep: #8A5C0B;
+  --color-trail: #7A5220;
+  --color-chapter: #251806;
+  --color-hairline: #E9DCC3;
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-body: var(--font-figtree), "Avenir Next", system-ui, sans-serif;
+
   --animate-shine: shine 8s ease-in-out infinite;
   --animate-marquee: marquee 25s linear infinite;
 
@@ -257,6 +272,77 @@ a, button, input, select, textarea {
   100% {
     transform: translateX(100%);
   }
+}
+
+/* ─── THADAM V2 public-site helpers ─── */
+
+/* One warm photographic grade so mixed photos read as one collection */
+.thadam-grade {
+  filter: saturate(0.94) sepia(0.08) contrast(1.02);
+}
+
+/* Drawn-underline link (left → right) */
+.thadam-link {
+  position: relative;
+  transition: color 0.25s var(--ease-premium);
+}
+.thadam-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s var(--ease-premium);
+}
+.thadam-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Footsteps divider: a short trail of marks instead of a plain hairline */
+.thadam-trail-rule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.thadam-trail-rule::before,
+.thadam-trail-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-hairline);
+}
+.thadam-trail-rule .steps {
+  display: flex;
+  gap: 10px;
+}
+.thadam-trail-rule .steps i {
+  width: 5px;
+  height: 8px;
+  border-radius: 50% 50% 45% 45%;
+  background: var(--color-ochre);
+  opacity: 0.7;
+}
+.thadam-trail-rule .steps i:nth-child(odd) { transform: translateY(-2px) rotate(-12deg); }
+.thadam-trail-rule .steps i:nth-child(even) { transform: translateY(2px) rotate(12deg); }
+
+/* Footprint cursor stamps */
+@keyframes thadam-stamp {
+  0% { opacity: 0.55; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(0.9); }
+  20% { opacity: 0.45; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(1); }
+}
+.thadam-stamp {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 90;
+  animation: thadam-stamp 1.2s ease-out forwards;
 }
 
 /* Accessibility: Respect Reduced Motion preferences */
