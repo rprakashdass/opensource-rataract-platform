@@ -8,6 +8,8 @@ import { CmsText } from "@/components/cms/CmsText";
 import {
   RevealBlock,
   Eyebrow,
+  PageIntro,
+  SectionLabel,
   EditorialImage,
   StoryCard,
   TrailRule,
@@ -65,26 +67,19 @@ export default async function ProjectsPage({
 
   return (
     <main className="min-h-screen bg-paper flex flex-col">
-      {/* Compact interior hero */}
-      <section className="pt-40 md:pt-48 pb-14 md:pb-20 bg-paper">
-        <MaxWidthWrapper>
-          <RevealBlock>
-            <Eyebrow className="mb-5">Our work</Eyebrow>
-            <h1 className="font-display font-medium text-ink tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,5.5vw,4rem)] text-balance max-w-3xl">
-              Work that outlasts the photos.
-            </h1>
-            <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-xl">
-              <CmsText
-                channel="projects"
-                initial={heroCopy}
-                field="projectsSubtitle"
-                fallback="Explore our long-running community service initiatives, fundraising drives, and educational programs."
-                isPreview={isPreview}
-              />
-            </p>
-          </RevealBlock>
-        </MaxWidthWrapper>
-      </section>
+      <PageIntro
+        eyebrow="Our work"
+        title={<>Work that outlasts the photos.</>}
+        support={
+          <CmsText
+            channel="projects"
+            initial={heroCopy}
+            field="projectsSubtitle"
+            fallback="Explore our long-running community service initiatives, fundraising drives, and educational programs."
+            isPreview={isPreview}
+          />
+        }
+      />
 
       <Suspense fallback={<ProjectsGridSkeleton />}>
         <ProjectsGrid isPreview={isPreview} />
@@ -121,9 +116,8 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
       {/* ACTIVE PROJECTS */}
       <section className="py-20 md:py-28 bg-wash">
         <MaxWidthWrapper>
-          <RevealBlock className="mb-12 md:mb-16">
-            <Eyebrow className="mb-4">In motion</Eyebrow>
-            <h2 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.1] text-[clamp(1.9rem,4.5vw,3.2rem)] text-balance max-w-2xl">
+          <RevealBlock>
+            <SectionLabel>
               <CmsText
                 channel="projects"
                 initial={copy}
@@ -131,7 +125,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
                 fallback="Ongoing causes."
                 isPreview={isPreview}
               />
-            </h2>
+            </SectionLabel>
           </RevealBlock>
 
           {flagship ? (
@@ -199,9 +193,8 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
       <section className="py-20 md:py-28 bg-paper">
         <MaxWidthWrapper>
           <TrailRule className="mb-16 md:mb-20" />
-          <RevealBlock className="mb-10 md:mb-14">
-            <Eyebrow className="mb-4">The archive</Eyebrow>
-            <h2 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.1] text-[clamp(1.9rem,4.5vw,3.2rem)] text-balance max-w-2xl">
+          <RevealBlock>
+            <SectionLabel>
               <CmsText
                 channel="projects"
                 initial={copy}
@@ -209,7 +202,7 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
                 fallback="Impact archive."
                 isPreview={isPreview}
               />
-            </h2>
+            </SectionLabel>
           </RevealBlock>
 
           {completedProjects.length > 0 ? (

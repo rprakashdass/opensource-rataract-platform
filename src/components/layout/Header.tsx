@@ -56,7 +56,9 @@ export default function Header({ layoutData }: { layoutData?: any }) {
         "fixed inset-x-0 top-0 z-50 transition-all duration-500",
         scrolled
           ? "bg-paper/85 backdrop-blur-md border-b border-hairline py-3"
-          : "bg-transparent py-5"
+          : onDarkHero
+            ? "bg-gradient-to-b from-ink/75 via-ink/35 to-transparent py-5 pb-12"
+            : "bg-transparent py-5"
       )}
     >
       <div className="max-w-[1280px] mx-auto flex items-center justify-between px-6 lg:px-10">

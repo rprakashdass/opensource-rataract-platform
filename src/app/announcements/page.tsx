@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Paperclip, Calendar as CalendarIcon, MapPin } from "lucide-react";
 import {
   RevealBlock,
-  Eyebrow,
+  PageIntro,
   EmptyState,
 } from "@/components/ui/public/v2";
 
@@ -33,22 +33,13 @@ export default async function PublicAnnouncementsPage() {
 
   return (
     <main className="min-h-screen bg-paper pb-24">
-      {/* Compact hero */}
-      <section className="pt-40 md:pt-48 pb-14 md:pb-20 bg-paper">
-        <MaxWidthWrapper>
-          <RevealBlock>
-            <Eyebrow className="mb-5">Notice board</Eyebrow>
-            <h1 className="font-display font-medium text-ink tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,5.5vw,4rem)] text-balance max-w-3xl">
-              What the board wants you to know.
-            </h1>
-            <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-xl">
-              Official notices, meeting notifications, volunteer opportunities, and achievements from our board.
-            </p>
-          </RevealBlock>
-        </MaxWidthWrapper>
-      </section>
+      <PageIntro
+        eyebrow="Notice board"
+        title={<>What the board wants you to know.</>}
+        support="Official notices, meeting notifications, volunteer opportunities, and achievements from our board."
+      />
 
-      <section className="py-20 md:py-28 bg-paper border-t border-hairline">
+      <section className="py-20 md:py-28 bg-paper">
         <MaxWidthWrapper>
           <div className="max-w-3xl">
             {announcements.length > 0 ? (

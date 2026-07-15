@@ -8,11 +8,15 @@ const FOOT_OFFSET_PX = 7; // perpendicular offset so left/right feet straddle th
 
 const FOOTPRINT_SVG = `
 <svg viewBox="0 0 24 32" width="13" height="17" fill="currentColor" aria-hidden="true">
-  <ellipse cx="11" cy="19" rx="7" ry="10" />
-  <ellipse cx="4.5" cy="7.5" rx="2.2" ry="3" transform="rotate(-15 4.5 7.5)" />
-  <ellipse cx="9.5" cy="4.8" rx="2.1" ry="2.9" transform="rotate(-6 9.5 4.8)" />
-  <ellipse cx="14.5" cy="4.6" rx="2" ry="2.7" transform="rotate(4 14.5 4.6)" />
-  <ellipse cx="19" cy="6.8" rx="1.8" ry="2.4" transform="rotate(14 19 6.8)" />
+  <path d="M12 18.5c-3.8 0-6.5 2-6.5 5 0 3.5 2.5 5.5 6.5 5.5s6.5-2 6.5-5.5c0-3-2.7-5-6.5-5z" />
+  <ellipse cx="5.2" cy="15.2" rx="2" ry="3.5" transform="rotate(-30 5.2 15.2)" />
+  <path d="M4.5 12.5c-.5-3-1-5 .8-4 0 1.5-.3 3-.8 4z" />
+  <ellipse cx="9.8" cy="11.8" rx="2.2" ry="4" transform="rotate(-10 9.8 11.8)" />
+  <path d="M9.5 8.2c-.3-3.2-.8-5.2 1-4.2-.3 1.6-.5 3.2-.7 4.2z" />
+  <ellipse cx="14.2" cy="11.8" rx="2.2" ry="4" transform="rotate(10 14.2 11.8)" />
+  <path d="M14.5 8.2c.3-3.2.8-5.2-1-4.2.3 1.6.5 3.2.7 4.2z" />
+  <ellipse cx="18.8" cy="15.2" rx="2" ry="3.5" transform="rotate(30 18.8 15.2)" />
+  <path d="M19.5 12.5c.5-3 1-5-.8-4 0 1.5.3 3 .8 4z" />
 </svg>`;
 
 /**
@@ -35,37 +39,45 @@ export function FootprintTrail() {
     container.setAttribute("aria-hidden", "true");
     document.body.appendChild(container);
 
+    let lastAngle = 0;
+
     const onMove = (e: MouseEvent) => {
       if (!last.current) {
         last.current = { x: e.clientX, y: e.clientY };
         return;
       }
+
       const dx = e.clientX - last.current.x;
       const dy = e.clientY - last.current.y;
       const dist = Math.hypot(dx, dy);
+
       if (dist < STRIDE_PX) return;
 
-      const angle = Math.atan2(dy, dx);
-      // Perpendicular offset alternates so feet straddle the walking line
+      let angle = lastAngle;
+      if (dist > 2) {
+        angle = Math.atan2(dy, dx);
+        lastAngle = angle;
+      }
+
       const side = leftFoot.current ? -1 : 1;
       const ox = Math.cos(angle + Math.PI / 2) * FOOT_OFFSET_PX * side;
       const oy = Math.sin(angle + Math.PI / 2) * FOOT_OFFSET_PX * side;
 
-      // Footprint art points "up", so rotate to travel direction (+90°),
-      // with a slight inward toe angle per foot.
-      const rotDeg = (angle * 180) / Math.PI + 90 + side * 8;
-
-      const isDark = !!(e.target as Element | null)?.closest?.(".bg-chapter, [data-thadam-dark]");
+      // Stamp rotation based on travel direction
+      const stampRot = (angle * 180) / Math.PI + 90 + side * 8;
 
       const stamp = document.createElement("span");
       stamp.className = "thadam-stamp";
-      stamp.style.setProperty("--stamp-rot", `${rotDeg}deg`);
-      stamp.style.transform = `translate(-50%, -50%) rotate(${rotDeg}deg)`;
+      stamp.style.setProperty("--stamp-rot", `${stampRot}deg`);
+      stamp.style.transform = `translate(-50%, -50%) rotate(${stampRot}deg)`;
       stamp.style.left = `${e.clientX + ox}px`;
       stamp.style.top = `${e.clientY + oy}px`;
-      stamp.style.color = isDark ? "rgba(246, 238, 221, 0.5)" : "rgba(196, 136, 26, 0.55)";
+
+      // Strong color trail
+      stamp.style.color = "#EC4899";
       stamp.innerHTML = FOOTPRINT_SVG;
       container.appendChild(stamp);
+
       window.setTimeout(() => stamp.remove(), STAMP_LIFETIME_MS);
 
       leftFoot.current = !leftFoot.current;
@@ -73,6 +85,7 @@ export function FootprintTrail() {
     };
 
     window.addEventListener("mousemove", onMove, { passive: true });
+
     return () => {
       window.removeEventListener("mousemove", onMove);
       container.remove();
@@ -81,3 +94,4 @@ export function FootprintTrail() {
 
   return null;
 }
+

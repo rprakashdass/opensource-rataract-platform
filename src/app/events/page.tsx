@@ -9,6 +9,8 @@ import { CmsText } from "@/components/cms/CmsText";
 import {
   RevealBlock,
   Eyebrow,
+  PageIntro,
+  SectionLabel,
   TrailRule,
   PillLink,
   StoryCard,
@@ -65,27 +67,19 @@ export default async function EventsPage({
 
   return (
     <main className="min-h-screen bg-paper flex flex-col overflow-x-hidden">
-      <section className="pt-40 md:pt-48 pb-14 md:pb-20 bg-paper">
-        <MaxWidthWrapper>
-          <RevealBlock>
-            <Eyebrow className="mb-5">
-              <CmsText channel="events" initial={heroCopy} field="eventsEyebrow" fallback="Events" isPreview={isPreview} />
-            </Eyebrow>
-            <h1 className="font-display font-medium text-ink tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,5.5vw,4rem)] text-balance max-w-3xl">
-              Come once. You&rsquo;ll come back.
-            </h1>
-            <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-xl">
-              <CmsText
-                channel="events"
-                initial={heroCopy}
-                field="eventsSubtitle"
-                fallback="Discover upcoming events to connect and serve, or browse archives of our completed moments."
-                isPreview={isPreview}
-              />
-            </p>
-          </RevealBlock>
-        </MaxWidthWrapper>
-      </section>
+      <PageIntro
+        eyebrow={<CmsText channel="events" initial={heroCopy} field="eventsEyebrow" fallback="Events" isPreview={isPreview} />}
+        title={<>Come once. You&rsquo;ll come back.</>}
+        support={
+          <CmsText
+            channel="events"
+            initial={heroCopy}
+            field="eventsSubtitle"
+            fallback="Discover upcoming events to connect and serve, or browse archives of our completed moments."
+            isPreview={isPreview}
+          />
+        }
+      />
 
       <Suspense fallback={<EventsGridSkeleton />}>
         <EventsGrid isPreview={isPreview} />
@@ -127,11 +121,8 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
       {/* NEXT UP + upcoming list */}
       <section className="py-20 md:py-28 bg-paper">
         <MaxWidthWrapper>
-          <RevealBlock className="mb-12 md:mb-16">
-            <Eyebrow className="mb-4">Next up</Eyebrow>
-            <h2 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.1] text-[clamp(1.9rem,4.5vw,3.2rem)] text-balance max-w-2xl">
-              <CmsText channel="events" initial={copy} field="eventsUpcomingTitle" fallback="Where you'll find us next." isPreview={isPreview} />
-            </h2>
+          <RevealBlock>
+            <SectionLabel>Next up</SectionLabel>
           </RevealBlock>
 
           {nextEvent ? (
@@ -216,11 +207,10 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
       {/* PAST EVENTS */}
       <section className="py-20 md:py-28 bg-paper">
         <MaxWidthWrapper>
-          <RevealBlock className="mb-12 md:mb-16">
-            <Eyebrow className="mb-4">Where we&rsquo;ve been</Eyebrow>
-            <h2 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.1] text-[clamp(1.9rem,4.5vw,3.2rem)] text-balance max-w-2xl">
-              <CmsText channel="events" initial={copy} field="eventsCompletedTitle" fallback="The gatherings behind us." isPreview={isPreview} />
-            </h2>
+          <RevealBlock>
+            <SectionLabel>
+              <CmsText channel="events" initial={copy} field="eventsCompletedTitle" fallback="Where we've been" isPreview={isPreview} />
+            </SectionLabel>
           </RevealBlock>
 
           {completedEvents.length > 0 ? (

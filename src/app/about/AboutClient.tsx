@@ -7,7 +7,9 @@ import { useCmsPreview } from "@/hooks/useCmsPreview";
 import {
   RevealBlock,
   Eyebrow,
-  SectionHeader,
+  PageIntro,
+  SectionLabel,
+  QuietLink,
   EditorialImage,
   VoiceBlock,
   TimelineRow,
@@ -67,20 +69,13 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
 
   return (
     <div className="min-h-screen bg-paper">
-      {/* Compact interior hero */}
-      <section id="about-hero" className="pt-40 md:pt-48 pb-14 md:pb-20 bg-paper">
-        <MaxWidthWrapper>
-          <RevealBlock>
-            <Eyebrow className="mb-5">{heroEyebrow}</Eyebrow>
-            <h1 className="font-display font-medium text-ink tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,5.5vw,4rem)] text-balance max-w-3xl">
-              {heroTitle}
-            </h1>
-            {heroSubtitle && (
-              <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-xl">{heroSubtitle}</p>
-            )}
-          </RevealBlock>
-        </MaxWidthWrapper>
-      </section>
+      <div id="about-hero">
+        <PageIntro
+          eyebrow={heroEyebrow}
+          title={heroTitle}
+          support={heroSubtitle || undefined}
+        />
+      </div>
 
       {/* 1. OUR STORY — asymmetric 7/5 editorial grid */}
       <section id="about-story" className="py-20 md:py-28 bg-paper">
@@ -120,10 +115,7 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
       {/* 2. WHAT WE STAND FOR — three ruled columns */}
       <section id="about-values" className="py-20 md:py-28 bg-wash">
         <MaxWidthWrapper>
-          <SectionHeader
-            eyebrow="What we stand for"
-            heading="The convictions we carry into every project."
-          />
+          <SectionLabel>What we stand for</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-10">
             {pillars.map((pillar, i) => (
               <RevealBlock key={pillar.keyword} delay={i * 0.08} className="border-t border-hairline pt-6">
@@ -158,10 +150,7 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
       {portfolios?.length > 0 && (
         <section id="about-portfolios" className={club.parentClubName ? "py-20 md:py-28 bg-wash" : "py-20 md:py-28 bg-paper"}>
           <MaxWidthWrapper>
-            <SectionHeader
-              eyebrow="Portfolio teams"
-              heading="How we organize our impact."
-            />
+            <SectionLabel>Portfolio teams</SectionLabel>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-12">
               <RevealBlock className="lg:col-span-4">
                 <div className="flex lg:flex-col gap-x-6 overflow-x-auto lg:overflow-visible border-t border-hairline">
@@ -224,12 +213,7 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
       {milestones?.length > 0 && (
         <section id="about-milestones" className="py-20 md:py-28 bg-paper">
           <MaxWidthWrapper>
-            <SectionHeader
-              eyebrow="Milestones"
-              heading="A few marks we've left along the way."
-              linkText="Walk the full archive"
-              linkHref="/our-archive"
-            />
+            <SectionLabel>Milestones</SectionLabel>
             <RevealBlock className="border-t border-hairline">
               {previewMilestones.map((m: any) => (
                 <TimelineRow
@@ -239,6 +223,9 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
                   description={m.description}
                 />
               ))}
+            </RevealBlock>
+            <RevealBlock className="mt-10">
+              <QuietLink href="/our-archive">Walk the full archive</QuietLink>
             </RevealBlock>
           </MaxWidthWrapper>
         </section>

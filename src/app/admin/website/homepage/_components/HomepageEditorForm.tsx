@@ -40,6 +40,8 @@ export default function HomepageEditorForm({
     heroSecondaryCTA: settings.heroSecondaryCTA || "",
     heroSecondaryCTALink: settings.heroSecondaryCTALink || "",
     heroImages: (settings.heroImages as string[]) || [],
+    heroScrollAuto: (settings as any).heroScrollAuto ?? true,
+    heroScrollInterval: (settings as any).heroScrollInterval ?? 5,
     presName: settings.presName || "",
     presMessage: settings.presMessage || "",
     presQuote: settings.presQuote || "",
@@ -412,15 +414,75 @@ export default function HomepageEditorForm({
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Hero Image</label>
-                  <p className="text-xs text-slate-400 -mt-1">The photo shown below the headline. Defaults to a stock photo if none is uploaded.</p>
-                  <FileUpload
-                    value={localSettings.heroImages[0] || ""}
-                    onChange={url => handleSettingChange("heroImages", url ? [url] : [])}
-                    accept="image/*"
-                    albumTitle="Homepage"
-                  />
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+                    <div>
+                      <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Auto Scroll Slideshow</label>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Automatically cycle through background photos.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={localSettings.heroScrollAuto}
+                      onChange={e => handleSettingChange("heroScrollAuto", e.target.checked)}
+                      className="w-5 h-5 accent-[#0B132B] rounded cursor-pointer"
+                    />
+                  </div>
+
+                  {localSettings.heroScrollAuto && (
+                    <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
+                      <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Auto Scroll Interval (seconds)</label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={60}
+                        value={localSettings.heroScrollInterval}
+                        onChange={e => handleSettingChange("heroScrollInterval", parseInt(e.target.value) || 5)}
+                        placeholder="e.g. 5"
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Hero Slide Images</label>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase -mt-2">Upload multiple images to rotate in the background.</p>
+                    
+                    <div className="space-y-3">
+                      {localSettings.heroImages.map((image: string, idx: number) => (
+                        <div key={idx} className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-100 rounded-2xl relative">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = localSettings.heroImages.filter((_: any, i: number) => i !== idx);
+                              handleSettingChange("heroImages", updated);
+                            }}
+                            className="absolute top-4 right-4 p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors z-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <FileUpload
+                            value={image}
+                            onChange={url => {
+                              const updated = [...localSettings.heroImages];
+                              updated[idx] = url;
+                              handleSettingChange("heroImages", updated.filter(Boolean));
+                            }}
+                            accept="image/*"
+                            albumTitle="Homepage"
+                          />
+                        </div>
+                      ))}
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleSettingChange("heroImages", [...localSettings.heroImages, ""])}
+                        className="w-full rounded-2xl flex items-center justify-center gap-1.5 h-11 border-dashed border-slate-300 hover:border-slate-400 text-xs font-bold"
+                      >
+                        <Plus className="w-4 h-4" /> Add Slide Image
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
 

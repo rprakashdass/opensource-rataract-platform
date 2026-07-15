@@ -336,8 +336,8 @@ a, button, input, select, textarea {
 
 /* Footprint cursor stamps */
 @keyframes thadam-stamp {
-  0% { opacity: 0.55; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(0.9); }
-  20% { opacity: 0.45; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(1); }
+  0% { opacity: 0.9; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(0.9); }
+  15% { opacity: 0.85; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--stamp-rot)) scale(1); }
 }
 .thadam-stamp {

@@ -71,6 +71,22 @@ export default function HomeClientWrapper({
 
   const { club, settings, metrics } = data;
 
+  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const rawHeroImages = (settings?.heroImages as string[]) || [];
+  const heroImages = rawHeroImages.filter(Boolean);
+  const isAutoScroll = settings?.heroScrollAuto !== false;
+  const intervalSeconds = settings?.heroScrollInterval || 5;
+
+  React.useEffect(() => {
+    if (heroImages.length <= 1 || !isAutoScroll) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, intervalSeconds * 1000);
+    return () => clearInterval(timer);
+  }, [heroImages.length, isAutoScroll, intervalSeconds]);
+
+  const activeSlideIndex = heroImages.length > 0 ? currentSlide % heroImages.length : 0;
+
   const sectionsConfig = normalizeHomepageSections(settings?.homepageSections);
   const sortedSections = [...sectionsConfig]
     .filter((s) => s.enabled)
@@ -114,18 +130,46 @@ export default function HomeClientWrapper({
 
               return (
                 <section key="hero" className="relative min-h-[92vh] flex items-end bg-chapter" data-thadam-dark aria-label="Homepage hero">
-                  {heroImage && (
-                    <>
-                      <Image
-                        src={heroImage}
-                        alt={heroHeadline}
-                        fill
-                        sizes="100vw"
-                        priority
-                        className="object-cover thadam-grade"
-                      />
+                  {heroImages.length > 0 && (
+                    <div className="absolute inset-0 z-0 w-full h-full overflow-hidden">
+                      {heroImages.map((imgUrl, idx) => {
+                        const directLink = getGoogleDriveDirectLink(imgUrl);
+                        if (!directLink) return null;
+                        const isActive = idx === activeSlideIndex;
+                        return (
+                          <div
+                            key={imgUrl}
+                            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                              isActive ? "opacity-100" : "opacity-0"
+                            }`}
+                          >
+                            <Image
+                              src={directLink}
+                              alt={`Hero image ${idx + 1}`}
+                              fill
+                              sizes="100vw"
+                              priority={idx === 0}
+                              className="object-cover thadam-grade"
+                            />
+                          </div>
+                        );
+                      })}
                       <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,10,18,0.72)] via-[rgba(26,10,18,0.18)] to-[rgba(26,10,18,0.22)]" />
-                    </>
+                    </div>
+                  )}
+                  {heroImages.length > 1 && (
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                      {heroImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentSlide(idx)}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${
+                            idx === activeSlideIndex ? "w-6 bg-parchment" : "w-1.5 bg-parchment/40 hover:bg-parchment/70"
+                          }`}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
                   )}
                   <MaxWidthWrapper className="relative z-10 pb-16 md:pb-24 pt-44 w-full">
                     <div className="max-w-4xl">

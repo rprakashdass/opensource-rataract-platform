@@ -4,7 +4,7 @@ import Image from "next/image";
 import { CmsText } from "@/components/cms/CmsText";
 import {
   RevealBlock,
-  Eyebrow,
+  PageIntro,
   SectionHeader,
   PillLink,
   EmptyState,
@@ -144,39 +144,35 @@ export default async function GalleryPage({
 
   return (
     <main className="min-h-screen bg-paper flex flex-col">
-      {/* Compact hero */}
-      <section className="pt-40 md:pt-48 pb-14 md:pb-20 bg-paper">
-        <MaxWidthWrapper>
-          <RevealBlock>
-            <Eyebrow className="mb-5">Gallery</Eyebrow>
-            <h1 className="font-display font-medium text-ink tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,5.5vw,4rem)] text-balance max-w-3xl">
-              <CmsText
-                channel="gallery"
-                initial={copy}
-                field="galleryTitle"
-                fallback="Proof we were there."
-                isPreview={isPreview}
-              />
-            </h1>
-            <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-xl">
-              <CmsText
-                channel="gallery"
-                initial={copy}
-                field="gallerySubtitle"
-                fallback="Chronological snapshots of our fellowship, project drives, and installation ceremonies."
-                isPreview={isPreview}
-              />
-            </p>
-            {copy.galleryCTALink && (
-              <div className="mt-8">
-                <PillLink href={copy.galleryCTALink}>
-                  {copy.galleryCTA || "Learn more"}
-                </PillLink>
-              </div>
-            )}
-          </RevealBlock>
-        </MaxWidthWrapper>
-      </section>
+      <PageIntro
+        eyebrow="Gallery"
+        title={
+          <CmsText
+            channel="gallery"
+            initial={copy}
+            field="galleryTitle"
+            fallback="Proof we were there."
+            isPreview={isPreview}
+          />
+        }
+        support={
+          <CmsText
+            channel="gallery"
+            initial={copy}
+            field="gallerySubtitle"
+            fallback="Chronological snapshots of our fellowship, project drives, and installation ceremonies."
+            isPreview={isPreview}
+          />
+        }
+      >
+        {copy.galleryCTALink && (
+          <div className="mt-6">
+            <PillLink href={copy.galleryCTALink}>
+              {copy.galleryCTA || "Learn more"}
+            </PillLink>
+          </div>
+        )}
+      </PageIntro>
 
       {shelves.length > 0 ? (
         shelves.map((shelf, i) => (

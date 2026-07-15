@@ -131,6 +131,8 @@ model WebsiteSettings {
   heroSecondaryCTA     String?
   heroSecondaryCTALink String?
   heroImages        Json?    // Array of string URLs
+  heroScrollAuto    Boolean  @default(true)
+  heroScrollInterval Int     @default(5) // Auto scroll time in seconds
   
   // Finance Settings
   upiId             String?

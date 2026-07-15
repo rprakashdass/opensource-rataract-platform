@@ -1,5 +1,5 @@
 export { RevealBlock, RevealLines, RevealGroup, THADAM_EASE } from "./reveal";
-export { Eyebrow, Statement, SectionHeader, TrailRule } from "./typography";
+export { Eyebrow, Statement, SectionHeader, PageIntro, SectionLabel, TrailRule } from "./typography";
 export { PillLink, QuietLink } from "./buttons";
 export { EditorialImage } from "./EditorialImage";
 export { StoryCard } from "./StoryCard";

@@ -17,11 +17,20 @@ export interface ImpactMetric {
 export function FootprintGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 32" fill="currentColor" className={cn("w-4 h-5", className)} aria-hidden="true">
-      <ellipse cx="11" cy="19" rx="7" ry="10" />
-      <ellipse cx="4.5" cy="7.5" rx="2.2" ry="3" transform="rotate(-15 4.5 7.5)" />
-      <ellipse cx="9.5" cy="4.8" rx="2.1" ry="2.9" transform="rotate(-6 9.5 4.8)" />
-      <ellipse cx="14.5" cy="4.6" rx="2" ry="2.7" transform="rotate(4 14.5 4.6)" />
-      <ellipse cx="19" cy="6.8" rx="1.8" ry="2.4" transform="rotate(14 19 6.8)" />
+      {/* Central Pad */}
+      <path d="M12 18.5c-3.8 0-6.5 2-6.5 5 0 3.5 2.5 5.5 6.5 5.5s6.5-2 6.5-5.5c0-3-2.7-5-6.5-5z" />
+      {/* Left Toe & Claw */}
+      <ellipse cx="5.2" cy="15.2" rx="2" ry="3.5" transform="rotate(-30 5.2 15.2)" />
+      <path d="M4.5 12.5c-.5-3-1-5 .8-4 0 1.5-.3 3-.8 4z" />
+      {/* Middle-Left Toe & Claw */}
+      <ellipse cx="9.8" cy="11.8" rx="2.2" ry="4" transform="rotate(-10 9.8 11.8)" />
+      <path d="M9.5 8.2c-.3-3.2-.8-5.2 1-4.2-.3 1.6-.5 3.2-.7 4.2z" />
+      {/* Middle-Right Toe & Claw */}
+      <ellipse cx="14.2" cy="11.8" rx="2.2" ry="4" transform="rotate(10 14.2 11.8)" />
+      <path d="M14.5 8.2c.3-3.2.8-5.2-1-4.2.3 1.6.5 3.2.7 4.2z" />
+      {/* Right Toe & Claw */}
+      <ellipse cx="18.8" cy="15.2" rx="2" ry="3.5" transform="rotate(30 18.8 15.2)" />
+      <path d="M19.5 12.5c.5-3 1-5-.8-4 0 1.5.3 3 .8 4z" />
     </svg>
   );
 }
