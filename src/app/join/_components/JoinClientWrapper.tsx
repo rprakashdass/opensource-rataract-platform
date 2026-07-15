@@ -102,7 +102,7 @@ export default function JoinClientWrapper({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {THE_PATH.map((step) => (
               <RevealBlock key={step.numeral} className="border-t border-hairline pt-6">
-                <span className="font-display font-medium italic text-3xl text-ochre-deep leading-none">
+                <span className="font-display font-medium italic text-3xl text-brand-deep leading-none">
                   {step.numeral}
                 </span>
                 <h3 className="mt-4 font-display font-medium text-xl text-ink tracking-[-0.01em]">

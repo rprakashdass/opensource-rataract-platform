@@ -60,7 +60,7 @@ export default async function PublicAnnouncementsPage() {
                       className="grid grid-cols-[64px_1fr] gap-x-5 md:gap-x-8 py-8 border-b border-hairline"
                     >
                       <div className="text-center">
-                        <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-ochre-deep">
+                        <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-deep">
                           {format(new Date(announcement.createdAt), "MMM")}
                         </span>
                         <span className="block font-display font-medium text-2xl md:text-3xl text-ink leading-none mt-1 tabular-nums">
@@ -90,7 +90,7 @@ export default async function PublicAnnouncementsPage() {
                         {announcement.startDate && (
                           <div className="bg-wash rounded-xl p-5 text-sm flex flex-col sm:flex-row sm:items-center gap-4">
                             <div className="flex items-center gap-2.5">
-                              <CalendarIcon className="w-4 h-4 text-ochre-deep shrink-0" aria-hidden="true" />
+                              <CalendarIcon className="w-4 h-4 text-brand-deep shrink-0" aria-hidden="true" />
                               <div>
                                 <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
                                   Schedule
@@ -102,7 +102,7 @@ export default async function PublicAnnouncementsPage() {
                             </div>
                             {announcement.location && (
                               <div className="flex items-center gap-2.5 sm:border-l sm:border-hairline sm:pl-4">
-                                <MapPin className="w-4 h-4 text-ochre-deep shrink-0" aria-hidden="true" />
+                                <MapPin className="w-4 h-4 text-brand-deep shrink-0" aria-hidden="true" />
                                 <div>
                                   <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
                                     Venue
@@ -131,7 +131,7 @@ export default async function PublicAnnouncementsPage() {
                                 rel="noopener noreferrer"
                                 className="thadam-link inline-flex items-center gap-1.5 text-sm font-semibold text-ink"
                               >
-                                <Paperclip className="w-3.5 h-3.5 text-ochre-deep" aria-hidden="true" />
+                                <Paperclip className="w-3.5 h-3.5 text-brand-deep" aria-hidden="true" />
                                 View attachment →
                               </a>
                             )}
@@ -143,7 +143,7 @@ export default async function PublicAnnouncementsPage() {
                                 rel="noopener noreferrer"
                                 className="thadam-link inline-flex items-center gap-1.5 text-sm font-semibold text-ink"
                               >
-                                <Paperclip className="w-3.5 h-3.5 text-ochre-deep" aria-hidden="true" />
+                                <Paperclip className="w-3.5 h-3.5 text-brand-deep" aria-hidden="true" />
                                 Attachment {idx + 1} →
                               </a>
                             ))}

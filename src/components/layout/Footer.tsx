@@ -29,14 +29,14 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
   const customQuickLinks = (settings?.footerQuickLinks as { label: string; url: string }[]) || [];
 
   const socialIconClass =
-    "text-parchment/50 hover:text-ochre transition-colors duration-300 p-2.5 border border-parchment/15 hover:border-ochre/40 rounded-full";
+    "text-parchment/50 hover:text-gold transition-colors duration-300 p-2.5 border border-parchment/15 hover:border-gold/40 rounded-full";
 
   return (
     <footer id="footer" className="bg-chapter text-parchment/70" data-thadam-dark>
       <MaxWidthWrapper>
         {/* Manifesto — the final chord */}
         <div className="pt-24 md:pt-32 pb-16 md:pb-24 border-b border-parchment/10">
-          <div className="flex items-center gap-3 text-ochre mb-8">
+          <div className="flex items-center gap-3 text-gold mb-8">
             <FootprintGlyph />
             <span className="text-xs font-semibold uppercase tracking-[0.18em]">Thadam · 2026–27</span>
           </div>
@@ -50,7 +50,7 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
           <div className="lg:col-span-5 space-y-6">
             <p className="font-display font-semibold text-parchment text-xl tracking-[-0.01em]">
               {club?.name || appName}
-              <span className="text-ochre">.</span>
+              <span className="text-brand">.</span>
             </p>
             <p className="text-[15px] leading-relaxed max-w-sm">{footerDesc}</p>
             <div className="flex flex-wrap gap-3 pt-2">

@@ -58,7 +58,7 @@ export function StoryCard({
       </div>
       <div className="pt-5">
         {eyebrow && (
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-ochre-deep mb-2">
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-deep mb-2">
             {eyebrow}
           </span>
         )}
@@ -69,7 +69,7 @@ export function StoryCard({
           )}
         >
           {title}
-          <span className="inline-block ml-2 text-ochre transition-transform duration-200 group-hover:translate-x-1">
+          <span className="inline-block ml-2 text-brand transition-transform duration-200 group-hover:translate-x-1">
             →
           </span>
         </h3>

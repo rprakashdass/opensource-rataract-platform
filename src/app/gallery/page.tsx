@@ -98,13 +98,13 @@ function Masonry({ photos }: { photos: GalleryPhoto[] }) {
             />
             {label && (
               <figcaption
-                className="absolute inset-x-0 bottom-0 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none bg-[rgba(24,14,4,0.55)] px-4 pt-3 pb-3.5"
+                className="absolute inset-x-0 bottom-0 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none bg-[rgba(26,10,18,0.55)] px-4 pt-3 pb-3.5"
               >
                 <p className="text-parchment font-display font-medium text-sm leading-snug line-clamp-2">
                   {label}
                 </p>
                 {tag && (
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-ochre mt-1">
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-brand mt-1">
                     {tag}
                   </span>
                 )}

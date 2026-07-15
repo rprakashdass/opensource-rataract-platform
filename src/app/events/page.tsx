@@ -143,7 +143,7 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
                     const d = new Date(nextEvent.startDate);
                     return (
                       <div>
-                        <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-ochre-deep">
+                        <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
                           {d.toLocaleDateString(undefined, { weekday: "long" })}
                         </span>
                         <span className="block font-display font-medium text-ink leading-none tabular-nums text-[clamp(3.5rem,8vw,6rem)] mt-2">

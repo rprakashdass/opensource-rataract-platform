@@ -51,7 +51,7 @@ export function ImpactBand({
     <section className={cn("bg-chapter", condensed ? "py-16 md:py-24" : "py-24 md:py-36", className)}>
       <MaxWidthWrapper>
         <RevealBlock>
-          <div className="flex items-center gap-3 mb-6 text-ochre">
+          <div className="flex items-center gap-3 mb-6 text-gold">
             <FootprintGlyph />
             <span className="text-xs font-semibold uppercase tracking-[0.18em]">{kicker}</span>
           </div>

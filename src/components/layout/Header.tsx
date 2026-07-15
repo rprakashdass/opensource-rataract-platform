@@ -74,7 +74,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
             )}
           >
             {wordmark}
-            <span className="text-ochre">.</span>
+            <span className="text-brand">.</span>
           </span>
         </Link>
 
@@ -117,7 +117,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
           {settings?.enableJoin !== false && (
             <Link
               href="/join"
-              className="hidden md:inline-flex motion-button items-center rounded-full bg-ochre px-7 py-2.5 text-[15px] font-semibold text-white hover:bg-ochre-deep transition-colors"
+              className="hidden md:inline-flex motion-button items-center rounded-full bg-brand px-7 py-2.5 text-[15px] font-semibold text-white hover:bg-brand-deep transition-colors"
             >
               Join us
             </Link>
@@ -144,7 +144,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
               <div className="p-8 flex-1">
                 <span className="font-display font-semibold text-xl text-ink tracking-[-0.01em]">
                   {wordmark}
-                  <span className="text-ochre">.</span>
+                  <span className="text-brand">.</span>
                 </span>
                 <nav className="flex flex-col gap-1 mt-12">
                   {navLinks.map((item: any, index: number) => {
@@ -156,7 +156,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
                         onClick={() => setIsOpen(false)}
                         className={cn(
                           "font-display font-medium text-3xl py-2 w-fit transition-colors",
-                          isActive ? "text-ochre-deep" : "text-ink hover:text-ochre-deep"
+                          isActive ? "text-brand-deep" : "text-ink hover:text-brand-deep"
                         )}
                       >
                         {item.label}
@@ -170,7 +170,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
                   <Link
                     href="/join"
                     onClick={() => setIsOpen(false)}
-                    className="motion-button inline-flex items-center justify-center rounded-full bg-ochre px-8 py-3.5 text-[15px] font-semibold text-white hover:bg-ochre-deep transition-colors"
+                    className="motion-button inline-flex items-center justify-center rounded-full bg-brand px-8 py-3.5 text-[15px] font-semibold text-white hover:bg-brand-deep transition-colors"
                   >
                     Join us
                   </Link>

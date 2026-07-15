@@ -40,7 +40,7 @@ export function ListRow({
       <div className="text-center">
         {d ? (
           <>
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-ochre-deep">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-deep">
               {month}
             </span>
             <span className="block font-display font-medium text-2xl md:text-3xl text-ink leading-none mt-1 tabular-nums">
@@ -48,7 +48,7 @@ export function ListRow({
             </span>
           </>
         ) : (
-          <span className="block w-2 h-2 rounded-full bg-ochre mx-auto" aria-hidden="true" />
+          <span className="block w-2 h-2 rounded-full bg-brand mx-auto" aria-hidden="true" />
         )}
       </div>
       <div className="min-w-0">
@@ -66,7 +66,7 @@ export function ListRow({
         )}
       </div>
       {href && (
-        <span className="text-ochre transition-transform duration-200 group-hover:translate-x-1 self-center" aria-hidden="true">
+        <span className="text-brand transition-transform duration-200 group-hover:translate-x-1 self-center" aria-hidden="true">
           →
         </span>
       )}
@@ -101,7 +101,7 @@ export function TimelineRow({
   return (
     <div className={cn("grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-3 py-8 border-b border-hairline", className)}>
       <div className="md:col-span-3">
-        <span className="font-display font-medium italic text-2xl md:text-3xl text-ochre-deep leading-none">
+        <span className="font-display font-medium italic text-2xl md:text-3xl text-brand-deep leading-none">
           {marker}
         </span>
         {meta && <p className="text-[13px] font-medium text-ink-faint mt-2">{meta}</p>}

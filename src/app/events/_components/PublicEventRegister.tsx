@@ -20,7 +20,7 @@ export default function PublicEventRegister({ eventId, memberId, isRegistered, i
   if (isRegistered) {
     return (
       <div className="w-full rounded-full py-3.5 px-6 text-center bg-paper border border-hairline text-ink text-[15px] font-semibold flex items-center justify-center gap-2">
-        <CheckCircle2 className="w-4 h-4 text-ochre-deep" /> You&rsquo;re registered
+        <CheckCircle2 className="w-4 h-4 text-brand-deep" /> You&rsquo;re registered
       </div>
     );
   }
@@ -52,7 +52,7 @@ export default function PublicEventRegister({ eventId, memberId, isRegistered, i
       type="button"
       onClick={handleRegister}
       disabled={loading}
-      className="motion-button w-full inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-ochre text-white hover:bg-ochre-deep transition-colors disabled:opacity-60 disabled:pointer-events-none"
+      className="motion-button w-full inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-brand text-white hover:bg-brand-deep transition-colors disabled:opacity-60 disabled:pointer-events-none"
     >
       {loading ? "Registering…" : "Register for this event"}
     </button>

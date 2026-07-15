@@ -90,7 +90,7 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
               <Eyebrow className="mb-6">Our story</Eyebrow>
               {foundedYear && (
                 <p
-                  className="font-display font-medium italic text-ochre-deep leading-none text-[clamp(2.6rem,6vw,4.2rem)] mb-6"
+                  className="font-display font-medium italic text-brand-deep leading-none text-[clamp(2.6rem,6vw,4.2rem)] mb-6"
                   aria-label={`Founded in ${foundedYear}`}
                 >
                   {foundedYear}
@@ -173,7 +173,7 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
                         onClick={() => setActivePortfolio(portfolio)}
                         aria-pressed={isActive}
                         className={`text-left py-4 border-b border-hairline whitespace-nowrap lg:whitespace-normal font-display font-medium text-lg transition-colors ${
-                          isActive ? "text-ochre-deep" : "text-ink-faint hover:text-ink"
+                          isActive ? "text-brand-deep" : "text-ink-faint hover:text-ink"
                         }`}
                       >
                         {portfolio.name}
@@ -205,7 +205,7 @@ export default function AboutClient({ data, isPreview }: { data: any; isPreview?
                         <ul className="mt-8 pt-6 border-t border-hairline grid sm:grid-cols-2 gap-x-8 gap-y-3">
                           {activePortfolio.activities.map((activity: string, i: number) => (
                             <li key={i} className="flex items-start gap-3 text-[15px] text-ink-soft leading-relaxed">
-                              <span className="mt-2 block w-1.5 h-1.5 rounded-full bg-ochre shrink-0" aria-hidden="true" />
+                              <span className="mt-2 block w-1.5 h-1.5 rounded-full bg-brand shrink-0" aria-hidden="true" />
                               <span>{activity}</span>
                             </li>
                           ))}

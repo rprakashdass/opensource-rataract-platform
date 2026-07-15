@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** The one primary action: ochre pill, sentence case. */
+/** The one primary action: accent pill, sentence case. */
 export function PillLink({
   href,
   children,
@@ -22,8 +22,8 @@ export function PillLink({
       className={cn(
         "motion-button inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold transition-colors",
         onDark
-          ? "bg-ochre text-chapter hover:bg-parchment"
-          : "bg-ochre text-white hover:bg-ochre-deep",
+          ? "bg-brand text-white hover:bg-brand-deep"
+          : "bg-brand text-white hover:bg-brand-deep",
         className
       )}
     >

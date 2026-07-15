@@ -79,7 +79,7 @@ export default async function PartnerPage() {
                 contactEmail={contactEmail}
                 clubName={club.name}
                 subject={`Partnership Inquiry — ${club.name}`}
-                className="motion-button inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-ochre text-chapter hover:bg-parchment transition-colors"
+                className="motion-button inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-brand text-chapter hover:bg-parchment transition-colors"
               >
                 {ctaText}
               </PartnerCTAButton>
@@ -187,7 +187,7 @@ export default async function PartnerPage() {
                 contactEmail={contactEmail}
                 clubName={club.name}
                 subject={`Partnership Inquiry — ${club.name}`}
-                className="motion-button inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-ochre text-white hover:bg-ochre-deep transition-colors"
+                className="motion-button inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-semibold bg-brand text-white hover:bg-brand-deep transition-colors"
               >
                 Write to {contactEmail}
               </PartnerCTAButton>

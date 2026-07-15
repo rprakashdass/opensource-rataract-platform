@@ -11,7 +11,7 @@ export function Eyebrow({ children, className, onDark }: { children: React.React
     <span
       className={cn(
         "block text-xs font-semibold uppercase tracking-[0.14em]",
-        onDark ? "text-ochre" : "text-ochre-deep",
+        onDark ? "text-gold" : "text-brand-deep",
         className
       )}
     >
@@ -89,7 +89,7 @@ export function SectionHeader({
             href={linkHref}
             className={cn(
               "thadam-link w-fit text-sm font-semibold",
-              onDark ? "text-ochre" : "text-trail"
+              onDark ? "text-gold" : "text-trail"
             )}
           >
             {linkText} →

@@ -14,7 +14,7 @@ interface PartnerCTAButtonProps {
 }
 
 const INPUT_CLASSES =
-  "w-full bg-wash border border-hairline rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-ochre motion-input";
+  "w-full bg-wash border border-hairline rounded-xl px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand motion-input";
 
 const LABEL_CLASSES = "block text-sm font-medium text-ink-soft mb-1.5";
 
@@ -126,7 +126,7 @@ export default function PartnerCTAButton({
                 </div>
                 <button
                   onClick={handleClose}
-                  className="motion-button w-full rounded-full bg-ochre text-white hover:bg-ochre-deep text-[15px] font-semibold py-3.5 transition-colors"
+                  className="motion-button w-full rounded-full bg-brand text-white hover:bg-brand-deep text-[15px] font-semibold py-3.5 transition-colors"
                 >
                   Back to the site
                 </button>
@@ -135,7 +135,7 @@ export default function PartnerCTAButton({
               // Form View
               <div className="space-y-6">
                 <div>
-                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-ochre-deep">
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
                     Sponsorship
                   </span>
                   <h3 className="font-display font-medium text-2xl text-ink tracking-[-0.01em] mt-2">
@@ -210,7 +210,7 @@ export default function PartnerCTAButton({
                   <button
                     disabled={submitting}
                     type="submit"
-                    className="motion-button w-full rounded-full bg-ochre text-white hover:bg-ochre-deep disabled:opacity-60 text-[15px] font-semibold py-3.5 transition-colors"
+                    className="motion-button w-full rounded-full bg-brand text-white hover:bg-brand-deep disabled:opacity-60 text-[15px] font-semibold py-3.5 transition-colors"
                   >
                     {submitting ? "Sending inquiry..." : "Submit inquiry"}
                   </button>
@@ -221,7 +221,7 @@ export default function PartnerCTAButton({
                   <span>Or copy our email:</span>
                   <button
                     onClick={handleCopy}
-                    className="inline-flex items-center gap-1.5 text-ink hover:text-ochre-deep transition-colors font-semibold"
+                    className="inline-flex items-center gap-1.5 text-ink hover:text-brand-deep transition-colors font-semibold"
                   >
                     {copied ? <Check className="w-3.5 h-3.5 text-trail" /> : <Copy className="w-3.5 h-3.5" />}
                     {contactEmail}

@@ -85,9 +85,9 @@ export default function HomeClientWrapper({
           dangerouslySetInnerHTML={{
             __html: `
               :root {
-                --color-ochre: ${settings?.primaryColor || "#C4881A"};
-                --color-ink: ${settings?.darkColor || "#2E2014"};
-                --color-paper: ${settings?.lightColor || "#FBF6ED"};
+                --color-brand: ${settings?.primaryColor || "#D41367"};
+                --color-ink: ${settings?.darkColor || "#2B1F26"};
+                --color-paper: ${settings?.lightColor || "#FBF7F2"};
               }
             `,
           }}
@@ -124,7 +124,7 @@ export default function HomeClientWrapper({
                         priority
                         className="object-cover thadam-grade"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(24,14,4,0.72)] via-[rgba(24,14,4,0.18)] to-[rgba(24,14,4,0.22)]" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,10,18,0.72)] via-[rgba(26,10,18,0.18)] to-[rgba(26,10,18,0.22)]" />
                     </>
                   )}
                   <MaxWidthWrapper className="relative z-10 pb-16 md:pb-24 pt-44 w-full">

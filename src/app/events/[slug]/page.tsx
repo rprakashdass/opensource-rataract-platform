@@ -189,7 +189,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               {/* Big serif date + about */}
               <div className="lg:col-span-7">
                 <RevealBlock>
-                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-ochre-deep">
+                  <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
                     {eventDate.toLocaleDateString(undefined, { weekday: "long" })}
                   </span>
                   <span className="block font-display font-medium text-ink leading-none tabular-nums text-[clamp(3.5rem,8vw,6rem)] mt-2">

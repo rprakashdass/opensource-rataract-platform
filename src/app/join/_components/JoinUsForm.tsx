@@ -6,7 +6,7 @@ import { submitInquiry } from "@/features/public/actions/submitInquiry";
 import { QuietLink } from "@/components/ui/public/v2";
 
 const INPUT_CLASSES =
-  "w-full bg-paper border border-hairline rounded-xl px-4 py-3 text-ink placeholder:text-ink-faint focus:outline-none focus:border-ochre motion-input";
+  "w-full bg-paper border border-hairline rounded-xl px-4 py-3 text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand motion-input";
 
 const LABEL_CLASSES = "block text-sm font-medium text-ink-soft mb-1.5";
 
@@ -97,7 +97,7 @@ export default function JoinUsForm({
       <button
         type="submit"
         disabled={loading}
-        className="motion-button w-full rounded-full bg-ochre text-white hover:bg-ochre-deep disabled:opacity-60 text-[15px] font-semibold py-3.5 transition-colors"
+        className="motion-button w-full rounded-full bg-brand text-white hover:bg-brand-deep disabled:opacity-60 text-[15px] font-semibold py-3.5 transition-colors"
       >
         {loading ? "Submitting..." : "Submit application"}
       </button>
