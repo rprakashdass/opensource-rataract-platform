@@ -297,9 +297,28 @@ export default function TreasurerWorkspace({
                   </div>
                   <p className="text-sm text-slate-600">{tx.title} — {tx.description || "No description"}</p>
                   {tx.receiptUrl && (
-                    <a href={tx.receiptUrl} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline mt-1.5 inline-block font-semibold">
+                    <button
+                      onClick={() => {
+                        const url = tx.receiptUrl;
+                        if (url.startsWith("data:")) {
+                          const win = window.open();
+                          if (win) {
+                            const isPdf = url.includes("pdf") || url.startsWith("data:application/pdf");
+                            if (isPdf) {
+                              win.document.write(`<iframe src="${url}" style="width: 100%; height: 100%; border: 0;" title="Receipt PDF"></iframe>`);
+                            } else {
+                              win.document.write(`<img src="${url}" style="max-width: 100%; max-height: 100vh; display: block; margin: auto;" />`);
+                            }
+                            win.document.title = "View Receipt";
+                          }
+                        } else {
+                          window.open(url, "_blank", "noopener,noreferrer");
+                        }
+                      }}
+                      className="text-xs text-brand hover:underline mt-1.5 inline-block font-semibold bg-transparent border-0 p-0 cursor-pointer"
+                    >
                       View Receipt Attached
-                    </a>
+                    </button>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center justify-between md:justify-end gap-4 w-full md:w-auto">

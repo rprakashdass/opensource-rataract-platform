@@ -286,10 +286,28 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
                         <img src={transaction.receiptUrl} alt="Receipt" className="w-full h-full object-cover" />
                       )}
                     </div>
-                    <Button variant="outline" className="w-full" asChild>
-                      <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer">
-                        View Full Size
-                      </a>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        const url = transaction.receiptUrl;
+                        if (url.startsWith("data:")) {
+                          const win = window.open();
+                          if (win) {
+                            const isPdf = url.includes("pdf") || url.startsWith("data:application/pdf");
+                            if (isPdf) {
+                              win.document.write(`<iframe src="${url}" style="width: 100%; height: 100%; border: 0;" title="Receipt PDF"></iframe>`);
+                            } else {
+                              win.document.write(`<img src="${url}" style="max-width: 100%; max-height: 100vh; display: block; margin: auto;" />`);
+                            }
+                            win.document.title = "View Receipt";
+                          }
+                        } else {
+                          window.open(url, "_blank", "noopener,noreferrer");
+                        }
+                      }}
+                    >
+                      View Full Size
                     </Button>
                   </div>
                 );

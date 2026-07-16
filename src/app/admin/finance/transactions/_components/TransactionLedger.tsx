@@ -348,9 +348,28 @@ export default function TransactionLedger({
                 <div className="pt-2 border-t border-slate-50">
                   <span className="text-xs font-semibold text-slate-400 uppercase">Receipt URL</span>
                   <p className="mt-0.5">
-                    <a href={selectedTx.receiptUrl} target="_blank" rel="noreferrer" className="text-brand hover:underline font-semibold flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        const url = selectedTx.receiptUrl;
+                        if (url.startsWith("data:")) {
+                          const win = window.open();
+                          if (win) {
+                            const isPdf = url.includes("pdf") || url.startsWith("data:application/pdf");
+                            if (isPdf) {
+                              win.document.write(`<iframe src="${url}" style="width: 100%; height: 100%; border: 0;" title="Receipt PDF"></iframe>`);
+                            } else {
+                              win.document.write(`<img src="${url}" style="max-width: 100%; max-height: 100vh; display: block; margin: auto;" />`);
+                            }
+                            win.document.title = "View Receipt";
+                          }
+                        } else {
+                          window.open(url, "_blank", "noopener,noreferrer");
+                        }
+                      }}
+                      className="text-brand hover:underline font-semibold flex items-center gap-1 bg-transparent border-0 p-0 cursor-pointer"
+                    >
                       <LinkIcon className="w-3.5 h-3.5" /> View Uploaded Receipt
-                    </a>
+                    </button>
                   </p>
                 </div>
               )}
