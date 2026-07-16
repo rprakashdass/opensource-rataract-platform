@@ -42,7 +42,7 @@ export function MediaThumbnail({ id, url, title, caption, type, isCover, isFeatu
 
   return (
     <div className="group block">
-      <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative">
+      <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative">
         {type === "IMAGE" ? (
           <Image
             src={url}
@@ -54,11 +54,11 @@ export function MediaThumbnail({ id, url, title, caption, type, isCover, isFeatu
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ImageIcon className="w-8 h-8 text-gray-300" />
+            <ImageIcon className="w-8 h-8 text-slate-300" />
           </div>
         )}
         {isCover && (
-          <Badge className="absolute top-2 left-2 bg-purple-500 text-white border-none shadow-sm text-[10px] px-1.5 py-0">Cover</Badge>
+          <Badge className="absolute top-2 left-2 bg-brand text-white border-none shadow-sm text-[10px] px-1.5 py-0">Cover</Badge>
         )}
         {isFeatured && (
           <Badge className="absolute top-2 right-2 bg-amber-500 text-white border-none shadow-sm text-[10px] px-1.5 py-0">Featured</Badge>
@@ -75,13 +75,13 @@ export function MediaThumbnail({ id, url, title, caption, type, isCover, isFeatu
           title="Delete"
           className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
         >
-          <span className="h-9 w-9 rounded-full bg-white/90 text-red-600 flex items-center justify-center shadow-sm hover:bg-white">
+          <span className="h-9 w-9 rounded-full bg-white/90 text-rose-600 flex items-center justify-center shadow-sm hover:bg-white">
             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </span>
         </button>
       </div>
       {title && (
-        <p className="text-xs text-gray-600 mt-1 truncate px-0.5">{title}</p>
+        <p className="text-xs text-slate-600 mt-1 truncate px-0.5">{title}</p>
       )}
     </div>
   );

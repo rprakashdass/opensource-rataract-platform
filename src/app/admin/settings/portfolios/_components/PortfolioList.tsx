@@ -142,9 +142,9 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
     <div className="lg:col-span-5 space-y-6 max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
-      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <p className="text-sm text-slate-500 font-medium">Configure the avenues and domains your club operates in.</p>
-        <Button onClick={handleAddNew} disabled={isEditing !== null} className="bg-purple-600 hover:bg-purple-700">
+        <Button onClick={handleAddNew} disabled={isEditing !== null} className="bg-brand hover:bg-brand-deep text-white">
           <Plus className="w-4 h-4 mr-2" /> Add Portfolio
         </Button>
       </div>
@@ -179,7 +179,7 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
                     </div>
                     <div>
                       <label className="text-xs font-bold text-slate-500 uppercase">Icon</label>
-                      <div className="grid grid-cols-6 gap-2 mt-1 w-fit max-w-full">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-1 w-fit max-w-full">
                         {ICON_OPTIONS.map(opt => {
                           const IconComp = opt.icon;
                           const isSelected = editForm.icon === opt.name;
@@ -188,7 +188,7 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
                               key={opt.name}
                               type="button"
                               onClick={() => setEditForm({...editForm, icon: opt.name})}
-                              className={`p-2 rounded-lg border flex items-center justify-center ${isSelected ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                              className={`p-2 rounded-lg border flex items-center justify-center ${isSelected ? 'bg-brand/10 border-brand/40 text-brand' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                               title={opt.name}
                             >
                               <IconComp className="w-4 h-4" />
@@ -225,13 +225,13 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
                       if (portfolio.isNew) setPortfolios(portfolios.filter(p => p.id !== portfolio.id));
                       setIsEditing(null);
                     }}>Cancel</Button>
-                    <Button onClick={() => handleSave(portfolio.id)} disabled={isLoading} className="bg-purple-600">Save Changes</Button>
+                    <Button onClick={() => handleSave(portfolio.id)} disabled={isLoading} className="bg-brand hover:bg-brand-deep text-white">Save Changes</Button>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex gap-4 items-start">
-                    <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-pink-50 text-brand flex items-center justify-center shrink-0">
                       {(() => {
                         const iconOpt = ICON_OPTIONS.find(i => i.name === portfolio.icon);
                         const IconComp = iconOpt ? iconOpt.icon : Globe;
@@ -239,7 +239,7 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
                       })()}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-slate-900">{portfolio.name}</h3>
+                      <h3 className="text-base font-semibold text-slate-900">{portfolio.name}</h3>
                       <p className="text-sm text-slate-500 mt-1 line-clamp-2">{portfolio.description || "No description provided."}</p>
                       {portfolio.activities?.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3">
@@ -255,7 +255,7 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
                     <Button variant="outline" size="icon" onClick={() => { setIsEditing(portfolio.id); setEditForm(portfolio); }} disabled={isEditing !== null}>
                       <Edit2 className="w-4 h-4 text-slate-500" />
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => handleDelete(portfolio.id)} disabled={isEditing !== null} className="hover:text-red-600 hover:bg-red-50">
+                    <Button variant="outline" size="icon" onClick={() => handleDelete(portfolio.id)} disabled={isEditing !== null} className="hover:text-rose-600 hover:bg-rose-50">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

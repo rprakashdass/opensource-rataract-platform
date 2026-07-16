@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import TransactionLedger from "./_components/TransactionLedger";
-import { Wallet } from "lucide-react";
+import { PageHeader } from "@/components/portal";
 
 export default async function AdminFinanceTransactionsPage() {
   const club = await getOrCreateDefaultClub();
@@ -68,15 +68,12 @@ export default async function AdminFinanceTransactionsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="h-12 w-12 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-          <Wallet className="h-6 w-6 text-purple-600" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Ledger & Audit Trail</h1>
-          <p className="text-sm text-slate-500 mt-1 font-medium">Verify all recorded incomes, expense claims, and inter-account transfers.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Ledger & Audit Trail"
+        description="Verify all recorded incomes, expense claims, and inter-account transfers."
+        backHref="/admin/finance"
+        backLabel="Back to Finance"
+      />
 
       <TransactionLedger
         initialTransactions={transactionsSerialized}

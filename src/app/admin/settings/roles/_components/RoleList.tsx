@@ -170,12 +170,12 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
       </div>
 
       {/* Active Category Header + Add Button */}
-      <div className={`flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm ${category.border}`}>
+      <div className={`flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-xl border shadow-sm ${category.border}`}>
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${category.bg} ${category.color}`}>
             <Icon className="w-5 h-5" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900">{category.label}</h2>
+          <h2 className="text-base font-semibold text-slate-900">{category.label}</h2>
         </div>
         <Button
           onClick={() => handleAddNew(activeTab)}
@@ -193,7 +193,7 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
           <div
             key={role.id}
             className={`bg-white border rounded-xl p-4 shadow-sm transition-all hover:shadow-md flex gap-4 ${
-              isEditing === role.id ? "border-purple-300 ring-4 ring-purple-50" : "border-slate-200"
+              isEditing === role.id ? "border-brand/40 ring-4 ring-brand/5" : "border-slate-200"
             }`}
           >
             {/* Ordering */}
@@ -214,7 +214,7 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
                         type="text"
                         value={editForm.name}
                         onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand outline-none"
                         placeholder="e.g. President, Secretary"
                       />
                     </div>
@@ -224,7 +224,7 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
                         type="number"
                         value={editForm.maxMembers || ""}
                         onChange={e => setEditForm({ ...editForm, maxMembers: e.target.value })}
-                        className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand outline-none"
                         placeholder="Leave blank for unlimited"
                       />
                     </div>
@@ -234,7 +234,7 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
                       if (role.isNew) setRoles(roles.filter(r => r.id !== role.id));
                       setIsEditing(null);
                     }}>Cancel</Button>
-                    <Button onClick={() => handleSave(role.id)} disabled={isLoading || !editForm.name} className="bg-purple-600">
+                    <Button onClick={() => handleSave(role.id)} disabled={isLoading || !editForm.name} className="bg-brand hover:bg-brand-deep text-white">
                       Save Role
                     </Button>
                   </div>
@@ -251,7 +251,7 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
                     <Button variant="outline" size="sm" onClick={() => { setIsEditing(role.id); setEditForm(role); }} disabled={isEditing !== null}>
                       <Edit2 className="w-4 h-4 mr-2" /> Edit
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDelete(role.id)} disabled={isEditing !== null} className="hover:text-red-600 hover:bg-red-50 text-slate-400">
+                    <Button variant="outline" size="sm" onClick={() => handleDelete(role.id)} disabled={isEditing !== null} className="hover:text-rose-600 hover:bg-rose-50 text-slate-400">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

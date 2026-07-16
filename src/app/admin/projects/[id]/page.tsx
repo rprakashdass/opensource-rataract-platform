@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, Users, IndianRupee, Plus, Lightbulb } from "lucide-react";
+import { Calendar, Users, Plus, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PageHeader, TableWrap } from "@/components/portal";
 import ProjectSettingsButton from "./_components/ProjectSettingsButton";
 import ProjectPublishButton from "./_components/ProjectPublishButton";
 import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
@@ -51,49 +52,47 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
 
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <Link href="/admin/projects" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Projects
-        </Link>
-        <div className="flex items-center gap-3">
-          <ProjectSettingsButton project={project} />
-          <ProjectPublishButton project={project} template={{ subject: renderedSubject, body: renderedBody }} />
-        </div>
-      </div>
+      <PageHeader
+        title={project.title}
+        description={project.description || undefined}
+        backHref="/admin/projects"
+        backLabel="Back to Projects"
+        actions={
+          <>
+            <ProjectSettingsButton project={project} />
+            <ProjectPublishButton project={project} template={{ subject: renderedSubject, body: renderedBody }} />
+          </>
+        }
+      />
 
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-            {project.category.replace(/_/g, ' ')}
-          </span>
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide ${project.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-            {project.status}
-          </span>
-        </div>
-        <h1 className="text-4xl font-bold text-gray-900">{project.title}</h1>
-        <p className="text-lg text-gray-500 mt-2 max-w-3xl">{project.description}</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="bg-pink-50 text-brand text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+          {project.category.replace(/_/g, ' ')}
+        </span>
+        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide ${project.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
+          {project.status}
+        </span>
       </div>
 
       {project.initiative && (
-        <div className="inline-flex items-center gap-2 text-sm bg-purple-50 border border-purple-100 text-purple-700 px-4 py-2 rounded-xl">
+        <div className="inline-flex flex-wrap items-center gap-2 text-sm bg-pink-50 border border-pink-100 text-brand-deep px-4 py-2 rounded-xl">
           <Lightbulb className="w-4 h-4" />
           Originally proposed by <span className="font-bold">{project.initiative.proposedBy?.name || "a member"}</span>
-          <Link href={`/admin/proposals/${project.initiative.id}`} className="underline hover:text-purple-900">View proposal</Link>
+          <Link href={`/admin/proposals/${project.initiative.id}`} className="underline text-brand hover:text-brand-deep">View proposal</Link>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium text-slate-500 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-brand" />
               Timeline
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{totalEvents} Events</div>
-            <p className="text-sm text-gray-500 mt-1">
+            <div className="text-2xl font-bold text-slate-900">{totalEvents} Events</div>
+            <p className="text-sm text-slate-500 mt-1">
               {new Date(project.startDate).toLocaleDateString()} - {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Ongoing'}
             </p>
           </CardContent>
@@ -101,51 +100,56 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-slate-500 flex items-center gap-2">
               <Users className="w-4 h-4 text-blue-500" />
               Engagement
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{totalRegistrations}</div>
-            <p className="text-sm text-gray-500 mt-1">Total registrations across all events</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-              <IndianRupee className="w-4 h-4 text-green-500" />
-              Financial Impact
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">₹ 0</div>
-            <p className="text-sm text-gray-500 mt-1">Total project expenses (Coming soon)</p>
+            <div className="text-2xl font-bold text-slate-900">{totalRegistrations}</div>
+            <p className="text-sm text-slate-500 mt-1">Total registrations across all events</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Project Events</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-semibold text-slate-900">Project Events</h2>
           <Link href={`/admin/events/create?project=${project.id}`}>
-            <Button size="sm" className="gap-2 bg-purple-600 hover:bg-purple-700">
+            <Button size="sm" className="gap-2 bg-brand hover:bg-brand-deep text-white">
               <Plus className="w-4 h-4" /> Add Event
             </Button>
           </Link>
         </div>
-        
+
         {project.events.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-12 text-center">
-            <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900">No events scheduled</h3>
-            <p className="text-gray-500 mt-1">Get started by adding the first event to this project.</p>
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-12 text-center">
+            <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-sm font-semibold text-slate-900">No events scheduled</h3>
+            <p className="text-slate-500 mt-1 text-sm">Get started by adding the first event to this project.</p>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50 text-gray-900 font-medium border-b border-gray-200">
+          <TableWrap
+            mobile={project.events.map(event => (
+              <div key={event.id} className="p-4 space-y-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <p className="font-medium text-slate-900">{event.title}</p>
+                  <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                    {event.status}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-500" suppressHydrationWarning>{new Date(event.startTime).toLocaleString()}</p>
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <span className="text-xs text-slate-500">{event._count.registrations} registrations</span>
+                  <Link href={`/admin/events/${event.id}`} className="text-sm text-brand font-medium hover:text-brand-deep">
+                    Manage
+                  </Link>
+                </div>
+              </div>
+            ))}
+          >
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50 text-slate-900 font-medium border-b border-slate-200">
                 <tr>
                   <th className="px-6 py-4">Event Name</th>
                   <th className="px-6 py-4">Date</th>
@@ -154,19 +158,19 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100">
                 {project.events.map(event => (
-                  <tr key={event.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">{event.title}</td>
+                  <tr key={event.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-slate-900">{event.title}</td>
                     <td className="px-6 py-4" suppressHydrationWarning>{new Date(event.startTime).toLocaleString()}</td>
                     <td className="px-6 py-4">
-                      <span className="bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
                         {event.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">{event._count.registrations}</td>
                     <td className="px-6 py-4 text-right">
-                      <Link href={`/admin/events/${event.id}`} className="text-purple-600 font-medium hover:text-purple-800">
+                      <Link href={`/admin/events/${event.id}`} className="text-brand font-medium hover:text-brand-deep">
                         Manage
                       </Link>
                     </td>
@@ -174,7 +178,7 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableWrap>
         )}
       </div>
     </div>

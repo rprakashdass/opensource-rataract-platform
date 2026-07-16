@@ -89,45 +89,45 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 p-6 md:p-8">
+    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-900/5 p-6 md:p-8">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm mb-6">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700 text-sm mb-6">
           {error}
         </div>
       )}
       
-      <div className="flex items-center gap-2 mb-6 text-purple-700 font-semibold border-b pb-2">
+      <div className="flex items-center gap-2 mb-6 text-brand font-semibold border-b pb-2">
         <Calendar className="h-5 w-5" />
         <span>Edit Event Details</span>
       </div>
 
       <form onSubmit={submitEvent} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Event Title *</label>
-          <input value={title} onChange={(e) => handleEventTitleChange(e.target.value)} required className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="Tree Planting Day" />
+          <label className="block text-sm font-medium text-slate-700 mb-1">Event Title *</label>
+          <input value={title} onChange={(e) => handleEventTitleChange(e.target.value)} required className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Tree Planting Day" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
-          <input value={slug} onChange={(e) => setSlug(e.target.value)} required className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="tree-planting-day" />
+          <label className="block text-sm font-medium text-slate-700 mb-1">Slug *</label>
+          <input value={slug} onChange={(e) => setSlug(e.target.value)} required className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="tree-planting-day" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date/Time *</label>
-            <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Start Date/Time *</label>
+            <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">End Date/Time</label>
-            <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">End Date/Time</label>
+            <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <input value={location} onChange={(e) => setLocation(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="City Park / Zoom Link" />
+          <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+          <input value={location} onChange={(e) => setLocation(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="City Park / Zoom Link" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white">
+          <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
             <option value="DRAFT">Draft</option>
             <option value="UPCOMING">Upcoming</option>
             <option value="ONGOING">Ongoing</option>
@@ -136,22 +136,22 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Publish Status</label>
-          <select value={publishStatus} onChange={(e) => setPublishStatus(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white">
+          <label className="block text-sm font-medium text-slate-700 mb-1">Publish Status</label>
+          <select value={publishStatus} onChange={(e) => setPublishStatus(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
             <option value="DRAFT">Draft (Hidden)</option>
             <option value="PUBLISHED">Published (Visible)</option>
             <option value="ARCHIVED">Archived</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full rounded border border-gray-300 px-3 py-2 text-sm" placeholder="Describe the event..." />
+          <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Describe the event..." />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
-            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Visibility</label>
+            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
               <option value="PUBLIC">Public</option>
               <option value="INTERNAL">Internal</option>
               <option value="MEMBERS_ONLY">Members Only</option>
@@ -161,32 +161,32 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
           
           <div className="space-y-3 pt-6">
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="registrationEnabled" checked={registrationEnabled} onChange={(e) => setRegistrationEnabled(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600" />
-              <label htmlFor="registrationEnabled" className="text-sm font-medium text-gray-700 cursor-pointer">Enable Public Registration</label>
+              <input type="checkbox" id="registrationEnabled" checked={registrationEnabled} onChange={(e) => setRegistrationEnabled(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-brand" />
+              <label htmlFor="registrationEnabled" className="text-sm font-medium text-slate-700 cursor-pointer">Enable Public Registration</label>
             </div>
             
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="isFeatured" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600" />
-              <label htmlFor="isFeatured" className="text-sm font-medium text-gray-700 cursor-pointer">Feature on Homepage</label>
+              <input type="checkbox" id="isFeatured" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-brand" />
+              <label htmlFor="isFeatured" className="text-sm font-medium text-slate-700 cursor-pointer">Feature on Homepage</label>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
           <div>
-            <Label className="block text-sm font-medium text-gray-700 mb-1">Banner Image</Label>
-            <p className="text-xs text-gray-500 mb-2">Wide hero image on the event page and cards.</p>
+            <Label className="block text-sm font-medium text-slate-700 mb-1">Banner Image</Label>
+            <p className="text-xs text-slate-500 mb-2">Wide hero image on the event page and cards.</p>
             <MediaUpload value={bannerMediaId} onChange={setBannerMediaId} type="IMAGE" usage="BANNER" accept="image/*" />
           </div>
           <div>
-            <Label className="block text-sm font-medium text-gray-700 mb-1">Poster Image</Label>
-            <p className="text-xs text-gray-500 mb-2">Portrait flyer shown in the sidebar.</p>
+            <Label className="block text-sm font-medium text-slate-700 mb-1">Poster Image</Label>
+            <p className="text-xs text-slate-500 mb-2">Portrait flyer shown in the sidebar.</p>
             <MediaUpload value={posterMediaId} onChange={setPosterMediaId} type="IMAGE" usage="POSTER" accept="image/*" />
           </div>
         </div>
         
         <div className="pt-4 flex justify-end">
-          <button type="submit" disabled={submitting} className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 transition">
+          <button type="submit" disabled={submitting} className="rounded-lg bg-brand px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep transition">
             {submitting ? "Saving..." : "Save Event Details"}
           </button>
         </div>

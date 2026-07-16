@@ -7,6 +7,7 @@ import { Plus, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants";
+import { PageHeader } from "@/components/portal";
 
 export default function NewAccountPage() {
   const router = useRouter();
@@ -85,77 +86,68 @@ export default function NewAccountPage() {
     });
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  if (loading) return <div className="p-8 text-center text-slate-500">Loading...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-700">Accounts</span>
-          <h1 className="text-3xl font-bold text-gray-900">{editId ? "Edit Credentials" : "New Account"}</h1>
-          <p className="text-sm text-gray-500 max-w-xl">
-            {editId ? "Update the login credentials and role." : "Create new login credentials for an administrator."}
-          </p>
-        </div>
-        <Link
-          href={`${ROUTES.ADMIN}/accounts`}
-          className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
-        >
-          Back to overview
-        </Link>
-      </div>
+      <PageHeader
+        title={editId ? "Edit Credentials" : "New Account"}
+        description={editId ? "Update the login credentials and role." : "Create new login credentials for an administrator."}
+        backHref={`${ROUTES.ADMIN}/accounts`}
+        backLabel="Back to overview"
+      />
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
           {error}
         </div>
       )}
 
-      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
+      <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {!editId && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Owner Name *</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none text-sm"
                 placeholder="e.g. John Doe"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Login ID *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Login ID *</label>
             <input
               type="text"
               required
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none text-sm"
               placeholder="e.g. admin_nexus"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Password {!editId && "*"}
-              {editId && <span className="text-gray-400 font-normal ml-2 text-xs">(Leave blank to keep current)</span>}
+              {editId && <span className="text-slate-400 font-normal ml-2 text-xs">(Leave blank to keep current)</span>}
             </label>
             <input
               type={editId ? "password" : "text"}
               required={!editId}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none text-sm"
               placeholder="Secure password"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">System Roles *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">System Roles *</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { id: "SUPER_ADMIN", label: "Superadmin" },
@@ -164,7 +156,7 @@ export default function NewAccountPage() {
                 { id: "FINANCE_VIEWER", label: "Finance Viewer" },
                 { id: "MEMBER", label: "Standard Member" }
               ].map((r) => (
-                <label key={r.id} className="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                <label key={r.id} className="flex items-center space-x-3 cursor-pointer p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition">
                   <input
                     type="checkbox"
                     checked={roles.includes(r.id)}
@@ -179,19 +171,19 @@ export default function NewAccountPage() {
                         }
                       }
                     }}
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-brand focus:ring-brand border-slate-300 rounded"
                   />
-                  <span className="text-sm font-medium text-gray-900">{r.label}</span>
+                  <span className="text-sm font-medium text-slate-900">{r.label}</span>
                 </label>
               ))}
             </div>
-            <p className="mt-2 text-xs text-gray-500">Accounts can have multiple roles to combine permissions.</p>
+            <p className="mt-2 text-xs text-slate-500">Accounts can have multiple roles to combine permissions.</p>
           </div>
 
           <button
             type="submit"
             disabled={saveMutation.isPending}
-            className="w-full bg-purple-600 text-white py-2.5 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition cursor-pointer font-medium flex justify-center items-center gap-2"
+            className="w-full bg-brand text-white py-2.5 rounded-lg hover:bg-brand-deep disabled:opacity-50 transition cursor-pointer font-medium flex justify-center items-center gap-2"
           >
             {saveMutation.isPending ? "Saving..." : editId ? "Update Credentials" : (
               <><Plus className="h-4 w-4" /> Create Account</>

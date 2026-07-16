@@ -5,6 +5,7 @@ import { ROUTES } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Lightbulb, ChevronRight } from "lucide-react";
+import { PageHeader } from "@/components/portal";
 
 const STATUS_TABS = [
   { value: "", label: "All" },
@@ -24,10 +25,10 @@ export default async function ProposalsAdminPage({ searchParams }: { searchParam
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-2">
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Initiative Proposals</h1>
-        <p className="text-slate-500 mt-1 font-medium">Review member-suggested event and project ideas.</p>
-      </div>
+      <PageHeader
+        title="Initiative Proposals"
+        description="Review member-suggested event and project ideas."
+      />
 
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {STATUS_TABS.map((tab) => (
@@ -49,10 +50,10 @@ export default async function ProposalsAdminPage({ searchParams }: { searchParam
           <div className="space-y-4">
             {initiatives.map((initiative: any) => (
               <Link key={initiative.id} href={`${ROUTES.ADMIN}/proposals/${initiative.id}`} className="block group">
-                <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-300 flex items-center justify-between gap-6">
+                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-300 flex items-center justify-between gap-6">
                   <div className="space-y-2 flex-1 min-w-0">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-bold text-slate-900 text-lg group-hover:text-purple-700 transition-colors">{initiative.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="font-bold text-slate-900 text-lg group-hover:text-brand transition-colors">{initiative.title}</h3>
                       <InitiativeStatusBadge status={initiative.status} />
                     </div>
                     <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{initiative.description}</p>
@@ -62,13 +63,13 @@ export default async function ProposalsAdminPage({ searchParams }: { searchParam
                       {" · "}{formatDistanceToNow(new Date(initiative.createdAt), { addSuffix: true })}
                     </p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-purple-600 transition-colors shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-brand transition-colors shrink-0" />
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center text-slate-500">
+          <div className="bg-white rounded-xl border border-slate-200 p-16 text-center text-slate-500">
             <Lightbulb className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             No proposals in this category yet.
           </div>

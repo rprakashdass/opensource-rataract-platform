@@ -10,7 +10,14 @@ const globalForPrisma = globalThis as unknown as {
 const connectionString = process.env.DATABASE_URL;
 
 // Cache the pg Pool on globalThis in development to prevent leaking connections on hot-reload
-const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+const pool =
+  globalForPrisma.pool ??
+  new Pool({
+    connectionString,
+    max: process.env.NODE_ENV === "production" ? undefined : 4,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 5000,
+  });
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;
 
 const adapter = new PrismaPg(pool);

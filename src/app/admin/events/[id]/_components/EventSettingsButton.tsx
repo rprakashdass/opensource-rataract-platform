@@ -17,7 +17,7 @@ export default function EventSettingsButton({ event }: { event: any }) {
           Event Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Event Settings</DialogTitle>
         </DialogHeader>

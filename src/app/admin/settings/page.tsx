@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Settings, Save, Layers, ShieldCheck, ChevronRight } from "lucide-react";
+import { Save, Layers, ShieldCheck, ChevronRight } from "lucide-react";
+import { PageHeader } from "@/components/portal";
 import { toast } from "sonner";
 import { useLoadingToast } from "@/hooks/useLoadingToast";
 import { FileUpload } from "@/components/ui/file-upload";
@@ -123,70 +124,67 @@ export default function SettingsAdmin() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-3 border-b border-primary/10 pb-4">
-        <Settings className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-black text-foreground">Club Configurations</h1>
-          <p className="text-sm text-muted-foreground mt-1">Configure your organization and active tenure details</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Club Configurations"
+        description="Configure your organization and active tenure details"
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link href="/admin/settings/portfolios">
-          <div className="group border border-primary/10 bg-card p-4 rounded-2xl hover:border-primary/30 hover:shadow-sm transition-all flex items-center gap-4">
-            <div className="p-3 rounded-xl h-fit shrink-0 bg-violet-100 text-violet-600">
+          <div className="group border border-slate-200 bg-white p-4 rounded-2xl hover:border-slate-300 hover:shadow-sm transition-all flex items-center gap-4">
+            <div className="p-3 rounded-xl h-fit shrink-0 bg-pink-50 text-brand">
               <Layers className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">Portfolio Management</h3>
-              <p className="text-sm text-muted-foreground mt-1">Configure your club's avenues of service.</p>
+              <h3 className="font-semibold text-slate-900 group-hover:text-brand transition-colors">Portfolio Management</h3>
+              <p className="text-sm text-slate-500 mt-1">Configure your club's avenues of service.</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
         </Link>
         <Link href="/admin/settings/roles">
-          <div className="group border border-primary/10 bg-card p-4 rounded-2xl hover:border-primary/30 hover:shadow-sm transition-all flex items-center gap-4">
+          <div className="group border border-slate-200 bg-white p-4 rounded-2xl hover:border-slate-300 hover:shadow-sm transition-all flex items-center gap-4">
             <div className="p-3 rounded-xl h-fit shrink-0 bg-indigo-100 text-indigo-600">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">Board Role Configuration</h3>
-              <p className="text-sm text-muted-foreground mt-1">Define board, core team, and member roles.</p>
+              <h3 className="font-semibold text-slate-900 group-hover:text-brand transition-colors">Board Role Configuration</h3>
+              <p className="text-sm text-slate-500 mt-1">Define board, core team, and member roles.</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
           </div>
         </Link>
       </div>
 
       {message && (
-        <div className="bg-primary/5 border border-primary/10 text-primary px-4 py-3 rounded-xl text-sm font-semibold">
+        <div className="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm font-semibold">
           {message}
         </div>
       )}
 
       {loading ? (
-        <div className="text-muted-foreground text-sm">Loading configurations...</div>
+        <div className="text-slate-500 text-sm">Loading configurations...</div>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-card border border-primary/10 p-6 rounded-3xl space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Rotaract Club Name *</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Rotaract Club Name *</label>
               <input
                 type="text"
                 required
                 value={clubName}
                 onChange={(e) => setClubName(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. Rotaract Club of Delhi"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Short Name / Acronym</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Short Name / Acronym</label>
               <input
                 type="text"
                 value={shortName}
                 onChange={(e) => setShortName(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. RAC Delhi"
               />
             </div>
@@ -194,35 +192,35 @@ export default function SettingsAdmin() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">District Number</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">District Number</label>
               <input
                 type="text"
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. 3011"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Active Tenure *</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Active Tenure *</label>
               <input
                 type="text"
                 required
                 value={tenureYear}
                 onChange={(e) => setTenureYear(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. 2026-27"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Founded Year</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Founded Year</label>
               <input
                 type="number"
                 value={foundedYear}
                 onChange={(e) => setFoundedYear(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. 1999"
               />
             </div>
@@ -230,7 +228,7 @@ export default function SettingsAdmin() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club Logo</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club Logo</label>
               <FileUpload 
                 value={logoUrl} 
                 onChange={setLogoUrl} 
@@ -239,7 +237,7 @@ export default function SettingsAdmin() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club Banner</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club Banner</label>
               <FileUpload 
                 value={bannerUrl} 
                 onChange={setBannerUrl} 
@@ -248,7 +246,7 @@ export default function SettingsAdmin() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Theme Color</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Theme Color</label>
               <div className="flex gap-4 items-center">
                 <input
                   type="color"
@@ -263,22 +261,22 @@ export default function SettingsAdmin() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Contact Email Address</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Contact Email Address</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. contact@yourclub.org"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Contact Phone</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Contact Phone</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. +1 234 567 890"
               />
             </div>
@@ -286,126 +284,126 @@ export default function SettingsAdmin() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club Description / About Us</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club Description / About Us</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="Brief description of your club..."
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Mission Statement</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Mission Statement</label>
               <textarea
                 value={missionStatement}
                 onChange={(e) => setMissionStatement(e.target.value)}
                 rows={2}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="Our mission is..."
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Vision Statement</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Vision Statement</label>
               <textarea
                 value={visionStatement}
                 onChange={(e) => setVisionStatement(e.target.value)}
                 rows={2}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="Our vision is..."
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">President's Message</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">President's Message</label>
               <textarea
                 value={presidentMessage}
                 onChange={(e) => setPresidentMessage(e.target.value)}
                 rows={4}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="Welcome to our club..."
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-primary/10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-200">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Meeting Day</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Meeting Day</label>
               <input
                 type="text"
                 value={meetingDay}
                 onChange={(e) => setMeetingDay(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. Every 1st and 3rd Sunday"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Meeting Time</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Meeting Time</label>
               <input
                 type="text"
                 value={meetingTime}
                 onChange={(e) => setMeetingTime(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. 10:00 AM"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Meeting Venue</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Meeting Venue</label>
               <input
                 type="text"
                 value={meetingVenue}
                 onChange={(e) => setMeetingVenue(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. Rotary Sadan"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-primary/10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-200">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Instagram URL</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Instagram URL</label>
               <input
                 type="url"
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="https://instagram.com/..."
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">LinkedIn URL</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">LinkedIn URL</label>
               <input
                 type="url"
                 value={linkedin}
                 onChange={(e) => setLinkedin(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="https://linkedin.com/..."
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">YouTube URL</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">YouTube URL</label>
               <input
                 type="url"
                 value={youtube}
                 onChange={(e) => setYoutube(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="https://youtube.com/..."
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-primary/10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Club UPI ID</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club UPI ID</label>
               <input
                 type="text"
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
-                className="w-full bg-primary/5 border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 placeholder="e.g. rotaractclub@upi"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-foreground uppercase tracking-widest mb-2">Payment QR Code</label>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Payment QR Code</label>
               <FileUpload 
                 value={paymentQr} 
                 onChange={setPaymentQr} 
@@ -417,7 +415,7 @@ export default function SettingsAdmin() {
           <button
             type="submit"
             disabled={saving}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-xl text-xs uppercase tracking-widest transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+            className="bg-brand hover:bg-brand-deep text-white font-semibold py-3 px-6 rounded-xl text-xs uppercase tracking-widest transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
             {saving ? "Saving..." : "Save Settings"}

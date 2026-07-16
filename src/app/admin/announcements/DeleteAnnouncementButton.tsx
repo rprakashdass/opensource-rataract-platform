@@ -34,7 +34,7 @@ export default function DeleteAnnouncementButton({ id }: { id: string }) {
     <button
       onClick={handleDelete}
       disabled={isDeleting}
-      className="text-red-600 hover:text-red-900 transition-colors disabled:opacity-50"
+      className="text-rose-600 hover:text-rose-800 transition-colors disabled:opacity-50"
       title="Delete Announcement"
     >
       <Trash2 className="h-4 w-4" />

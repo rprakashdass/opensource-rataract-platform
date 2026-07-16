@@ -40,7 +40,7 @@ export default function EventMemories({ eventId, driveFolderId }: { eventId: str
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm mt-6">
-      <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+      <h2 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
         <Camera className="w-5 h-5 text-amber-500" /> Event Memories
       </h2>
       

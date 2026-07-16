@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import Link from "next/link";
-import { Plus, Folder } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Folder } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/portal";
 import { GalleryUpload } from "./GalleryUpload";
 import { CreateAlbumDialog } from "./CreateAlbumDialog";
 import { MediaThumbnail } from "./_components/MediaThumbnail";
@@ -34,38 +34,36 @@ export default async function AdminGalleryPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-2">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Media & Albums</h1>
-          <p className="text-sm text-gray-500 max-w-2xl">
-            Organize your media into albums, or keep them as standalone images.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <CreateAlbumDialog />
-          <GalleryUpload albums={albums.map(a => ({ id: a.id, title: a.title }))} />
-        </div>
-      </div>
+      <PageHeader
+        title="Media & Albums"
+        description="Organize your media into albums, or keep them as standalone images."
+        actions={
+          <>
+            <CreateAlbumDialog />
+            <GalleryUpload albums={albums.map(a => ({ id: a.id, title: a.title }))} />
+          </>
+        }
+      />
 
       <section>
-        <h2 className="text-xl font-bold mb-4">Albums</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-4">Albums</h2>
         {albums.length === 0 ? (
-          <div className="border border-dashed border-gray-200 rounded-xl p-8 text-center text-gray-500">
+          <div className="border border-dashed border-slate-200 rounded-xl p-8 text-center text-slate-500">
             No albums found. Create one to group your event photos.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {albums.map(album => (
               <Link href={`/admin/gallery/albums/${album.id}`} key={album.id} className="block group">
-                <div className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition bg-white">
-                  <div className="h-40 bg-gray-100 flex items-center justify-center relative">
-                    <Folder className="w-12 h-12 text-gray-300" />
-                    <Badge className="absolute bottom-2 right-2 bg-white/90 text-gray-900 border-none shadow-sm">{album._count.media} Items</Badge>
+                <div className="border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition bg-white">
+                  <div className="h-40 bg-slate-100 flex items-center justify-center relative">
+                    <Folder className="w-12 h-12 text-slate-300" />
+                    <Badge className="absolute bottom-2 right-2 bg-white/90 text-slate-900 border-none shadow-sm">{album._count.media} Items</Badge>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">{album.title}</h3>
+                    <h3 className="font-bold text-slate-900 group-hover:text-brand transition-colors">{album.title}</h3>
                     {(album.event || album.project) && (
-                      <p className="text-xs text-gray-500 mt-1 truncate">
+                      <p className="text-xs text-slate-500 mt-1 truncate">
                         Linked to: {album.event?.title || album.project?.title}
                       </p>
                     )}
@@ -78,9 +76,9 @@ export default async function AdminGalleryPage() {
       </section>
 
       <section>
-        <h2 className="text-xl font-bold mb-4">Uncategorized Media</h2>
+        <h2 className="text-base font-semibold text-slate-900 mb-4">Uncategorized Media</h2>
         {media.length === 0 ? (
-          <div className="border border-dashed border-gray-200 rounded-xl p-8 text-center text-gray-500">
+          <div className="border border-dashed border-slate-200 rounded-xl p-8 text-center text-slate-500">
             No loose media found.
           </div>
         ) : (

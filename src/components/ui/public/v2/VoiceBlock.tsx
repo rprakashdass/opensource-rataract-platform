@@ -38,7 +38,7 @@ export function VoiceBlock({
         {eyebrow && <Eyebrow onDark={onDark} className="mb-8">{eyebrow}</Eyebrow>}
         <blockquote
           className={cn(
-            "font-display font-medium tracking-[-0.01em] leading-[1.3] text-[clamp(1.4rem,3vw,2.1rem)] text-balance",
+            "font-statement font-medium tracking-[-0.01em] leading-[1.3] text-[clamp(1.4rem,3vw,2.1rem)] text-balance",
             onDark ? "text-parchment" : "text-ink"
           )}
         >

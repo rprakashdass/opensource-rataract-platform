@@ -64,7 +64,7 @@ export default function GalleryEditorForm({
       <div className="lg:col-span-5 h-full flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto space-y-6 pr-2">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <h4 className="font-black text-slate-900 text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Gallery Page Hero</h4>
+            <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Gallery Page Hero</h4>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Page Title</label>
               <Input value={form.galleryTitle} onChange={e => handleChange("galleryTitle", e.target.value)} placeholder="e.g. Moments & Memories." />
@@ -73,7 +73,7 @@ export default function GalleryEditorForm({
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Subtitle</label>
               <Textarea value={form.gallerySubtitle} onChange={e => handleChange("gallerySubtitle", e.target.value)} placeholder="Chronological snapshots of our fellowship..." rows={3} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">CTA Label (optional)</label>
                 <Input value={form.galleryCTA} onChange={e => handleChange("galleryCTA", e.target.value)} placeholder="e.g. Follow on Instagram" />
@@ -87,7 +87,7 @@ export default function GalleryEditorForm({
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <h4 className="font-black text-slate-900 text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Homepage Photo Teaser</h4>
+            <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Homepage Photo Teaser</h4>
             <p className="text-xs text-slate-400 -mt-2">Controls which photos appear in the homepage's gallery preview section.</p>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-slate-700">Show latest first</span>
@@ -102,7 +102,7 @@ export default function GalleryEditorForm({
               <select
                 value={form.galleryAlbumId}
                 onChange={e => handleChange("galleryAlbumId", e.target.value)}
-                className="w-full border border-gray-300 p-2.5 rounded-xl text-sm"
+                className="w-full border border-slate-300 p-2.5 rounded-xl text-sm"
               >
                 <option value="">All albums</option>
                 {albums.map(a => (

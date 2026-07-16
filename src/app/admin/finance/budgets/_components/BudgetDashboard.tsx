@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Plus, Trash2, Link as LinkIcon, PieChart, Activity, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatCard, StatGrid } from "@/components/portal";
 import { toast } from "sonner";
 import { createBudget, deleteBudget } from "@/features/finance/actions/manageBudget";
 import { useRouter } from "next/navigation";
@@ -86,65 +87,60 @@ export default function BudgetDashboard({ data }: BudgetDashboardProps) {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white border-0 shadow-md">
-          <CardContent className="p-6">
-            <p className="text-purple-100 text-sm font-semibold uppercase tracking-wider mb-1">Total Allocated</p>
-            <h3 className="text-3xl font-black">₹{totalAllocated.toLocaleString()}</h3>
-            <p className="text-purple-200 text-xs mt-2">{data.activeFinancialYear.name}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white border-slate-100 shadow-sm">
-          <CardContent className="p-6">
-            <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Total Spent</p>
-            <h3 className="text-3xl font-black text-rose-600">₹{totalSpent.toLocaleString()}</h3>
-            <p className="text-slate-400 text-xs mt-2">Across all approved transactions</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white border-slate-100 shadow-sm">
-          <CardContent className="p-6">
-            <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Remaining</p>
-            <h3 className="text-3xl font-black text-emerald-600">₹{remaining.toLocaleString()}</h3>
-            <p className="text-slate-400 text-xs mt-2">Available across all budgets</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid className="lg:grid-cols-3">
+        <StatCard
+          label="Total Allocated"
+          value={`₹${totalAllocated.toLocaleString()}`}
+          tone="brand"
+          hint={data.activeFinancialYear.name}
+        />
+        <StatCard
+          label="Total Spent"
+          value={`₹${totalSpent.toLocaleString()}`}
+          tone="critical"
+          hint="Across all approved transactions"
+        />
+        <StatCard
+          label="Remaining"
+          value={`₹${remaining.toLocaleString()}`}
+          tone="positive"
+          hint="Available across all budgets"
+        />
+      </StatGrid>
 
       {/* Header and Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Project & Event Budgets</h2>
+          <h2 className="text-base font-semibold text-slate-900">Project & Event Budgets</h2>
           <p className="text-sm text-slate-500">Track spending limits for ongoing activities</p>
         </div>
-        <Button onClick={() => setShowCreate(!showCreate)} className="bg-purple-600 hover:bg-purple-700 text-white gap-2">
+        <Button onClick={() => setShowCreate(!showCreate)} className="bg-brand hover:bg-brand-deep text-white gap-2">
           {showCreate ? "Cancel" : <><Plus className="w-4 h-4" /> New Budget</>}
         </Button>
       </div>
 
       {/* Create Form */}
       {showCreate && (
-        <Card className="border-purple-100 bg-purple-50/30">
+        <Card className="border-pink-100 bg-pink-50/30">
           <CardContent className="p-6">
             <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-4 items-end">
               <div className="flex-1 w-full space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Allocate Amount (₹)</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Allocate Amount (₹)</label>
                 <input
                   type="number"
                   required
                   value={formData.amount}
                   onChange={e => setFormData({...formData, amount: e.target.value})}
-                  className="w-full border border-gray-300 p-2 rounded-xl text-sm h-10"
+                  className="w-full border border-slate-300 p-2 rounded-lg text-sm h-10 bg-white focus:outline-none focus:ring-2 focus:ring-brand"
                   placeholder="e.g. 5000"
                 />
               </div>
               <div className="flex-1 w-full space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Link To</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Link To</label>
                 <select
                   value={formData.sourceType}
                   onChange={e => setFormData({...formData, sourceType: e.target.value, projectId: "", eventId: ""})}
-                  className="w-full border border-gray-300 p-2 rounded-xl text-sm h-10"
+                  className="w-full border border-slate-300 p-2 rounded-lg text-sm h-10 bg-white focus:outline-none focus:ring-2 focus:ring-brand"
                 >
                   <option value="PROJECT">Project</option>
                   <option value="EVENT">Event</option>
@@ -153,12 +149,12 @@ export default function BudgetDashboard({ data }: BudgetDashboardProps) {
               
               {formData.sourceType === "PROJECT" ? (
                 <div className="flex-[2] w-full space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select Project</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Project</label>
                   <select
                     required
                     value={formData.projectId}
                     onChange={e => setFormData({...formData, projectId: e.target.value})}
-                    className="w-full border border-gray-300 p-2 rounded-xl text-sm h-10"
+                    className="w-full border border-slate-300 p-2 rounded-lg text-sm h-10 bg-white focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     <option value="">Choose Project...</option>
                     {data.projects.map(p => (
@@ -168,12 +164,12 @@ export default function BudgetDashboard({ data }: BudgetDashboardProps) {
                 </div>
               ) : (
                 <div className="flex-[2] w-full space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select Event</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Event</label>
                   <select
                     required
                     value={formData.eventId}
                     onChange={e => setFormData({...formData, eventId: e.target.value})}
-                    className="w-full border border-gray-300 p-2 rounded-xl text-sm h-10"
+                    className="w-full border border-slate-300 p-2 rounded-lg text-sm h-10 bg-white focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     <option value="">Choose Event...</option>
                     {data.events.map(e => (
@@ -205,7 +201,7 @@ export default function BudgetDashboard({ data }: BudgetDashboardProps) {
           const isOver = spent > allocated;
 
           return (
-            <Card key={budget.id} className={`border-l-4 shadow-sm hover:shadow-md transition-all ${isOver ? 'border-l-rose-500' : 'border-l-purple-500'}`}>
+            <Card key={budget.id} className={`border-l-4 shadow-sm hover:shadow-md transition-all ${isOver ? 'border-l-rose-500' : 'border-l-brand'}`}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -230,7 +226,7 @@ export default function BudgetDashboard({ data }: BudgetDashboardProps) {
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                       <div 
-                        className={`h-2.5 rounded-full ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-amber-400' : 'bg-purple-500'}`} 
+                        className={`h-2.5 rounded-full ${isOver ? 'bg-rose-500' : percent > 80 ? 'bg-amber-400' : 'bg-brand'}`} 
                         style={{ width: `${percent}%` }}
                       ></div>
                     </div>

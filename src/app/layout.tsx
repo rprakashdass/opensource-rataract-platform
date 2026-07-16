@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, Figtree } from "next/font/google";
+import { Inter, Fraunces, Figtree, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import LayoutProvider from "@/components/providers/LayoutProvider";
 import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
@@ -25,6 +25,12 @@ const figtree = Figtree({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-figtree",
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-bricolage-grotesque",
 });
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Platform";
@@ -66,7 +72,7 @@ export default async function RootLayout({
   const lightColor = settings?.lightColor || "#FAF9F6";
 
   return (
-    <html lang="en" className={`h-full antialiased ${fraunces.variable} ${figtree.variable}`}>
+    <html lang="en" className={`h-full antialiased ${fraunces.variable} ${figtree.variable} ${bricolageGrotesque.variable}`}>
       <head>
         <meta
           name="viewport"

@@ -43,7 +43,7 @@ export default function ProjectsEditorForm({ settings }: { settings: any }) {
       <div className="lg:col-span-5 h-full flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto space-y-6 pr-2">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <h4 className="font-black text-slate-900 text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Hero</h4>
+            <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Hero</h4>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Subtitle</label>
               <Textarea value={form.projectsSubtitle} onChange={e => handleChange("projectsSubtitle", e.target.value)} placeholder="Explore our long-running community service initiatives..." rows={3} />
@@ -51,7 +51,7 @@ export default function ProjectsEditorForm({ settings }: { settings: any }) {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <h4 className="font-black text-slate-900 text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Section Headings</h4>
+            <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Section Headings</h4>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Active Section Title</label>
               <Input value={form.projectsActiveTitle} onChange={e => handleChange("projectsActiveTitle", e.target.value)} placeholder="e.g. Ongoing causes." />

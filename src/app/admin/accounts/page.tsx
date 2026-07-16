@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import FilterBar from "@/components/admin/FilterBar";
 import { ROUTES } from "@/lib/constants";
 import Link from "next/link";
+import { PageHeader, TableWrap } from "@/components/portal";
 
 interface UserAccount {
   id: string;
@@ -89,18 +90,15 @@ export default function AccountsAdmin() {
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-purple-500">Accounts</span>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Login Accounts</h1>
-          <p className="text-sm text-slate-500 max-w-2xl font-medium">
-            Manage who can log into the platform. Connect these logins to member profiles for complete access.
-          </p>
-        </div>
-        <Link href={`${ROUTES.ADMIN}/accounts/new`} className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 hover:shadow-[0_8px_30px_rgba(147,51,234,0.3)] hover:-translate-y-0.5 transition-all duration-300">
-          Create Account
-        </Link>
-      </div>
+      <PageHeader
+        title="Login Accounts"
+        description="Manage who can log into the platform. Connect these logins to member profiles for complete access."
+        actions={
+          <Link href={`${ROUTES.ADMIN}/accounts/new`} className="inline-flex items-center justify-center rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-deep transition-colors">
+            Create Account
+          </Link>
+        }
+      />
 
       <FilterBar 
         placeholder="Search by name or email..." 
@@ -110,72 +108,109 @@ export default function AccountsAdmin() {
 
       <section className="space-y-6">
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200 text-sm">
+          <div className="bg-rose-50 text-rose-600 p-4 rounded-lg border border-rose-200 text-sm">
             {error}
           </div>
         )}
 
-        <div className="rounded-3xl border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all hover:bg-white/60">
-          <div className="p-8 border-b border-gray-900/5 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Registered Accounts</h2>
-              <p className="text-sm text-slate-500 mt-1 font-medium">A comprehensive list of all users with login access.</p>
-            </div>
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Registered Accounts</h2>
+            <p className="text-sm text-slate-500 mt-1">A comprehensive list of all users with login access.</p>
           </div>
 
           {loading ? (
-            <div className="text-center py-16">
-              <div className="animate-spin h-8 w-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="text-center py-16 rounded-xl border border-slate-200 bg-white">
+              <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-slate-500 font-medium">Loading accounts...</p>
             </div>
           ) : filteredAccounts.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-16 rounded-xl border border-slate-200 bg-white">
               <Key className="h-12 w-12 text-slate-300 mx-auto mb-3" />
               <p className="text-slate-500 font-medium">No login accounts found matching criteria.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
-                <thead className="bg-slate-50/50">
+            <TableWrap
+              mobile={filteredAccounts.map((acc) => (
+                <div key={acc.id} className="p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-pink-50 flex items-center justify-center text-brand font-bold text-sm shrink-0">
+                      {acc.name?.charAt(0) || "U"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900">{acc.name}</p>
+                      <p className="text-sm text-slate-500 truncate">{acc.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {acc.roles?.map(r => (
+                      <span key={r} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600">
+                        {r.replace('_', ' ')}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`${ROUTES.ADMIN}/accounts/new?edit=${acc.id}`}
+                      className="inline-flex items-center justify-center p-2 rounded-lg bg-pink-50 text-brand hover:bg-pink-100 hover:text-brand-deep transition-colors cursor-pointer"
+                      title="Edit Credentials"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Link>
+                    {((currentUser?.roles?.includes('ADMIN') || currentUser?.roles?.includes('CLUB_ADMIN'))) && (
+                      <button
+                        onClick={() => handleDelete(acc.id)}
+                        className="inline-flex items-center justify-center p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors cursor-pointer"
+                        title="Delete Account"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            >
+              <table className="w-full">
+                <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Account</th>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Login ID</th>
-                    <th className="px-8 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Role</th>
-                    <th className="px-8 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Account</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Login ID</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-900/5">
+                <tbody className="divide-y divide-slate-100">
                   {filteredAccounts.map((acc) => (
-                    <tr key={acc.id} className="hover:bg-white/50 transition-colors group cursor-default">
-                      <td className="px-8 py-5 whitespace-nowrap">
+                    <tr key={acc.id} className="hover:bg-slate-50/50 transition-colors group cursor-default">
+                      <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm border border-purple-200/50 shadow-sm">
+                          <div className="h-10 w-10 rounded-xl bg-pink-50 flex items-center justify-center text-brand font-bold text-sm">
                             {acc.name?.charAt(0) || "U"}
                           </div>
                           <div className="ml-4">
-                            <p className="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">{acc.name}</p>
+                            <p className="text-sm font-bold text-slate-900 group-hover:text-brand transition-colors">{acc.name}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
+                      <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 text-sm text-slate-600 font-medium">
                           <UserCheck className="h-4 w-4 text-slate-400" />
                           {acc.email}
                         </div>
                       </td>
-                      <td className="px-8 py-5 whitespace-nowrap">
+                      <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex flex-wrap gap-1">
                           {acc.roles?.map(r => (
-                            <span key={r} className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-700 border border-purple-200/50">
+                            <span key={r} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600">
                               {r.replace('_', ' ')}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="px-8 py-5 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                      <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium space-x-3">
                         <Link
                           href={`${ROUTES.ADMIN}/accounts/new?edit=${acc.id}`}
-                          className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors cursor-pointer"
+                          className="inline-flex items-center justify-center p-2 rounded-lg bg-pink-50 text-brand hover:bg-pink-100 hover:text-brand-deep transition-colors cursor-pointer"
                           title="Edit Credentials"
                         >
                           <Pencil className="h-4 w-4" />
@@ -183,7 +218,7 @@ export default function AccountsAdmin() {
                         {((currentUser?.roles?.includes('ADMIN') || currentUser?.roles?.includes('CLUB_ADMIN'))) && (
                           <button
                             onClick={() => handleDelete(acc.id)}
-                            className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer"
+                            className="inline-flex items-center justify-center p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-colors cursor-pointer"
                             title="Delete Account"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -194,7 +229,7 @@ export default function AccountsAdmin() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableWrap>
           )}
         </div>
       </section>

@@ -97,13 +97,13 @@ export default function DashboardEventsClient({
                             onClick={() => setActiveTab(tab.id as EventTab)}
                             className={`snap-start shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                                 activeTab === tab.id 
-                                    ? "bg-white text-purple-700 shadow-sm border border-slate-200/50" 
+                                    ? "bg-white text-brand shadow-sm border border-slate-200/50"
                                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
                             }`}
                         >
                             {tab.label}
                             {tab.count > 0 && (
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === tab.id ? "bg-purple-100 text-purple-700" : "bg-slate-200 text-slate-500"}`}>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === tab.id ? "bg-pink-100 text-brand" : "bg-slate-200 text-slate-500"}`}>
                                     {tab.count}
                                 </span>
                             )}
@@ -156,7 +156,7 @@ export default function DashboardEventsClient({
                                     {activeTab === "CHECK_IN_AVAILABLE" && (
                                         <div className="space-y-2">
                                             <Button 
-                                                className="w-full rounded-xl bg-purple-600 hover:bg-purple-700 text-white"
+                                                className="w-full rounded-xl bg-brand hover:bg-brand-deep text-white"
                                                 onClick={() => setCheckInModal({ isOpen: true, eventId: event.id })}
                                             >
                                                 <QrCode className="w-4 h-4 mr-2" />

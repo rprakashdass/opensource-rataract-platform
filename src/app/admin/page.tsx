@@ -18,6 +18,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader, StatCard, StatGrid } from "@/components/portal";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -115,41 +116,40 @@ export default async function AdminPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-2">
       {/* Header & Greetings */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Welcome back, {session?.name || "Leader"}</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{clubName}</p>
-        </div>
-        
-        {/* Quick Actions */}
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/events/create" className="flex items-center gap-1.5">
-              <Plus className="w-4 h-4" /> Create Event
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/projects/create" className="flex items-center gap-1.5">
-              <Plus className="w-4 h-4" /> Create Project
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/finance/transactions/new" className="flex items-center gap-1.5">
-              <Receipt className="w-4 h-4" /> Add Expense
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/members" className="flex items-center gap-1.5">
-              <UserPlus className="w-4 h-4" /> Add Member
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={`Welcome back, ${session?.name || "Leader"}`}
+        description={clubName}
+        className="border-b border-slate-200 pb-6 mb-0 md:mb-0"
+        actions={
+          <>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/events/create" className="flex items-center gap-1.5">
+                <Plus className="w-4 h-4" /> Create Event
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/projects/create" className="flex items-center gap-1.5">
+                <Plus className="w-4 h-4" /> Create Project
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/finance" className="flex items-center gap-1.5">
+                <Receipt className="w-4 h-4" /> Add Expense
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/members" className="flex items-center gap-1.5">
+                <UserPlus className="w-4 h-4" /> Add Member
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       {/* Needs Attention */}
       {(attentionSummary.memberships.count > 0 || attentionSummary.ideas.count > 0 || attentionSummary.finance.count > 0 || attentionSummary.media.count > 0) ? (
         <div className="space-y-4 mb-2">
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Needs Attention</h2>
+          <h2 className="text-base font-semibold text-slate-900">Needs Attention</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {attentionSummary.memberships.count > 0 && (
               <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 flex flex-col justify-between">
@@ -158,7 +158,7 @@ export default async function AdminPage() {
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                     <h3 className="font-bold text-amber-900">Membership Requests</h3>
                   </div>
-                  <p className="text-3xl font-black text-amber-700">{attentionSummary.memberships.count}</p>
+                  <p className="text-3xl font-bold text-amber-700">{attentionSummary.memberships.count}</p>
                   <p className="text-xs text-amber-800 mt-1">New people want to join your club</p>
                 </div>
                 <Button variant="outline" className="mt-4 w-full bg-white text-amber-900 border-amber-300 hover:bg-amber-100" asChild>
@@ -174,7 +174,7 @@ export default async function AdminPage() {
                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                     <h3 className="font-bold text-blue-900">Event Ideas</h3>
                   </div>
-                  <p className="text-3xl font-black text-blue-700">{attentionSummary.ideas.count}</p>
+                  <p className="text-3xl font-bold text-blue-700">{attentionSummary.ideas.count}</p>
                   <p className="text-xs text-blue-800 mt-1">Members suggested new initiatives</p>
                 </div>
                 <Button variant="outline" className="mt-4 w-full bg-white text-blue-900 border-blue-300 hover:bg-blue-100" asChild>
@@ -190,7 +190,7 @@ export default async function AdminPage() {
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <h3 className="font-bold text-emerald-900">Finance Approvals</h3>
                   </div>
-                  <p className="text-3xl font-black text-emerald-700">{attentionSummary.finance.count}</p>
+                  <p className="text-3xl font-bold text-emerald-700">{attentionSummary.finance.count}</p>
                   <p className="text-xs text-emerald-800 mt-1">Expenses waiting for approval</p>
                 </div>
                 <Button variant="outline" className="mt-4 w-full bg-white text-emerald-900 border-emerald-300 hover:bg-emerald-100" asChild>
@@ -211,41 +211,14 @@ export default async function AdminPage() {
       )}
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Projects</span>
-            <Briefcase className="w-4 h-4 text-slate-400" />
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mt-2">{activeProjectsCount}</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Upcoming Events</span>
-            <Calendar className="w-4 h-4 text-slate-400" />
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mt-2">{upcomingEventsCount}</p>
-        </div>
-
+      <StatGrid>
+        <StatCard label="Active Projects" value={activeProjectsCount} icon={Briefcase} tone="brand" />
+        <StatCard label="Upcoming Events" value={upcomingEventsCount} icon={Calendar} tone="neutral" />
         {canViewFinance(session) && (
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Monthly Expenses</span>
-              <IndianRupee className="w-4 h-4 text-slate-400" />
-            </div>
-            <p className="text-3xl font-bold text-slate-900 mt-2">₹{monthlyExpenses.toLocaleString()}</p>
-          </div>
+          <StatCard label="Monthly Expenses" value={`₹${monthlyExpenses.toLocaleString()}`} icon={IndianRupee} tone="warning" />
         )}
-
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Members</span>
-            <Users className="w-4 h-4 text-slate-400" />
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mt-2">{membersCount}</p>
-        </div>
-      </div>
+        <StatCard label="Total Members" value={membersCount} icon={Users} tone="positive" />
+      </StatGrid>
 
       {/* Main Grid sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -330,10 +303,10 @@ export default async function AdminPage() {
               <div className="space-y-3">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Treasury Balance</span>
-                  <p className="text-2xl font-black text-slate-900 mt-0.5">₹{balance.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-0.5">₹{balance.toLocaleString()}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-3">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-0.5">
                       Income <ArrowUpRight className="w-3 h-3 text-emerald-500" />

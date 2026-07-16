@@ -22,7 +22,7 @@ interface Props {
   portfolios: Portfolio[];
 }
 
-const inputClass = "w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none";
+const inputClass = "w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none";
 
 export default function InitiativeForm({ initiative, portfolios }: Props) {
   const router = useRouter();
@@ -61,7 +61,7 @@ export default function InitiativeForm({ initiative, portfolios }: Props) {
         return;
       }
 
-      toast.success(submit ? "Proposal submitted for review!" : "Draft saved!");
+      toast.success(submit ? "Idea submitted for review!" : "Draft saved!");
       const savedId = (res as any).initiative?.id || initiative?.id;
       router.push(`${ROUTES.DASHBOARD}/initiatives/${savedId}`);
       router.refresh();
@@ -71,7 +71,7 @@ export default function InitiativeForm({ initiative, portfolios }: Props) {
   };
 
   const handleDelete = async () => {
-    if (!initiative || !confirm("Delete this draft proposal?")) return;
+    if (!initiative || !confirm("Delete this draft idea?")) return;
     setLoading("delete");
     const res = await deleteInitiative(initiative.id);
     setLoading(null);
@@ -143,7 +143,7 @@ export default function InitiativeForm({ initiative, portfolios }: Props) {
           <Button type="button" variant="outline" onClick={() => save(false)} disabled={loading !== null || !form.title || !form.description} className="rounded-xl">
             <Save className="w-4 h-4 mr-2" /> {loading === "draft" ? "Saving..." : "Save Draft"}
           </Button>
-          <Button type="button" onClick={() => save(true)} disabled={loading !== null || !form.title || !form.description} className="rounded-xl bg-purple-600 hover:bg-purple-700">
+          <Button type="button" onClick={() => save(true)} disabled={loading !== null || !form.title || !form.description} className="rounded-xl bg-brand hover:bg-brand-deep text-white">
             <Send className="w-4 h-4 mr-2" /> {loading === "submit" ? "Submitting..." : "Submit for Review"}
           </Button>
         </div>

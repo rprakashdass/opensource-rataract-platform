@@ -35,7 +35,7 @@ export default function DashboardProjectsClient({
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
                             activeTab === tab.id 
-                            ? "bg-purple-600 text-white shadow-md font-semibold" 
+                            ? "bg-brand text-white shadow-md font-semibold"
                             : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 font-medium"
                         }`}
                     >
@@ -85,7 +85,7 @@ export default function DashboardProjectsClient({
                                     </Button>
                                 )}
                                 {activeTab === "JOINED" && (
-                                    <div className="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 border border-purple-100 capitalize">
+                                    <div className="bg-pink-50 text-brand px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 border border-pink-100 capitalize">
                                         <UserCheck className="w-4 h-4" /> Role: {project.myRole?.toLowerCase()}
                                     </div>
                                 )}

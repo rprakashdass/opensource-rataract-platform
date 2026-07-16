@@ -3,14 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Clock, FileText, CheckCircle2, Ban, Loader2, AlertTriangle, AlertCircle } from "lucide-react";
+import { Clock, FileText, CheckCircle2, Ban, Loader2, AlertTriangle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import Link from "next/link";
 import { voidTransaction } from "@/features/finance/actions/voidTransaction";
 import { updateTransactionStatus } from "@/features/finance/actions/updateTransactionStatus";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PageHeader } from "@/components/portal";
 
 interface TransactionDetailViewProps {
   transaction: any;
@@ -60,20 +60,17 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
   return (
     <div className="space-y-6">
       {/* Header & Status Alert */}
-      <div className="flex flex-col gap-4">
-        <Link href="/admin/finance/transactions" className="text-purple-600 hover:underline text-sm font-semibold flex items-center gap-1 w-fit">
-          <ArrowLeft className="h-4 w-4" /> Back to Transactions
-        </Link>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">{transaction.title}</h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">Transaction ID: {transaction.id}</p>
-          </div>
-          <div className="flex items-center gap-3">
+      <PageHeader
+        title={transaction.title}
+        description={`Transaction ID: ${transaction.id}`}
+        backHref="/admin/finance/transactions"
+        backLabel="Back to Transactions"
+        actions={
+          <>
             <span className={`px-3 py-1 rounded-full text-sm font-bold border ${
               transaction.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
               transaction.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-              transaction.status === 'VOIDED' ? 'bg-gray-100 text-gray-600 border-gray-300' :
+              transaction.status === 'VOIDED' ? 'bg-slate-100 text-slate-600 border-slate-300' :
               'bg-amber-50 text-amber-700 border-amber-200'
             }`}>
               {transaction.status.replace("_", " ")}
@@ -83,9 +80,9 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
             }`}>
               {transaction.type}
             </span>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {transaction.status === "VOIDED" && (
         <Alert variant="destructive">
@@ -105,48 +102,48 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
             <CardHeader>
               <CardTitle>Overview</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</p>
-                <p className="text-2xl font-black text-gray-900 mt-1">₹{amount.toLocaleString()}</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Amount</p>
+                <p className="text-2xl font-bold text-slate-900 mt-1">₹{amount.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">{new Date(transaction.date).toLocaleDateString()}</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</p>
+                <p className="text-sm font-medium text-slate-900 mt-1">{new Date(transaction.date).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">{transaction.category?.name || transaction.categoryId}</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</p>
+                <p className="text-sm font-medium text-slate-900 mt-1">{transaction.category?.name || transaction.categoryId}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Account</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">{transaction.account?.name || "N/A"}</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Account</p>
+                <p className="text-sm font-medium text-slate-900 mt-1">{transaction.account?.name || "N/A"}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment Method</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">{transaction.paymentMethod}</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Payment Method</p>
+                <p className="text-sm font-medium text-slate-900 mt-1">{transaction.paymentMethod}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Financial Year</p>
-                <p className="text-sm font-medium text-gray-900 mt-1">{transaction.financialYear?.name || "N/A"}</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Financial Year</p>
+                <p className="text-sm font-medium text-slate-900 mt-1">{transaction.financialYear?.name || "N/A"}</p>
               </div>
               
               {transaction.project && (
-                <div className="col-span-2 pt-3 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Linked Project</p>
-                  <p className="text-sm font-medium text-purple-600 mt-1">{transaction.project.title}</p>
+                <div className="sm:col-span-2 pt-3 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Linked Project</p>
+                  <p className="text-sm font-medium text-brand mt-1">{transaction.project.title}</p>
                 </div>
               )}
               {transaction.event && (
-                <div className="col-span-2 pt-3 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Linked Event</p>
-                  <p className="text-sm font-medium text-purple-600 mt-1">{transaction.event.title}</p>
+                <div className="sm:col-span-2 pt-3 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Linked Event</p>
+                  <p className="text-sm font-medium text-brand mt-1">{transaction.event.title}</p>
                 </div>
               )}
               {transaction.description && (
-                <div className="col-span-2 pt-3 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Description</p>
-                  <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{transaction.description}</p>
+                <div className="sm:col-span-2 pt-3 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</p>
+                  <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{transaction.description}</p>
                 </div>
               )}
             </CardContent>
@@ -156,13 +153,13 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-gray-400" />
+                <Clock className="w-5 h-5 text-slate-400" />
                 Audit History
               </CardTitle>
             </CardHeader>
             <CardContent>
               {transaction.auditLogs?.length === 0 ? (
-                <p className="text-sm text-gray-500 py-4">No audit logs found.</p>
+                <p className="text-sm text-slate-500 py-4">No audit logs found.</p>
               ) : (
                 <div className="space-y-4 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                   {transaction.auditLogs?.map((log: any, idx: number) => (
@@ -194,7 +191,7 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
         <div className="space-y-6">
           
           {/* Actions Panel */}
-          <Card className="border-purple-100 bg-purple-50/30">
+          <Card className="border-pink-100 bg-pink-50/30">
             <CardHeader>
               <CardTitle>Actions</CardTitle>
             </CardHeader>

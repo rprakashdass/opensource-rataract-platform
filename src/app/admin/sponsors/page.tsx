@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus, Landmark, Award, ShieldAlert, Sparkles } from "lucide-react";
+import { Trash2, Plus, Landmark, Award } from "lucide-react";
+import { PageHeader } from "@/components/portal";
 
 export default function AdminSponsorsPage() {
   const [activeTab, setActiveTab] = useState<"sponsors" | "packages">("sponsors");
@@ -162,21 +163,18 @@ export default function AdminSponsorsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4 md:p-6 animate-in fade-in duration-300">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Sponsors & CSR Tiers</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage public patron organizations and scrollable campaign impact packages.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Sponsors & CSR Tiers"
+        description="Manage public patron organizations and scrollable campaign impact packages."
+      />
 
       {/* Tabs Menu */}
-      <div className="flex border-b border-slate-200/80">
+      <div className="flex flex-wrap border-b border-slate-200/80">
         <button
           onClick={() => setActiveTab("sponsors")}
-          className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 sm:px-5 py-3 border-b-2 font-semibold text-xs uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === "sponsors"
-              ? "border-primary text-primary"
+              ? "border-brand text-brand"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -185,9 +183,9 @@ export default function AdminSponsorsPage() {
         </button>
         <button
           onClick={() => setActiveTab("packages")}
-          className={`flex items-center gap-2 px-5 py-3 border-b-2 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-4 sm:px-5 py-3 border-b-2 font-semibold text-xs uppercase tracking-wider transition-all cursor-pointer ${
             activeTab === "packages"
-              ? "border-primary text-primary"
+              ? "border-brand text-brand"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -201,7 +199,7 @@ export default function AdminSponsorsPage() {
       {/* ------------------------------------------------------------- */}
       {activeTab === "sponsors" && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
+          <div className="flex flex-wrap justify-between items-center gap-3 bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
             <span className="text-xs font-semibold text-slate-500">Corporate sponsor logos displayed in the website footer and partnership page.</span>
             <Button size="sm" onClick={() => setIsAddingSponsor(!isAddingSponsor)}>
               {isAddingSponsor ? "Cancel" : <><Plus className="w-4.5 h-4.5 mr-1" /> Add Sponsor</>}
@@ -210,11 +208,11 @@ export default function AdminSponsorsPage() {
 
           {isAddingSponsor && (
             <form onSubmit={handleAddSponsor} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6 shadow-sm">
-              <h2 className="text-lg font-black text-slate-900 border-b pb-2">New Sponsor Logo</h2>
+              <h2 className="text-base font-semibold text-slate-900 border-b pb-2">New Sponsor Logo</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Sponsor Name *</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Sponsor Name *</label>
                   <input 
                     type="text" required value={sponsorName} onChange={(e) => setSponsorName(e.target.value)} placeholder="e.g. Acme Corp"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -222,7 +220,7 @@ export default function AdminSponsorsPage() {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Tenure / Year</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Tenure / Year</label>
                   <input 
                     type="text" value={sponsorYear} onChange={(e) => setSponsorYear(e.target.value)} placeholder="e.g. 2026-27"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -230,7 +228,7 @@ export default function AdminSponsorsPage() {
                 </div>
                 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Website URL</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Website URL</label>
                   <input 
                     type="url" value={sponsorWebsite} onChange={(e) => setSponsorWebsite(e.target.value)} placeholder="https://acme.org"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -238,7 +236,7 @@ export default function AdminSponsorsPage() {
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">About Partner (Optional)</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">About Partner (Optional)</label>
                   <textarea 
                     value={sponsorDesc} onChange={(e) => setSponsorDesc(e.target.value)} rows={2} placeholder="Brief summary of connection"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -246,7 +244,7 @@ export default function AdminSponsorsPage() {
                 </div>
                 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Sponsor Logo</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Sponsor Logo</label>
                   <FileUpload value={sponsorLogo} onChange={setSponsorLogo} accept="image/*" />
                 </div>
               </div>
@@ -264,7 +262,7 @@ export default function AdminSponsorsPage() {
               {sponsors.map((s) => (
                 <div key={s.id} className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative h-12 w-16 bg-[#FAF9F6] border border-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="relative h-12 w-16 bg-slate-50 border border-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                       {s.logo ? (
                         <img src={s.logo} alt={s.name} className="object-contain w-full h-full p-1" />
                       ) : (
@@ -277,7 +275,7 @@ export default function AdminSponsorsPage() {
                     </div>
                   </div>
                   <Button 
-                    variant="outline" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50 border-slate-200 shrink-0"
+                    variant="outline" size="icon" className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 border-slate-200 shrink-0"
                     onClick={() => handleDeleteSponsor(s.id)}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -300,7 +298,7 @@ export default function AdminSponsorsPage() {
       {/* ------------------------------------------------------------- */}
       {activeTab === "packages" && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
+          <div className="flex flex-wrap justify-between items-center gap-3 bg-slate-50 border border-slate-200/60 p-4 rounded-xl">
             <span className="text-xs font-semibold text-slate-500">CSR impact deliverables and price tiers shown on the Partner page.</span>
             <Button size="sm" onClick={() => setIsAddingPackage(!isAddingPackage)}>
               {isAddingPackage ? "Cancel" : <><Plus className="w-4.5 h-4.5 mr-1" /> Create Tier</>}
@@ -309,11 +307,11 @@ export default function AdminSponsorsPage() {
 
           {isAddingPackage && (
             <form onSubmit={handleAddPackage} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6 shadow-sm">
-              <h2 className="text-lg font-black text-slate-900 border-b pb-2">New Impact Tier Package</h2>
+              <h2 className="text-base font-semibold text-slate-900 border-b pb-2">New Impact Tier Package</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Campaign Title *</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Campaign Title *</label>
                   <input 
                     type="text" required value={pkgTitle} onChange={(e) => setPkgTitle(e.target.value)} placeholder="e.g. Primary School Kit Sponsor"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -321,7 +319,7 @@ export default function AdminSponsorsPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Contribution Amount (INR) *</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Contribution Amount (INR) *</label>
                   <input 
                     type="number" required value={pkgAmount} onChange={(e) => setPkgAmount(e.target.value)} placeholder="e.g. 10000"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -329,7 +327,7 @@ export default function AdminSponsorsPage() {
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Impact Deliverable Tag *</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Impact Deliverable Tag *</label>
                   <input 
                     type="text" required value={pkgImpactText} onChange={(e) => setPkgImpactText(e.target.value)} placeholder="e.g. 20+ Students Benefited"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -337,7 +335,7 @@ export default function AdminSponsorsPage() {
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Project Phase Description</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Project Phase Description</label>
                   <textarea 
                     value={pkgDesc} onChange={(e) => setPkgDesc(e.target.value)} rows={3} placeholder="Describe exactly what this tier funds"
                     className="w-full px-4 py-2 border rounded-lg text-sm"
@@ -359,14 +357,14 @@ export default function AdminSponsorsPage() {
                 <div key={p.id} className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-2">
                     <div className="flex flex-wrap gap-2 items-center">
-                      <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{p.impactText}</span>
+                      <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{p.impactText}</span>
                       <span className="text-xs font-bold text-slate-500">₹{p.amount.toLocaleString("en-IN")} package</span>
                     </div>
-                    <h4 className="font-black text-slate-900 text-base">{p.title}</h4>
+                    <h4 className="font-semibold text-slate-900 text-base">{p.title}</h4>
                     {p.description && <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-xl">{p.description}</p>}
                   </div>
                   <Button 
-                    variant="outline" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50 border-slate-200 shrink-0 self-end sm:self-center"
+                    variant="outline" size="icon" className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 border-slate-200 shrink-0 self-end sm:self-center"
                     onClick={() => handleDeletePackage(p.id)}
                   >
                     <Trash2 className="w-4 h-4" />

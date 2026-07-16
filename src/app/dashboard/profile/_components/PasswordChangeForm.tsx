@@ -142,7 +142,7 @@ export default function PasswordChangeForm() {
                     maxLength={6}
                     value={formData.code}
                     onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm motion-input font-mono text-center tracking-widest text-lg font-black"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input font-mono text-center tracking-widest text-lg font-bold"
                     placeholder="000000"
                   />
                 </div>
@@ -153,7 +153,7 @@ export default function PasswordChangeForm() {
                     type="password"
                     value={formData.newPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm motion-input"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input"
                     placeholder="At least 6 characters"
                   />
                 </div>
@@ -164,7 +164,7 @@ export default function PasswordChangeForm() {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm motion-input"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input"
                     placeholder="Confirm new password"
                   />
                 </div>
@@ -181,7 +181,7 @@ export default function PasswordChangeForm() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 text-sm transition shadow-sm motion-button disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-brand hover:bg-brand-deep text-white font-bold py-3 text-sm transition shadow-sm motion-button disabled:opacity-50"
                 >
                   {loading ? "Verifying..." : "Update Password"}
                 </button>

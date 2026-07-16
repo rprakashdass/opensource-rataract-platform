@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from "react";
 
-const STRIDE_PX = 96; // distance between footprints — a natural walking rhythm
-const STAMP_LIFETIME_MS = 1300;
-const FOOT_OFFSET_PX = 7; // perpendicular offset so left/right feet straddle the path
+const STRIDE_PX = 80; // distance between footprints — a natural walking rhythm
+const STAMP_LIFETIME_MS = 2300; // matches the 2.2s CSS animation + a beat
+const FOOT_OFFSET_PX = 8; // perpendicular offset so left/right feet straddle the path
 
 const FOOTPRINT_SVG = `
-<svg viewBox="0 0 24 32" width="13" height="17" fill="currentColor" aria-hidden="true">
+<svg viewBox="0 0 24 32" width="17" height="22" fill="currentColor" aria-hidden="true">
   <path d="M12 18.5c-3.8 0-6.5 2-6.5 5 0 3.5 2.5 5.5 6.5 5.5s6.5-2 6.5-5.5c0-3-2.7-5-6.5-5z" />
   <ellipse cx="5.2" cy="15.2" rx="2" ry="3.5" transform="rotate(-30 5.2 15.2)" />
   <path d="M4.5 12.5c-.5-3-1-5 .8-4 0 1.5-.3 3-.8 4z" />
@@ -21,7 +21,12 @@ const FOOTPRINT_SVG = `
 
 /**
  * THADAM's signature interaction: the pointer leaves a fading trail of
- * alternating footprints — the visitor literally leaves a mark.
+ * alternating paw prints — the visitor literally leaves a mark.
+ *
+ * Prints are anchored to the PAGE (pageX/pageY in an absolute layer), not
+ * the viewport — so they stay where you "stepped" when you scroll, which is
+ * what makes them read as marks instead of screen decoration.
+ *
  * Desktop (fine pointer) only; disabled under prefers-reduced-motion.
  * Direct DOM stamps (no React state) so it costs nothing per frame.
  */
@@ -36,12 +41,14 @@ export function FootprintTrail() {
     if (!finePointer || reducedMotion) return;
 
     const container = document.createElement("div");
+    container.className = "thadam-stamp-layer";
     container.setAttribute("aria-hidden", "true");
     document.body.appendChild(container);
 
     let lastAngle = 0;
 
     const onMove = (e: MouseEvent) => {
+      // Track stride in viewport space (mouse travel), stamp in page space.
       if (!last.current) {
         last.current = { x: e.clientX, y: e.clientY };
         return;
@@ -63,18 +70,17 @@ export function FootprintTrail() {
       const ox = Math.cos(angle + Math.PI / 2) * FOOT_OFFSET_PX * side;
       const oy = Math.sin(angle + Math.PI / 2) * FOOT_OFFSET_PX * side;
 
-      // Stamp rotation based on travel direction
+      // Paw art points "up": rotate to travel direction, slight inward toe angle per foot
       const stampRot = (angle * 180) / Math.PI + 90 + side * 8;
+
+      const isDark = !!(e.target as Element | null)?.closest?.(".bg-chapter, [data-thadam-dark]");
 
       const stamp = document.createElement("span");
       stamp.className = "thadam-stamp";
       stamp.style.setProperty("--stamp-rot", `${stampRot}deg`);
-      stamp.style.transform = `translate(-50%, -50%) rotate(${stampRot}deg)`;
-      stamp.style.left = `${e.clientX + ox}px`;
-      stamp.style.top = `${e.clientY + oy}px`;
-
-      // Strong color trail
-      stamp.style.color = "#EC4899";
+      stamp.style.left = `${e.pageX + ox}px`;
+      stamp.style.top = `${e.pageY + oy}px`;
+      stamp.style.color = isDark ? "rgba(247, 239, 234, 0.75)" : "rgba(169, 114, 15, 0.85)";
       stamp.innerHTML = FOOTPRINT_SVG;
       container.appendChild(stamp);
 
@@ -94,4 +100,3 @@ export function FootprintTrail() {
 
   return null;
 }
-

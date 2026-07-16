@@ -9,7 +9,7 @@ import { getCurrentClub } from "@/lib/club";
 export async function uploadMedia(formData: FormData) {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
+    if (!session || !session.id) return { error: "Unauthorized" };
 
     const file = formData.get("file") as File;
     const title = formData.get("title") as string;
@@ -18,10 +18,18 @@ export async function uploadMedia(formData: FormData) {
     const type = (formData.get("type") as MediaType) || "IMAGE";
     const usage = (formData.get("usage") as MediaUsage) || "GALLERY";
     const isCover = formData.get("isCover") === "true";
-    const eventId = formData.get("eventId") as string | null;
-    const projectId = formData.get("projectId") as string | null;
-    let albumId = formData.get("albumId") as string | null;
-    const albumTitle = formData.get("albumTitle") as string | null;
+    const eventId = (formData.get("eventId") as string | null) || null;
+    const projectId = (formData.get("projectId") as string | null) || null;
+    let albumId = (formData.get("albumId") as string | null) || null;
+    const albumTitle = (formData.get("albumTitle") as string | null) || null;
+
+    // Security check: Only admins can assign files to albums, events, projects, or set as covers.
+    const isAdmin = canManageClub(session);
+    if (!isAdmin) {
+      if (isCover || eventId || projectId || albumId || albumTitle) {
+        return { error: "Unauthorized: Admin privileges required for this action." };
+      }
+    }
 
     if (!file && type !== "VIDEO_LINK") {
       return { error: "Missing file" };

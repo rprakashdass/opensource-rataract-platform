@@ -74,7 +74,7 @@ export default function AboutEditorForm({ settings, club }: Props) {
     }
   };
 
-  const inputClass = "w-full border border-gray-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none";
+  const inputClass = "w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch h-full">
@@ -84,7 +84,7 @@ export default function AboutEditorForm({ settings, club }: Props) {
         {/* Hero Section */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-5" onFocus={() => setActiveSection("about-hero")}>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-50 rounded-lg"><Info className="w-5 h-5 text-purple-600" /></div>
+            <div className="p-2 bg-pink-50 rounded-lg"><Info className="w-5 h-5 text-brand" /></div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Hero Section</h2>
               <p className="text-sm text-slate-500">Appears at the top of the About page.</p>
@@ -182,14 +182,14 @@ export default function AboutEditorForm({ settings, club }: Props) {
         </div>
 
         {/* Portfolios Notice */}
-        <div className="bg-purple-50 border border-purple-100 p-5 rounded-2xl flex items-start gap-4">
-          <div className="p-2 bg-purple-100 rounded-lg shrink-0"><Layers className="w-5 h-5 text-purple-600" /></div>
+        <div className="bg-pink-50 border border-pink-100 p-5 rounded-2xl flex items-start gap-4">
+          <div className="p-2 bg-pink-100 rounded-lg shrink-0"><Layers className="w-5 h-5 text-brand" /></div>
           <div>
             <h3 className="font-bold text-slate-900">Avenues & Portfolios</h3>
             <p className="text-sm text-slate-600 mt-1">
               The "Avenues of Service" section on the About page is driven by your Portfolio settings.
             </p>
-            <Link href="/admin/settings/portfolios" className="inline-block mt-3 text-sm font-bold text-purple-700 hover:text-purple-900 hover:underline">
+            <Link href="/admin/settings/portfolios" className="inline-block mt-3 text-sm font-bold text-brand hover:text-brand-deep hover:underline">
               Configure Portfolios →
             </Link>
           </div>

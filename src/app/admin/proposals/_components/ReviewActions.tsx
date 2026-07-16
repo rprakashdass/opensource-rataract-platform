@@ -51,14 +51,14 @@ export function ReviewActions({ initiativeId, status }: { initiativeId: string; 
   if (status === "APPROVED") {
     return (
       <div className="space-y-3">
-        <div className="p-3 bg-green-50 border border-green-100 rounded-xl flex items-center gap-2 text-sm text-green-700 font-semibold">
+        <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2 text-sm text-emerald-700 font-semibold">
           <CheckCircle2 className="w-4 h-4" /> Approved — ready to convert into an event or project.
         </div>
-        <div className="flex gap-3">
-          <Button onClick={() => runConvert("event")} disabled={loading !== null} className="rounded-xl bg-blue-600 hover:bg-blue-700">
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={() => runConvert("event")} disabled={loading !== null} className="rounded-xl bg-brand hover:bg-brand-deep text-white">
             <Calendar className="w-4 h-4 mr-2" /> {loading === "event" ? "Converting..." : "Convert to Event"}
           </Button>
-          <Button onClick={() => runConvert("project")} disabled={loading !== null} className="rounded-xl bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={() => runConvert("project")} disabled={loading !== null} className="rounded-xl bg-brand hover:bg-brand-deep text-white">
             <Briefcase className="w-4 h-4 mr-2" /> {loading === "project" ? "Converting..." : "Convert to Project"}
           </Button>
         </div>
@@ -80,13 +80,13 @@ export function ReviewActions({ initiativeId, status }: { initiativeId: string; 
             <Eye className="w-4 h-4 mr-2" /> {loading === "UNDER_REVIEW" ? "..." : "Mark Under Review"}
           </Button>
         )}
-        <Button variant="outline" onClick={() => runReview("NEEDS_CHANGES")} disabled={loading !== null} className="rounded-xl text-orange-600 border-orange-200 hover:bg-orange-50">
+        <Button variant="outline" onClick={() => runReview("NEEDS_CHANGES")} disabled={loading !== null} className="rounded-xl text-amber-600 border-amber-200 hover:bg-amber-50">
           <AlertCircle className="w-4 h-4 mr-2" /> {loading === "NEEDS_CHANGES" ? "..." : "Request Changes"}
         </Button>
-        <Button onClick={() => runReview("APPROVED")} disabled={loading !== null} className="rounded-xl bg-green-600 hover:bg-green-700">
+        <Button onClick={() => runReview("APPROVED")} disabled={loading !== null} className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white">
           <CheckCircle2 className="w-4 h-4 mr-2" /> {loading === "APPROVED" ? "..." : "Approve"}
         </Button>
-        <Button variant="outline" onClick={() => runReview("REJECTED")} disabled={loading !== null} className="rounded-xl text-red-600 border-red-200 hover:bg-red-50">
+        <Button variant="outline" onClick={() => runReview("REJECTED")} disabled={loading !== null} className="rounded-xl text-rose-600 border-rose-200 hover:bg-rose-50">
           <XCircle className="w-4 h-4 mr-2" /> {loading === "REJECTED" ? "..." : "Reject"}
         </Button>
       </div>

@@ -35,7 +35,7 @@ export default function ArchiveHeroForm({ settings }: { settings: any }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-        <h4 className="font-black text-slate-900 text-sm uppercase tracking-wide border-b border-slate-200 pb-2">
+        <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">
           "/our-archive" Page Hero
         </h4>
         <p className="text-xs text-slate-400 -mt-2">

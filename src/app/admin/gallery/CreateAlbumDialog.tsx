@@ -87,7 +87,7 @@ export function CreateAlbumDialog() {
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white" disabled={loading}>
+            <Button type="submit" className="bg-brand hover:bg-brand-deep text-white" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Album
             </Button>

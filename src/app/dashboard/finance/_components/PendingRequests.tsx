@@ -28,17 +28,17 @@ export default function PendingRequests({ requests }: { requests: any[] }) {
         <div key={req.id} className="bg-white border border-amber-100 rounded-xl p-4 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-2">
-              <h3 className="font-bold text-gray-900">{req.title}</h3>
+              <h3 className="font-bold text-slate-900">{req.title}</h3>
               <div className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded text-sm whitespace-nowrap">
                 ₹{req.amount}
               </div>
             </div>
             {req.description && (
-              <p className="text-xs text-gray-600 mb-3 line-clamp-2">{req.description}</p>
+              <p className="text-xs text-slate-600 mb-3 line-clamp-2">{req.description}</p>
             )}
           </div>
           
-          <div className="flex justify-between items-center mt-2 pt-3 border-t border-gray-100">
+          <div className="flex flex-wrap justify-between items-center gap-2 mt-2 pt-3 border-t border-slate-100">
             <div className="flex items-center gap-1 text-xs text-amber-700 font-medium">
               <Clock className="h-3.5 w-3.5" />
               {req.dueDate ? `Due ${new Date(req.dueDate).toLocaleDateString()}` : "Due Now"}
@@ -46,7 +46,7 @@ export default function PendingRequests({ requests }: { requests: any[] }) {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => handleDismiss(req.id)}
-                className="text-xs text-gray-500 hover:text-gray-700 font-medium py-1.5 px-2 rounded-lg transition flex items-center gap-1"
+                className="text-xs text-slate-500 hover:text-slate-700 font-medium py-1.5 px-2 rounded-lg transition flex items-center gap-1"
               >
                 <X className="h-3 w-3" /> Ignore
               </button>

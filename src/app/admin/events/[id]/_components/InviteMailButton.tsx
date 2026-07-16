@@ -30,7 +30,7 @@ export default function CalendarInviteButton({ eventId }: { eventId: string }) {
     <button
       onClick={handleSend}
       disabled={sending}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition shadow-sm"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand-deep transition shadow-sm"
     >
       <Mail className="h-4 w-4" />
       Send Invite Mail

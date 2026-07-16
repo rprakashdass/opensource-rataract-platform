@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { PageHeader } from "@/components/portal";
 
 export default async function ProjectsAdminPage() {
   const projects = await prisma.project.findMany({
@@ -35,17 +36,17 @@ export default async function ProjectsAdminPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-2">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Projects</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Manage and track club-wide long-term initiatives.</p>
-        </div>
-        <Button asChild size="sm">
-          <Link href="/admin/projects/create" className="flex items-center gap-1.5">
-            <Plus className="w-4 h-4" /> Create Project
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Projects"
+        description="Manage and track club-wide long-term initiatives."
+        actions={
+          <Button asChild size="sm" className="bg-brand hover:bg-brand-deep text-white">
+            <Link href="/admin/projects/create" className="flex items-center gap-1.5">
+              <Plus className="w-4 h-4" /> Create Project
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Grid listing */}
       {projects.length === 0 ? (
@@ -90,7 +91,7 @@ export default async function ProjectsAdminPage() {
                       <Badge variant="outline" className="mb-2">
                         {project.category.replace(/_/g, " ")}
                       </Badge>
-                      <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors text-lg">
+                      <h3 className="font-bold text-slate-900 group-hover:text-brand transition-colors text-lg">
                         {project.title}
                       </h3>
                       <p className="text-xs text-slate-500 mt-1 line-clamp-2">
@@ -109,7 +110,7 @@ export default async function ProjectsAdminPage() {
                   </div>
 
                   {/* Metrics grid */}
-                  <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 text-xs text-slate-500">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-4 text-xs text-slate-500">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-slate-400" />
                       <span>{completedEvents} events completed</span>
@@ -134,7 +135,7 @@ export default async function ProjectsAdminPage() {
 
                 {/* Footer link */}
                 <div className="flex justify-end pt-4 mt-4 border-t border-slate-100">
-                  <Button variant="ghost" size="sm" asChild className="group-hover:text-indigo-600">
+                  <Button variant="ghost" size="sm" asChild className="group-hover:text-brand">
                     <Link href={`/admin/projects/${project.id}`} className="flex items-center gap-1">
                       Open Project <ArrowRight className="w-3.5 h-3.5" />
                     </Link>

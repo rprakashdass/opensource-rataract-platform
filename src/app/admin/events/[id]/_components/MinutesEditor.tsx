@@ -29,10 +29,10 @@ export default function MinutesEditor({ eventId, initialMinutes }: { eventId: st
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200/60 shadow-xl shadow-gray-900/5 overflow-hidden">
-      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="font-bold text-gray-900 flex items-center gap-2">
-          <FileText className="h-5 w-5 text-gray-500" />
+    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-900/5 overflow-hidden">
+      <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h2 className="font-bold text-slate-900 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-slate-500" />
           Meeting Minutes
         </h2>
         <div className="flex gap-2">
@@ -52,9 +52,9 @@ export default function MinutesEditor({ eventId, initialMinutes }: { eventId: st
           value={minutes}
           onChange={(e) => setMinutes(e.target.value)}
           placeholder="Write the meeting minutes here... (Markdown is supported)"
-          className="w-full h-48 border-gray-200 bg-gray-50/50 rounded-xl focus:border-purple-500 focus:ring-purple-500 p-4 font-mono text-sm"
+          className="w-full h-48 border-slate-200 bg-slate-50/50 rounded-xl focus:border-brand focus:ring-brand p-4 font-mono text-sm"
         />
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-slate-500 mt-2">
           These minutes will be visible to all members on the public event page.
         </p>
       </div>

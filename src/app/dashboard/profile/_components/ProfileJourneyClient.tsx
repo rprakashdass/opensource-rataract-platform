@@ -14,8 +14,8 @@ import PasswordChangeForm from "./PasswordChangeForm";
 import { AnimatedCountUp } from "@/components/ui/motion/AnimatedCountUp";
 import { AnimatedImage, AnimatedGrid } from "@/components/ui/motion/AnimatedLayouts";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
-import { getFallbackImage } from "@/lib/fallbacks";
 import { formatDistanceToNow } from "date-fns";
+import { PageHeader } from "@/components/portal";
 
 const formatDate = (dateInput: any) => {
   if (!dateInput) return "";
@@ -139,7 +139,13 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
 
   return (
     <div className="max-w-6xl mx-auto pb-24 px-4 sm:px-6">
-      
+
+      <PageHeader
+        title="My Profile"
+        description="Your membership passport, milestones, and account settings."
+        className="mt-4 mb-0"
+      />
+
       {/* ─── GRID LAYOUT ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-4">
         
@@ -158,7 +164,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                 textClassName="text-3xl" 
               />
               
-              <h2 className="text-2xl font-black text-[#0B132B] tracking-tight">{member.name}</h2>
+              <h2 className="text-2xl font-bold text-[#0B132B] tracking-tight">{member.name}</h2>
               <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mt-1">
                 {member.profession || "Platform Member"}
               </p>
@@ -166,7 +172,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
 
               {/* Membership Badges */}
               <div className="mt-4 flex flex-col items-center gap-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-black text-amber-800 uppercase tracking-wider">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-bold text-amber-800 uppercase tracking-wider">
                   {"★".repeat(stars)} {statusBadge}
                 </span>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
@@ -176,27 +182,27 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
             </div>
 
             {/* Quick Passport Service Stats */}
-            <div className="grid grid-cols-4 gap-2 border-y border-slate-100 py-5 my-6 text-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 border-y border-slate-100 py-5 my-6 text-center">
               <div className="space-y-1">
-                <p className="text-sm font-black text-[#0B132B] leading-none">
+                <p className="text-sm font-bold text-[#0B132B] leading-none">
                   <AnimatedCountUp value={totalHours} />
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Hours</p>
               </div>
-              <div className="space-y-1 border-l border-slate-100">
-                <p className="text-sm font-black text-[#0B132B] leading-none">
+              <div className="space-y-1 lg:border-l lg:border-slate-100">
+                <p className="text-sm font-bold text-[#0B132B] leading-none">
                   <AnimatedCountUp value={totalEvents} />
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Events</p>
               </div>
-              <div className="space-y-1 border-l border-slate-100">
-                <p className="text-sm font-black text-[#0B132B] leading-none">
+              <div className="space-y-1 lg:border-l lg:border-slate-100">
+                <p className="text-sm font-bold text-[#0B132B] leading-none">
                   <AnimatedCountUp value={totalProjects} />
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Projects</p>
               </div>
-              <div className="space-y-1 border-l border-slate-100">
-                <p className="text-sm font-black text-[#0B132B] leading-none">
+              <div className="space-y-1 lg:border-l lg:border-slate-100">
+                <p className="text-sm font-bold text-[#0B132B] leading-none">
                   {member.attendance?.filter((a: any) => a.certificateUrl)?.length || 0}
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Awards</p>
@@ -221,9 +227,9 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
             <div className="mt-6 space-y-2.5">
               <ProfileEditDialog member={member} />
               
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  disabled 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  disabled
                   className="rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-400 cursor-not-allowed bg-slate-50/50 transition-colors"
                 >
                   Download Card
@@ -246,7 +252,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 1. Current Responsibilities */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-[#F7A800] uppercase tracking-[0.2em] block mb-1">Active Roles</span>
+              <span className="text-[10px] font-bold text-[#F7A800] uppercase tracking-[0.2em] block mb-1">Active Roles</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Current Responsibilities</h3>
             </div>
 
@@ -291,7 +297,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 2. Next Milestones (Goals) */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-[#0B132B] uppercase tracking-[0.2em] block mb-1">Growth Path</span>
+              <span className="text-[10px] font-bold text-[#0B132B] uppercase tracking-[0.2em] block mb-1">Growth Path</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Next Milestones</h3>
             </div>
             
@@ -305,7 +311,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                       <p className="text-xs text-slate-500 font-medium mt-0.5">Participate in more club operations. Currently: {totalEvents}/10</p>
                     </div>
                   </div>
-                  <span className="text-xs font-black text-[#F7A800] uppercase tracking-wider">{10 - totalEvents} more</span>
+                  <span className="text-xs font-bold text-[#F7A800] uppercase tracking-wider">{10 - totalEvents} more</span>
                 </div>
               )}
               {totalHours < 50 && (
@@ -317,7 +323,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                       <p className="text-xs text-slate-500 font-medium mt-0.5">Reach 50 volunteer service hours. Currently: {totalHours}/50 hrs</p>
                     </div>
                   </div>
-                  <span className="text-xs font-black text-indigo-500 uppercase tracking-wider">{50 - totalHours} hrs left</span>
+                  <span className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{50 - totalHours} hrs left</span>
                 </div>
               )}
               {leadingProjects.length === 0 && (
@@ -329,7 +335,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                       <p className="text-xs text-slate-500 font-medium mt-0.5">Step up to lead a project committee</p>
                     </div>
                   </div>
-                  <span className="text-xs font-black text-emerald-500 uppercase tracking-wider">Goal</span>
+                  <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Goal</span>
                 </div>
               )}
             </div>
@@ -338,7 +344,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 3. My Impact */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-[#003DA5] uppercase tracking-[0.2em] block mb-1">Legacy</span>
+              <span className="text-[10px] font-bold text-[#003DA5] uppercase tracking-[0.2em] block mb-1">Legacy</span>
               <h3 className="text-xl font-bold text-[#0B132B]">My Impact</h3>
             </div>
 
@@ -347,19 +353,19 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {/* This Rotary Year */}
               <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-between">
                 <div>
-                  <h4 className="text-sm font-black text-slate-400 uppercase tracking-wider">This Rotary Year</h4>
+                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">This Rotary Year</h4>
                   <div className="mt-4 space-y-3">
                     <div className="flex justify-between border-b border-slate-100 pb-2">
                       <span className="text-xs text-slate-500 font-bold">Events Attended</span>
-                      <span className="text-sm font-black text-[#0B132B]">{currentYearEventsCount}</span>
+                      <span className="text-sm font-bold text-[#0B132B]">{currentYearEventsCount}</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-100 pb-2">
                       <span className="text-xs text-slate-500 font-bold">Volunteer Hours</span>
-                      <span className="text-sm font-black text-[#0B132B]">{currentYearHours} hrs</span>
+                      <span className="text-sm font-bold text-[#0B132B]">{currentYearHours} hrs</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-slate-500 font-bold">Projects Chaired</span>
-                      <span className="text-sm font-black text-[#0B132B]">{leadingProjects.length}</span>
+                      <span className="text-sm font-bold text-[#0B132B]">{leadingProjects.length}</span>
                     </div>
                   </div>
                 </div>
@@ -368,19 +374,19 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {/* Lifetime Impact */}
               <div className="p-6 bg-[#0B132B] text-white rounded-2xl flex flex-col justify-between">
                 <div>
-                  <h4 className="text-sm font-black text-slate-300 uppercase tracking-wider">Lifetime Legacy</h4>
+                  <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Lifetime Legacy</h4>
                   <div className="mt-4 space-y-3">
                     <div className="flex justify-between border-b border-white/10 pb-2">
                       <span className="text-xs text-slate-300 font-bold">Total Hours</span>
-                      <span className="text-sm font-black text-[#F7A800]">{totalHours} hrs</span>
+                      <span className="text-sm font-bold text-[#F7A800]">{totalHours} hrs</span>
                     </div>
                     <div className="flex justify-between border-b border-white/10 pb-2">
                       <span className="text-xs text-slate-300 font-bold">Events Joined</span>
-                      <span className="text-sm font-black text-[#F7A800]">{totalEvents}</span>
+                      <span className="text-sm font-bold text-[#F7A800]">{totalEvents}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs text-slate-300 font-bold">Projects Participated</span>
-                      <span className="text-sm font-black text-[#F7A800]">{totalProjects}</span>
+                      <span className="text-sm font-bold text-[#F7A800]">{totalProjects}</span>
                     </div>
                   </div>
                 </div>
@@ -391,7 +397,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 4. Rotaract Journey Timeline */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-8">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Story</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Story</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Rotaract Journey</h3>
             </div>
 
@@ -400,7 +406,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {/* Joined */}
               <div className="relative">
                 <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-[#F7A800]" />
-                <span className="text-[10px] font-black text-[#F7A800] uppercase tracking-wider block">Beginning</span>
+                <span className="text-[10px] font-bold text-[#F7A800] uppercase tracking-wider block">Beginning</span>
                 <h4 className="text-sm font-bold text-[#0B132B] mt-1">Joined the Club</h4>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">{formatDate(member.createdAt)}</p>
               </div>
@@ -409,7 +415,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {member.attendance?.length > 0 && (
                 <div className="relative">
                   <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-blue-500" />
-                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-wider block">First Event</span>
+                  <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block">First Event</span>
                   <h4 className="text-sm font-bold text-[#0B132B] mt-1">
                     Attended {member.attendance[member.attendance.length - 1].event.title}
                   </h4>
@@ -423,7 +429,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {member.projectRoles?.length > 0 && (
                 <div className="relative">
                   <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-indigo-500" />
-                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider block">First Project</span>
+                  <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block">First Project</span>
                   <h4 className="text-sm font-bold text-[#0B132B] mt-1">
                     Assigned in {member.projectRoles[member.projectRoles.length - 1].project.title}
                   </h4>
@@ -436,8 +442,8 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {/* Leadership Role */}
               {member.boardMemberships?.length > 0 && (
                 <div className="relative">
-                  <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-purple-500" />
-                  <span className="text-[10px] font-black text-purple-500 uppercase tracking-wider block">Leadership</span>
+                  <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-brand" />
+                  <span className="text-[10px] font-bold text-brand uppercase tracking-wider block">Leadership</span>
                   <h4 className="text-sm font-bold text-[#0B132B] mt-1">
                     Appointed as {member.boardMemberships[member.boardMemberships.length - 1].position.replaceAll("_", " ")}
                   </h4>
@@ -450,7 +456,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               {/* Current Status */}
               <div className="relative">
                 <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2 border-white bg-emerald-500" />
-                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider block">Active Tenure</span>
+                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider block">Active Tenure</span>
                 <h4 className="text-sm font-bold text-[#0B132B] mt-1">Ongoing Growth</h4>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">Currently participating in {member.club?.name}</p>
               </div>
@@ -461,7 +467,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 5. Recognition & Awards */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] block mb-1">Honors</span>
+              <span className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.2em] block mb-1">Honors</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Recognition</h3>
             </div>
 
@@ -492,7 +498,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 6. Contribution Snapshot (Grouped) */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Metrics</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Metrics</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Contribution Snapshot</h3>
             </div>
 
@@ -500,7 +506,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
               
               {/* Participation */}
               <div className="space-y-4">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Participation</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Participation</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-500 font-semibold">Events Joined</span>
@@ -521,7 +527,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
 
               {/* Leadership */}
               <div className="space-y-4">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Leadership</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Leadership</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-500 font-semibold">Events Chaired</span>
@@ -540,7 +546,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
 
               {/* Community */}
               <div className="space-y-4">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Community</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Community</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between border-b border-slate-50 pb-2">
                     <span className="text-slate-500 font-semibold">Ideas Submitted</span>
@@ -565,23 +571,30 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 7. Memories */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] block mb-1">Visuals</span>
+              <span className="text-[10px] font-bold text-brand uppercase tracking-[0.2em] block mb-1">Visuals</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Recent Memories</h3>
             </div>
 
             {memoryTimeline.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {memoryTimeline.map((att: any) => {
-                  const mediaSrc = getGoogleDriveDirectLink(att.event.media?.[0]?.url) || getFallbackImage("COMMUNITY_SERVICE");
+                  const mediaSrc = getGoogleDriveDirectLink(att.event.media?.[0]?.url);
                   return (
                     <div key={att.id} className="group border border-slate-100 rounded-2xl overflow-hidden bg-slate-50 relative flex flex-col justify-between h-[280px] motion-card">
                       <div className="h-[180px] w-full relative overflow-hidden">
-                        <AnimatedImage
-                          src={mediaSrc}
-                          alt={att.event.title}
-                          fill
-                          className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
-                        />
+                        {mediaSrc ? (
+                          <AnimatedImage
+                            src={mediaSrc}
+                            alt={att.event.title}
+                            fill
+                            className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2">
+                            <Camera className="w-8 h-8 text-slate-300" />
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">No photos yet</span>
+                          </div>
+                        )}
                       </div>
                       <div className="p-4 flex justify-between items-center bg-white border-t">
                         <div>
@@ -590,7 +603,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
                             {formatDate(att.checkedInAt)}
                           </p>
                         </div>
-                        <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[10px] font-black text-emerald-800 uppercase tracking-wider">
+                        <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
                           +{Number(att.volunteerHours || 0)} hrs
                         </span>
                       </div>
@@ -612,7 +625,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 8. Skills & Interests */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] block mb-1">Capabilities</span>
+              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-[0.2em] block mb-1">Capabilities</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Skills & Interests</h3>
             </div>
 
@@ -656,7 +669,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 9. Certificates Showcase */}
           <section className="bg-white rounded-3xl border border-slate-200/60 p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
             <div className="border-b border-slate-100 pb-4">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Archive</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Archive</span>
               <h3 className="text-xl font-bold text-[#0B132B]">Certificates</h3>
             </div>
 
@@ -693,7 +706,7 @@ export default function ProfileJourneyClient({ member, user }: ProfileJourneyCli
           {/* 10. Account Settings */}
           <section className="bg-slate-50 rounded-3xl border border-slate-200/50 p-6 md:p-8 shadow-sm space-y-6">
             <div className="border-b border-slate-200/60 pb-4">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Preferences</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] block mb-1">Preferences</span>
               <h3 className="text-xl font-bold text-[#0B132B] flex items-center gap-2">
                 <Lock className="w-4 h-4 text-slate-400" /> Account Settings
               </h3>

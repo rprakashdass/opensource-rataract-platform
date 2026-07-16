@@ -3,9 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getInitiativeForMember } from "@/features/initiatives/queries/getInitiatives";
 import { getSession } from "@/lib/auth/session";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
+import { PageHeader } from "@/components/portal";
 import { InitiativeStatusBadge } from "@/components/initiatives/InitiativeStatusBadge";
 import { CommentThread } from "@/components/initiatives/CommentThread";
 import InitiativeForm from "../_components/InitiativeForm";
@@ -34,22 +33,13 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href={`${ROUTES.DASHBOARD}/initiatives`} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-          <ArrowLeft className="w-5 h-5 text-slate-500" />
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{initiative.title}</h1>
-            <InitiativeStatusBadge status={initiative.status} />
-          </div>
-          <p className="text-slate-500 mt-1 text-sm">
-            By {initiative.proposedBy?.name || "Unknown"}
-            {isOwner ? " (you)" : ""}
-            {editable ? " · You can edit and resubmit this proposal." : ""}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={initiative.title}
+        description={`By ${initiative.proposedBy?.name || "Unknown"}${isOwner ? " (you)" : ""}${editable ? " · You can edit and resubmit this idea." : ""}`}
+        backHref={`${ROUTES.DASHBOARD}/initiatives`}
+        backLabel="Back to Ideas"
+        actions={<InitiativeStatusBadge status={initiative.status} />}
+      />
 
       {editable ? (
         <InitiativeForm initiative={initiative} portfolios={portfolios} />
@@ -71,7 +61,7 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
               <p className="text-slate-700 whitespace-pre-wrap">{initiative.expectedImpact}</p>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {initiative.portfolio?.name && (
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase mb-1">Portfolio</p>
@@ -86,9 +76,9 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
             )}
           </div>
           {initiative.status === "CONVERTED" && (initiative.convertedEvent || initiative.convertedProject) && (
-            <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl">
-              <p className="text-sm font-bold text-purple-700">
-                🎉 {isOwner ? "Your" : "This"} proposal became {initiative.convertedEvent ? "an event" : "a project"}: {initiative.convertedEvent?.title || initiative.convertedProject?.title}
+            <div className="p-4 bg-pink-50 border border-pink-100 rounded-xl">
+              <p className="text-sm font-bold text-brand-deep">
+                🎉 {isOwner ? "Your" : "This"} idea became {initiative.convertedEvent ? "an event" : "a project"}: {initiative.convertedEvent?.title || initiative.convertedProject?.title}
               </p>
             </div>
           )}

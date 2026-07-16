@@ -8,6 +8,38 @@ export const getHomeBaseData = unstable_cache(
             const club = await getCurrentClub();
             if (!club) return { error: "Club not initialized" };
             
+            const activeYear = await prisma.financialYear.findFirst({
+                where: { clubId: club.id, status: "ACTIVE" }
+            });
+
+            let presidentBoardMember = null;
+            if (activeYear) {
+                presidentBoardMember = await prisma.boardMember.findFirst({
+                    where: {
+                        clubId: club.id,
+                        position: { equals: "President", mode: "insensitive" },
+                        financialYearId: activeYear.id,
+                        leftAt: null
+                    },
+                    include: {
+                        member: true
+                    }
+                });
+            }
+
+            if (!presidentBoardMember) {
+                presidentBoardMember = await prisma.boardMember.findFirst({
+                    where: {
+                        clubId: club.id,
+                        position: { equals: "President", mode: "insensitive" },
+                        leftAt: null
+                    },
+                    include: {
+                        member: true
+                    }
+                });
+            }
+
             const [websiteSettings, websiteMetrics] = await Promise.all([
                 prisma.websiteSettings.findUnique({
                     where: { clubId: club.id }
@@ -30,6 +62,11 @@ export const getHomeBaseData = unstable_cache(
                     aboutSubtitle: club.aboutSubtitle,
                 },
                 settings: websiteSettings as any,
+                president: presidentBoardMember ? {
+                    name: presidentBoardMember.member.name,
+                    avatar: presidentBoardMember.member.avatar,
+                    websiteQuote: presidentBoardMember.member.websiteQuote,
+                } : null,
                 metrics: websiteMetrics.map((m: any) => ({
                     id: m.id,
                     number: m.number,

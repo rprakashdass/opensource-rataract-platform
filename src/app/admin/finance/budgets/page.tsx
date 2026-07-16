@@ -1,5 +1,6 @@
 import { getBudgets } from "@/features/finance/queries/get-budgets";
 import BudgetDashboard from "./_components/BudgetDashboard";
+import { PageHeader } from "@/components/portal";
 
 export default async function BudgetsPage() {
   const data = await getBudgets();
@@ -24,6 +25,12 @@ export default async function BudgetsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 animate-in fade-in duration-300">
+      <PageHeader
+        title="Budgets"
+        description="Allocate and track spending limits for projects and events."
+        backHref="/admin/finance"
+        backLabel="Back to Finance"
+      />
       <BudgetDashboard data={safeData} />
     </div>
   );

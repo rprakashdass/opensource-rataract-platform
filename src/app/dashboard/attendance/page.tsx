@@ -2,6 +2,7 @@ import { getMemberAttendance } from "@/features/attendance/queries/getMemberAtte
 import { notFound, redirect } from "next/navigation";
 import { ClipboardCheck, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader, StatCard, StatGrid } from "@/components/portal";
 
 export default async function MemberAttendancePage() {
     const data = await getMemberAttendance();
@@ -13,42 +14,21 @@ export default async function MemberAttendancePage() {
 
     return (
         <div className="space-y-8 pb-10">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3 mb-2">
-                        <ClipboardCheck className="w-8 h-8 text-purple-600" />
-                        My Attendance
-                    </h1>
-                    <p className="text-slate-500 font-medium">Track your participation and volunteer contributions.</p>
-                </div>
-            </div>
+            <PageHeader
+                title="My Attendance"
+                description="Track your participation and volunteer contributions."
+            />
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center">
-                        <ClipboardCheck className="w-8 h-8 text-purple-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Attendance Rate</p>
-                        <h2 className="text-4xl font-black text-slate-900">{data.attendancePercentage}%</h2>
-                    </div>
-                </div>
-                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center">
-                        <Clock className="w-8 h-8 text-green-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Volunteer Hours</p>
-                        <h2 className="text-4xl font-black text-slate-900">{data.totalHours}</h2>
-                    </div>
-                </div>
-            </div>
+            <StatGrid className="lg:grid-cols-2">
+                <StatCard label="Attendance Rate" value={`${data.attendancePercentage}%`} icon={ClipboardCheck} tone="brand" />
+                <StatCard label="Total Volunteer Hours" value={data.totalHours} icon={Clock} tone="positive" />
+            </StatGrid>
 
             {/* History */}
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                 <div className="p-6 border-b border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-900">Attendance History</h2>
+                    <h2 className="text-base font-semibold text-slate-900">Attendance History</h2>
                 </div>
                 
                 {data.history && data.history.length > 0 ? (

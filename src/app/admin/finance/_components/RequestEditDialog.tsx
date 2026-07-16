@@ -1,6 +1,19 @@
+"use client";
+
 import React, { useState } from "react";
-import { X, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+const inputClass =
+  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand";
 
 export default function RequestEditDialog({
   request,
@@ -51,55 +64,52 @@ export default function RequestEditDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">Edit Payment Request</h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Payment Request</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Title</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
             <input
               required
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className={inputClass}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Description</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className={inputClass}
               rows={3}
             />
           </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Amount (₹)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Amount (₹)</label>
               <input
                 required
                 type="number"
                 step="0.01"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Category</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
               >
                 <option value="DUES">Dues</option>
                 <option value="EVENT_FEE">Event Fee</option>
@@ -109,48 +119,40 @@ export default function RequestEditDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Due Date</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Due Date</label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
               />
             </div>
-            <div className="flex flex-col justify-center pt-6">
+            <div className="flex items-end pb-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isGlobal}
                   onChange={e => setIsGlobal(e.target.checked)}
-                  className="rounded text-purple-600 focus:ring-purple-500 bg-gray-50 border-gray-300"
+                  className="rounded border-slate-300 text-brand focus:ring-brand"
                 />
-                <span className="text-sm text-gray-700 font-medium">Global Request</span>
+                <span className="text-sm text-slate-700 font-medium">Global Request</span>
               </label>
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition"
-            >
+          <DialogFooter className="gap-2 pt-2 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition disabled:opacity-50"
-            >
+            </Button>
+            <Button type="submit" disabled={loading} className="gap-2 bg-brand hover:bg-brand-deep text-white">
               <Save className="h-4 w-4" />
               {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

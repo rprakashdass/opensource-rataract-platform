@@ -53,7 +53,7 @@ export function GalleryUpload({ albums, defaultAlbumId }: GalleryUploadProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2">
+        <Button className="bg-brand hover:bg-brand-deep text-white flex items-center gap-2">
           <Plus className="w-4 h-4" /> Upload Media
         </Button>
       </DialogTrigger>

@@ -38,7 +38,7 @@ export function Statement({
       {eyebrow && <Eyebrow onDark={onDark} className="mb-6">{eyebrow}</Eyebrow>}
       <p
         className={cn(
-          "font-display font-medium tracking-[-0.015em] leading-[1.15] text-[clamp(1.75rem,4vw,3rem)] text-balance",
+          "font-statement font-medium tracking-[-0.015em] leading-[1.15] text-[clamp(1.75rem,4vw,3rem)] text-balance",
           onDark ? "text-parchment" : "text-ink"
         )}
       >

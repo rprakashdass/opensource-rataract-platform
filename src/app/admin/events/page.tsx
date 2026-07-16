@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import FilterBar from "@/components/admin/FilterBar";
+import { PageHeader } from "@/components/portal";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { 
   DropdownMenu,
@@ -78,18 +79,17 @@ export default async function EventsAdmin(props: {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-2">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Events</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Plan and manage club activities.</p>
-        </div>
-        <Button asChild size="sm">
-          <Link href="/admin/events/create" className="flex items-center gap-1.5">
-            <Plus className="w-4 h-4" /> Create Event
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Events"
+        description="Plan and manage club activities."
+        actions={
+          <Button asChild size="sm" className="bg-brand hover:bg-brand-deep text-white">
+            <Link href="/admin/events/create" className="flex items-center gap-1.5">
+              <Plus className="w-4 h-4" /> Create Event
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Tabs list */}
       <div className="border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -185,7 +185,7 @@ export default async function EventsAdmin(props: {
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-start gap-2">
-                    <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-brand transition-colors line-clamp-1">
                       {event.title}
                     </h3>
                     <DropdownMenu>
@@ -245,7 +245,7 @@ export default async function EventsAdmin(props: {
               </div>
 
               {/* Card Footer Actions */}
-              <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+              <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex flex-wrap justify-end gap-2">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/admin/events/${event.id}`}>Manage</Link>
                 </Button>

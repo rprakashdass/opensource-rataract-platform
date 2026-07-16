@@ -118,7 +118,7 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
                         "flex items-center rounded-lg font-medium transition-all text-sm group relative",
                         collapsed ? "justify-center py-3 px-0" : "px-3 py-2.5 justify-between",
                         active
-                          ? "bg-purple-50 text-purple-700 font-semibold shadow-sm"
+                          ? "bg-pink-50/80 text-brand font-semibold shadow-sm"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
                     >
@@ -127,7 +127,7 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
                           className={cn(
                             "flex-shrink-0 transition-colors",
                             collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4",
-                            active ? "text-purple-700" : "text-slate-400 group-hover:text-slate-600"
+                            active ? "text-brand" : "text-slate-400 group-hover:text-slate-600"
                           )}
                         />
                         {!collapsed && <span className="truncate flex-1">{item.label}</span>}
@@ -139,7 +139,7 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
                             collapsed
                               ? "absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full text-[9px] bg-red-500 text-white"
                               : "h-5 min-w-5 px-1.5 rounded-full text-xs ml-auto",
-                            !collapsed && active ? "bg-purple-200 text-purple-700" : !collapsed ? "bg-slate-100 text-slate-600" : ""
+                            !collapsed && active ? "bg-pink-100 text-brand" : !collapsed ? "bg-slate-100 text-slate-600" : ""
                           )}
                         >
                           {item.badgeCount}

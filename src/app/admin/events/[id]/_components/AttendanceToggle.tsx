@@ -37,7 +37,7 @@ export default function AttendanceToggle({ attendeeId, eventId, isAttended }: { 
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition ${
         isAttended 
           ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" 
-          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+          : "bg-slate-100 text-slate-500 hover:bg-slate-200"
       }`}
     >
       {isAttended ? (

@@ -3,8 +3,9 @@ import { getCurrentClub } from "@/lib/club";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Folder, Image as ImageIcon, CalendarDays, Layers } from "lucide-react";
+import { Folder, Image as ImageIcon, CalendarDays, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/portal";
 import { Button } from "@/components/ui/button";
 import { AlbumUploadButton } from "./AlbumUploadButton";
 import { DeleteAlbumButton } from "./DeleteAlbumButton";
@@ -39,58 +40,43 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-2">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2">
-          <Link
-            href="/admin/gallery"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Gallery
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Folder className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{album.title}</h1>
-              {album.description && (
-                <p className="text-sm text-gray-500 mt-0.5">{album.description}</p>
-              )}
-            </div>
-          </div>
+      <PageHeader
+        title={album.title}
+        description={album.description || undefined}
+        backHref="/admin/gallery"
+        backLabel="Back to Gallery"
+        className="mb-0"
+        actions={
+          <>
+            <DeleteAlbumButton albumId={album.id} albumTitle={album.title} />
+            <AlbumUploadButton albumId={album.id} albumTitle={album.title} />
+          </>
+        }
+      />
 
-          {/* Meta badges */}
-          <div className="flex items-center gap-2 flex-wrap pt-1">
-            <Badge variant="secondary" className="gap-1.5">
-              <ImageIcon className="w-3 h-3" />
-              {album.media.length} {album.media.length === 1 ? "item" : "items"}
-            </Badge>
-            {album.event && (
-              <Badge variant="outline" className="gap-1.5 text-purple-700 border-purple-200 bg-purple-50">
-                <CalendarDays className="w-3 h-3" />
-                Event: {album.event.title}
-              </Badge>
-            )}
-            {album.project && (
-              <Badge variant="outline" className="gap-1.5 text-blue-700 border-blue-200 bg-blue-50">
-                <Layers className="w-3 h-3" />
-                Project: {album.project.title}
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Upload button */}
-        <div className="flex-shrink-0 flex items-center gap-2">
-          <DeleteAlbumButton albumId={album.id} albumTitle={album.title} />
-          <AlbumUploadButton albumId={album.id} albumTitle={album.title} />
-        </div>
+      {/* Meta badges */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge variant="secondary" className="gap-1.5">
+          <ImageIcon className="w-3 h-3" />
+          {album.media.length} {album.media.length === 1 ? "item" : "items"}
+        </Badge>
+        {album.event && (
+          <Badge variant="outline" className="gap-1.5 text-brand border-pink-200 bg-pink-50">
+            <CalendarDays className="w-3 h-3" />
+            Event: {album.event.title}
+          </Badge>
+        )}
+        {album.project && (
+          <Badge variant="outline" className="gap-1.5 text-blue-700 border-blue-200 bg-blue-50">
+            <Layers className="w-3 h-3" />
+            Project: {album.project.title}
+          </Badge>
+        )}
       </div>
 
       {/* Cover preview */}
       {coverMedia && (
-        <div className="relative w-full h-56 md:h-72 rounded-2xl overflow-hidden bg-gray-100">
+        <div className="relative w-full h-56 md:h-72 rounded-2xl overflow-hidden bg-slate-100">
           <Image
             src={coverMedia.url}
             alt={coverMedia.altText || coverMedia.title || album.title}
@@ -101,7 +87,7 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <Badge className="absolute bottom-4 left-4 bg-white/90 text-gray-900 border-none shadow-sm">
+          <Badge className="absolute bottom-4 left-4 bg-white/90 text-slate-900 border-none shadow-sm">
             Cover Photo
           </Badge>
         </div>
@@ -109,8 +95,8 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
 
       {/* Media grid */}
       {album.media.length === 0 ? (
-        <div className="border border-dashed border-gray-200 rounded-xl p-12 text-center text-gray-500">
-          <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <div className="border border-dashed border-slate-200 rounded-xl p-12 text-center text-slate-500">
+          <Folder className="w-12 h-12 mx-auto mb-3 text-slate-300" />
           <p className="font-medium">This album is empty</p>
           <p className="text-sm mt-1">Upload photos to this album from the gallery.</p>
           <Button asChild variant="outline" className="mt-4">
@@ -119,7 +105,7 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
         </div>
       ) : (
         <section>
-          <h2 className="text-xl font-bold mb-4">All Media</h2>
+          <h2 className="text-base font-semibold text-slate-900 mb-4">All Media</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {album.media.map((m, idx) => (
               <MediaThumbnail

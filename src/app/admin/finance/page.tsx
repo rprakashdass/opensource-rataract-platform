@@ -3,7 +3,7 @@ import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import TreasurerWorkspace from "./_components/TreasurerWorkspace";
 import { getSession, canViewFinance } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { HandCoins } from "lucide-react";
+import { PageHeader } from "@/components/portal";
 
 export default async function AdminFinancePage() {
   const session = await getSession();
@@ -139,17 +139,12 @@ export default async function AdminFinancePage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="h-12 w-12 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-          <HandCoins className="h-6 w-6 text-purple-600" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Finance & Treasury</h1>
-          <p className="text-sm text-slate-500 mt-1 font-medium">Manage cash flows, approve expense claims, and check operational budgets.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Finance & Treasury"
+        description="Manage cash flows, approve expense claims, and check operational budgets."
+      />
 
-      <TreasurerWorkspace 
+      <TreasurerWorkspace
         clubId={activeClubId}
         financialYear={fySerialized}
         accounts={accountsSerialized}

@@ -45,7 +45,7 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
         size="sm" 
         onClick={() => handleUpdate("CONVERTED")}
         disabled={loading}
-        className="rounded-lg hover:text-green-600 hover:bg-green-50"
+        className="rounded-lg hover:text-emerald-600 hover:bg-emerald-50"
       >
         <UserPlus className="w-4 h-4 mr-1" /> Approve
       </Button>
@@ -54,7 +54,7 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
         size="sm" 
         onClick={() => handleUpdate("REJECTED")}
         disabled={loading}
-        className="rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 h-auto"
+        className="rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 h-auto"
       >
         <X className="w-4 h-4" />
       </Button>

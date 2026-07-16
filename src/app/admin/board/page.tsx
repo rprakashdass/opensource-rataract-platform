@@ -4,6 +4,7 @@ import { Shield, Clock, Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/portal";
 
 export default async function BoardManagementPage(props: {
   searchParams: Promise<{ year?: string }>;
@@ -19,23 +20,20 @@ export default async function BoardManagementPage(props: {
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <Shield className="w-8 h-8 text-purple-600" />
-            Board Management
-          </h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">Manage board positions across different Rotary years</p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        title="Board Management"
+        description="Manage board positions across different Rotary years"
+        actions={
+          <>
             <Button variant="outline" className="gap-2">
-                <Settings className="w-4 h-4" /> Manage Roles
+              <Settings className="w-4 h-4" /> Manage Roles
             </Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white gap-2">
-                <Plus className="w-4 h-4" /> Assign Position
+            <Button className="bg-brand hover:bg-brand-deep text-white gap-2">
+              <Plus className="w-4 h-4" /> Assign Position
             </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Year Selection */}
       {financialYears && financialYears.length > 0 && (
@@ -57,7 +55,7 @@ export default async function BoardManagementPage(props: {
       {!currentYear ? (
         <div className="text-center py-12 bg-white rounded-xl border border-slate-200 border-dashed">
             <Clock className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-900 mb-2">No Financial Years</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-2">No Financial Years</h2>
             <p className="text-slate-500 max-w-md mx-auto mb-4">Please create a financial year first to manage board history.</p>
             <Link href="/admin/settings">
                 <Button variant="outline">Go to Settings</Button>
@@ -67,11 +65,11 @@ export default async function BoardManagementPage(props: {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {board && board.length > 0 ? (
                 board.map(bm => (
-                    <Card key={bm.id} className="border-l-4 border-l-purple-600 shadow-sm relative overflow-hidden group">
+                    <Card key={bm.id} className="border-l-4 border-l-brand shadow-sm relative overflow-hidden group">
                         <CardContent className="p-6">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <p className="text-xs font-bold text-purple-600 uppercase tracking-widest">{bm.position}</p>
+                                    <p className="text-xs font-bold text-brand uppercase tracking-widest">{bm.position}</p>
                                     <h3 className="font-bold text-lg text-slate-900 mt-1">{bm.member.name}</h3>
                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 shrink-0">
@@ -97,7 +95,7 @@ export default async function BoardManagementPage(props: {
                 <div className="col-span-full text-center py-12 bg-slate-50 rounded-xl border border-slate-100">
                     <Shield className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                     <p className="text-slate-500 font-medium">No board members assigned for {currentYear.name}.</p>
-                    <Button variant="link" className="text-purple-600 mt-2">Assign First Member</Button>
+                    <Button variant="link" className="text-brand mt-2">Assign First Member</Button>
                 </div>
             )}
         </div>

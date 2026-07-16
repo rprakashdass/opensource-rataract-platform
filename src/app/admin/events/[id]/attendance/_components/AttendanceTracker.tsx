@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, XCircle, Clock, QrCode, Search, AlertTriangle, Users, Lock, Unlock, Download, MoreHorizontal, FileSpreadsheet } from "lucide-react";
+import { CheckCircle2, XCircle, QrCode, Search, Users, Lock, Unlock, FileSpreadsheet, Clock, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { markAttendance } from "@/features/attendance/actions/markAttendance";
 import { bulkMarkAttendance } from "@/features/attendance/actions/bulkMarkAttendance";
@@ -14,6 +14,7 @@ import { MemberAvatar } from "@/components/ui/member-avatar";
 import { exportAttendanceCsv } from "@/features/attendance/actions/exportAttendance";
 import { useRouter } from "next/navigation";
 import { AttendanceStatus } from "@prisma/client";
+import { StatCard, TableWrap, PortalEmptyState } from "@/components/portal";
 
 export default function AttendanceTracker({ event, activeSession }: { event: any, activeSession?: any }) {
     const router = useRouter();
@@ -175,73 +176,62 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
         setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
     };
 
+    const statusBadge = (status: string) => (
+        <>
+            {status === "PRESENT" && <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0">Present</Badge>}
+            {status === "ABSENT" && <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-0">Absent</Badge>}
+            {status === "LATE" && <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">Late</Badge>}
+            {status === "EXCUSED" && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0">Excused</Badge>}
+            {status === "PENDING" && <Badge variant="outline" className="text-slate-400">Pending</Badge>}
+        </>
+    );
+
     return (
         <div className="space-y-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-purple-500 to-purple-700 text-white border-0 shadow-sm md:col-span-2">
-                    <CardContent className="p-6 flex items-center justify-between h-full">
-                        <div>
-                            <p className="text-purple-100 text-sm font-semibold uppercase tracking-wider mb-1">Turnout</p>
-                            <div className="flex items-baseline gap-2">
-                                <h3 className="text-4xl font-black">{presentCount}</h3>
-                                <span className="text-purple-200 font-medium text-lg">/ {totalCount} registered</span>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-3xl font-black text-white">{percent}%</p>
-                            <p className="text-xs text-purple-200 font-medium">Attendance Rate</p>
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+                <StatCard label="Turnout" value={`${presentCount} / ${totalCount}`} icon={Users} tone="brand" hint="Present / registered" />
+                <StatCard label="Attendance Rate" value={`${percent}%`} icon={Percent} tone="positive" />
+                <StatCard label="Volunteer Hours" value={totalHours} icon={Clock} tone="neutral" />
 
-                <Card className="bg-white border-slate-100 shadow-sm">
-                    <CardContent className="p-6 text-center space-y-1 h-full flex flex-col justify-center">
-                        <p className="text-3xl font-black text-slate-800">{totalHours}</p>
-                        <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Volunteer Hours</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-white border-slate-100 shadow-sm">
-                    <CardContent className="p-6 text-center space-y-3 h-full flex flex-col justify-center">
-                        {!activeSession ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col justify-center gap-2 col-span-2 lg:col-span-1">
+                    {!activeSession ? (
+                        <Button
+                            variant="outline"
+                            className="w-full gap-2 text-brand border-pink-200 hover:bg-pink-50"
+                            onClick={handleStartSession}
+                            disabled={isLocked || loading}
+                        >
+                            <QrCode className="w-4 h-4" /> Start Session
+                        </Button>
+                    ) : (
+                        <>
                             <Button
-                                variant="outline"
-                                className="w-full gap-2 text-purple-600 border-purple-200 hover:bg-purple-50"
-                                onClick={handleStartSession}
-                                disabled={isLocked || loading}
+                                className="w-full gap-2 bg-brand hover:bg-brand-deep text-white"
+                                onClick={() => setShowSessionModal(true)}
                             >
-                                <QrCode className="w-4 h-4" /> Start Session
+                                <QrCode className="w-4 h-4" /> View Check-in Info
                             </Button>
-                        ) : (
-                            <div className="space-y-2">
-                                <Button
-                                    className="w-full gap-2 bg-purple-600 hover:bg-purple-700 text-white"
-                                    onClick={() => setShowSessionModal(true)}
-                                >
-                                    <QrCode className="w-4 h-4" /> View Check-in Info
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
-                                    onClick={handleStopSession}
-                                    disabled={loading}
-                                >
-                                    Stop Session
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            <Button
+                                variant="ghost"
+                                className="w-full text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-xs"
+                                onClick={handleStopSession}
+                                disabled={loading}
+                            >
+                                Stop Session
+                            </Button>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-1">
                     <Button variant={activeTab === "ALL" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("ALL")}>All</Button>
                     <Button variant={activeTab === "PRESENT" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("PRESENT")}>Present</Button>
                     <Button variant={activeTab === "ABSENT" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("ABSENT")}>Absent</Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <Button variant="outline" size="sm" className="gap-2 text-slate-600" onClick={handleExportCsv} disabled={loading}>
                         <FileSpreadsheet className="w-4 h-4" /> Export CSV
                     </Button>
@@ -251,187 +241,172 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                 </div>
             </div>
 
-            <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-
-                {/* Toolbar */}
-                <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:justify-between items-center bg-slate-50 gap-4">
-                    <div className="flex items-center gap-4 w-full sm:w-auto">
-                        {selectedIds.length > 0 ? (
-                            <div className="flex items-center gap-2 bg-purple-100 px-3 py-1.5 rounded-lg border border-purple-200">
-                                <span className="text-sm font-bold text-purple-800">{selectedIds.length} selected</span>
-                                <div className="w-px h-4 bg-purple-300 mx-1"></div>
-                                <Button size="sm" variant="ghost" className="h-7 text-green-700 hover:text-green-800 hover:bg-green-200" onClick={() => handleBulkMark("PRESENT")}>Mark Present</Button>
-                                <Button size="sm" variant="ghost" className="h-7 text-red-700 hover:text-red-800 hover:bg-red-200" onClick={() => handleBulkMark("ABSENT")}>Mark Absent</Button>
-                            </div>
-                        ) : (
-                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                <Users className="w-4 h-4 text-purple-600" /> Member Roster
-                            </h3>
-                        )}
-                    </div>
-
-                    <div className="relative w-full sm:max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Search roster..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
-                        />
-                    </div>
+            {/* Roster toolbar */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                    {selectedIds.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-2 bg-pink-50 px-3 py-1.5 rounded-lg border border-pink-200">
+                            <span className="text-sm font-semibold text-brand-deep">{selectedIds.length} selected</span>
+                            <div className="w-px h-4 bg-pink-200 mx-1 hidden sm:block"></div>
+                            <Button size="sm" variant="ghost" className="h-7 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-200" onClick={() => handleBulkMark("PRESENT")}>Mark Present</Button>
+                            <Button size="sm" variant="ghost" className="h-7 text-rose-700 hover:text-rose-800 hover:bg-rose-200" onClick={() => handleBulkMark("ABSENT")}>Mark Absent</Button>
+                        </div>
+                    ) : (
+                        <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <Users className="w-4 h-4 text-brand" /> Member Roster
+                        </h3>
+                    )}
                 </div>
 
-                {filteredMembers.length === 0 ? (
-                    <div className="p-12 text-center text-slate-500">
-                        <AlertTriangle className="w-8 h-8 mx-auto mb-3 text-slate-300" />
-                        No members found in the roster.
-                    </div>
-                ) : (
-                    <>
-                        <div className="hidden md:block overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead>
-                                    <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-500 uppercase tracking-wider text-xs font-semibold">
-                                        <th className="p-4 w-12 text-center">
-                                            <input type="checkbox" checked={selectedIds.length > 0 && selectedIds.length === filteredMembers.length} onChange={toggleSelectAll} className="rounded text-purple-600 focus:ring-purple-500 border-slate-300" />
-                                        </th>
-                                        <th className="p-4">Member</th>
-                                        <th className="p-4">Status</th>
-                                        <th className="p-4">Check-in Time</th>
-                                        <th className="p-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredMembers.map((member: any) => (
-                                        <tr key={member.id} className={`hover:bg-slate-50/50 transition-colors ${selectedIds.includes(member.id) ? 'bg-purple-50/30' : ''}`}>
-                                            <td className="p-4 text-center">
-                                                <input type="checkbox" checked={selectedIds.includes(member.id)} onChange={() => toggleSelect(member.id)} className="rounded text-purple-600 focus:ring-purple-500 border-slate-300" />
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-8 h-8 border border-slate-200" textClassName="text-xs" />
-                                                    <div>
-                                                        <p className="font-semibold text-slate-900">{member.name}</p>
-                                                        <p className="text-xs text-slate-500">{member.email || "No email"}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-4">
-                                                {member.attendanceStatus === "PRESENT" && <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0">Present</Badge>}
-                                                {member.attendanceStatus === "ABSENT" && <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0">Absent</Badge>}
-                                                {member.attendanceStatus === "LATE" && <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">Late</Badge>}
-                                                {member.attendanceStatus === "EXCUSED" && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0">Excused</Badge>}
-                                                {member.attendanceStatus === "PENDING" && <Badge variant="outline" className="text-slate-400">Pending</Badge>}
-                                            </td>
-                                            <td className="p-4 text-slate-500">
-                                                {member.checkedInAt ? new Date(member.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-green-600 hover:bg-green-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "PRESENT")}>
-                                                        <CheckCircle2 className="w-5 h-5" />
-                                                    </Button>
-                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "ABSENT")}>
-                                                        <XCircle className="w-5 h-5" />
-                                                    </Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                <div className="relative w-full sm:max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search roster..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-9 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                    />
+                </div>
+            </div>
 
-                        <div className="md:hidden flex flex-col divide-y divide-slate-100">
+            {filteredMembers.length === 0 ? (
+                <div className="rounded-xl border border-slate-200 bg-white">
+                    <PortalEmptyState
+                        title="No members found"
+                        detail="No members match the current roster filters."
+                    />
+                </div>
+            ) : (
+                <TableWrap
+                    mobile={filteredMembers.map((member: any) => (
+                        <div key={member.id} className={`p-4 space-y-3 ${selectedIds.includes(member.id) ? 'bg-pink-50/40' : ''}`}>
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="flex items-center gap-3">
+                                    <input type="checkbox" checked={selectedIds.includes(member.id)} onChange={() => toggleSelect(member.id)} className="rounded accent-brand border-slate-300" />
+                                    <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-10 h-10 border border-slate-200" textClassName="text-sm" />
+                                    <div>
+                                        <p className="font-semibold text-slate-900 text-base">{member.name}</p>
+                                        <p className="text-sm text-slate-500">{member.email || "No email"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap justify-between items-center gap-2 pt-2">
+                                <div className="flex flex-wrap gap-2 items-center">
+                                    {statusBadge(member.attendanceStatus)}
+                                    <span className="text-xs text-slate-500">{member.checkedInAt ? new Date(member.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
+                                </div>
+                                <div className="flex gap-1">
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "PRESENT")}>
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "ABSENT")}>
+                                        <XCircle className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                >
+                    <table className="w-full text-left text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-500 uppercase tracking-wider text-xs font-semibold">
+                                <th className="p-4 w-12 text-center">
+                                    <input type="checkbox" checked={selectedIds.length > 0 && selectedIds.length === filteredMembers.length} onChange={toggleSelectAll} className="rounded accent-brand border-slate-300" />
+                                </th>
+                                <th className="p-4">Member</th>
+                                <th className="p-4">Status</th>
+                                <th className="p-4">Check-in Time</th>
+                                <th className="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
                             {filteredMembers.map((member: any) => (
-                                <div key={member.id} className={`p-4 space-y-3 ${selectedIds.includes(member.id) ? 'bg-purple-50/30' : ''}`}>
-                                    <div className="flex justify-between items-start gap-4">
+                                <tr key={member.id} className={`hover:bg-slate-50/50 transition-colors ${selectedIds.includes(member.id) ? 'bg-pink-50/40' : ''}`}>
+                                    <td className="p-4 text-center">
+                                        <input type="checkbox" checked={selectedIds.includes(member.id)} onChange={() => toggleSelect(member.id)} className="rounded accent-brand border-slate-300" />
+                                    </td>
+                                    <td className="p-4">
                                         <div className="flex items-center gap-3">
-                                            <input type="checkbox" checked={selectedIds.includes(member.id)} onChange={() => toggleSelect(member.id)} className="rounded text-purple-600 focus:ring-purple-500 border-slate-300" />
-                                            <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-10 h-10 border border-slate-200" textClassName="text-sm" />
+                                            <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-8 h-8 border border-slate-200" textClassName="text-xs" />
                                             <div>
-                                                <p className="font-semibold text-slate-900 text-base">{member.name}</p>
-                                                <p className="text-sm text-slate-500">{member.email || "No email"}</p>
+                                                <p className="font-semibold text-slate-900">{member.name}</p>
+                                                <p className="text-xs text-slate-500">{member.email || "No email"}</p>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="flex justify-between items-center pt-2">
-                                        <div className="flex gap-2 items-center">
-                                            {member.attendanceStatus === "PRESENT" && <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-0">Present</Badge>}
-                                            {member.attendanceStatus === "ABSENT" && <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-0">Absent</Badge>}
-                                            {member.attendanceStatus === "LATE" && <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0">Late</Badge>}
-                                            {member.attendanceStatus === "EXCUSED" && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0">Excused</Badge>}
-                                            {member.attendanceStatus === "PENDING" && <Badge variant="outline" className="text-slate-400">Pending</Badge>}
-                                            <span className="text-xs text-slate-500">{member.checkedInAt ? new Date(member.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
-                                        </div>
-                                        <div className="flex gap-1">
-                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-green-600 hover:bg-green-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "PRESENT")}>
+                                    </td>
+                                    <td className="p-4">{statusBadge(member.attendanceStatus)}</td>
+                                    <td className="p-4 text-slate-500">
+                                        {member.checkedInAt ? new Date(member.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "PRESENT")}>
                                                 <CheckCircle2 className="w-5 h-5" />
                                             </Button>
-                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "ABSENT")}>
+                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "ABSENT")}>
                                                 <XCircle className="w-5 h-5" />
                                             </Button>
                                         </div>
-                                    </div>
-                                </div>
+                                    </td>
+                                </tr>
                             ))}
+                        </tbody>
+                    </table>
+                </TableWrap>
+            )}
+
+            <Dialog open={showSessionModal} onOpenChange={setShowSessionModal}>
+                <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Attendance Session</DialogTitle>
+                        <DialogDescription>
+                            Members can scan the QR code or enter the 6-digit PIN on their dashboard to check in.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 text-center">
+                        <div className="bg-pink-50 rounded-2xl p-6 border border-pink-100">
+                            <p className="text-brand font-semibold uppercase tracking-wider text-xs mb-2">Check-in PIN</p>
+                            <div className="text-4xl sm:text-5xl font-bold text-brand-deep tracking-[0.2em]">{checkInCode || "------"}</div>
                         </div>
-                    </>
-                )}
-            </div>
 
-            {showSessionModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-8 text-center space-y-6">
-                            <div>
-                                <h3 className="text-2xl font-black text-slate-900">Attendance Session</h3>
-                                <p className="text-slate-500 mt-2 font-medium">Members can scan the QR code or enter the 6-digit PIN on their dashboard to check in.</p>
-                            </div>
+                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
+                            {qrToken ? (
+                                <img
+                                    src={qrImageUrl}
+                                    alt="Check-in QR Code"
+                                    className="w-32 h-32 mb-4 bg-white border border-slate-200 p-1 rounded-xl shadow-sm select-none"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center text-center p-2 mb-2">
+                                    <QrCode className="w-16 h-16 text-slate-300 mb-2" />
+                                    <p className="text-[10px] text-amber-600 font-semibold max-w-[200px] leading-relaxed">
+                                        QR Code hidden for security. To display a new QR code to members, please stop and restart the session.
+                                    </p>
+                                </div>
+                            )}
+                            <p className="text-xs font-semibold text-slate-500 uppercase">Scan to check in</p>
+                            {qrToken && (
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(checkInUrl);
+                                        toast.success("Check-in link copied to clipboard");
+                                    }}
+                                    className="text-brand font-semibold hover:underline mt-2 text-xs"
+                                >
+                                    Copy Link
+                                </button>
+                            )}
+                        </div>
 
-                            <div className="bg-purple-50 rounded-2xl p-6 border border-purple-100">
-                                <p className="text-purple-700 font-bold uppercase tracking-wider text-xs mb-2">Check-in PIN</p>
-                                <div className="text-5xl font-black text-purple-900 tracking-[0.2em]">{checkInCode || "------"}</div>
-                            </div>
-
-                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center">
-                                {qrToken ? (
-                                    <img
-                                        src={qrImageUrl}
-                                        alt="Check-in QR Code"
-                                        className="w-32 h-32 mb-4 bg-white border border-slate-200 p-1 rounded-xl shadow-sm select-none"
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-center p-2 mb-2">
-                                        <QrCode className="w-16 h-16 text-slate-300 mb-2" />
-                                        <p className="text-[10px] text-amber-600 font-bold max-w-[200px] leading-relaxed">
-                                            QR Code hidden for security. To display a new QR code to members, please stop and restart the session.
-                                        </p>
-                                    </div>
-                                )}
-                                <p className="text-xs font-bold text-slate-500 uppercase">Scan to check in</p>
-                                {qrToken && (
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(checkInUrl);
-                                            toast.success("Check-in link copied to clipboard");
-                                        }}
-                                        className="text-purple-600 font-bold hover:underline mt-2 text-xs"
-                                    >
-                                        Copy Link
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="flex gap-3">
-                                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setShowSessionModal(false)}>Close</Button>
-                                <Button variant="destructive" className="flex-1 rounded-xl" onClick={handleStopSession} disabled={loading}>Stop Session</Button>
-                            </div>
+                        <div className="flex flex-wrap gap-3">
+                            <Button variant="outline" className="flex-1" onClick={() => setShowSessionModal(false)}>Close</Button>
+                            <Button variant="destructive" className="flex-1" onClick={handleStopSession} disabled={loading}>Stop Session</Button>
                         </div>
                     </div>
-                </div>
-            )}
+                </DialogContent>
+            </Dialog>
 
         </div>
     );

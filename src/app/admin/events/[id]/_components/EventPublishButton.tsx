@@ -10,7 +10,7 @@ export default function EventPublishButton({ event, template }: { event: any, te
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="gap-2 bg-purple-600 hover:bg-purple-700">
+      <Button onClick={() => setOpen(true)} className="gap-2 bg-brand hover:bg-brand-deep text-white">
         <Send className="w-4 h-4" />
         {event.publishStatus === "PUBLISHED" ? "Update Publication" : "Publish & Notify"}
       </Button>

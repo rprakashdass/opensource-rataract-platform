@@ -89,17 +89,19 @@ export async function getSession() {
   const payload = await verifyJWT(sessionCookie) as any;
   if (!payload || !payload.id) return null;
 
-  // Verify the user actually exists in the database
-  // This prevents foreign key errors if the database was reset but the cookie remains
-  const userExists = await prisma.user.findUnique({
+  // Verify the user actually exists in the database and attach their member profile
+  const user = await prisma.user.findUnique({
     where: { id: payload.id },
-    select: { id: true }
+    include: {
+      member: true
+    }
   });
 
-  if (!userExists) {
+  if (!user) {
     return null;
   }
 
+  payload.member = user.member;
   return payload;
 }
 

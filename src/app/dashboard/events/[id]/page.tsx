@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import EventActions from "./_components/EventActions";
 import EventMemories from "./_components/EventMemories";
+import { PageHeader } from "@/components/portal";
 
 export default async function MemberEventPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -56,24 +57,22 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
     return (
         <div className="max-w-3xl mx-auto space-y-6 pb-20 animate-in fade-in duration-300">
             
-            <div className="flex items-center gap-3 mb-6">
-                <Link href="/dashboard/events" className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition">
-                    ← Back to Events
-                </Link>
-            </div>
+            <PageHeader
+                title={event.title}
+                backHref="/dashboard/events"
+                backLabel="Back to Events"
+            />
 
             <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm">
-                <div className="h-32 sm:h-48 w-full bg-gradient-to-br from-purple-500 to-indigo-600"></div>
+                <div className="h-32 sm:h-48 w-full bg-gradient-to-br from-brand to-brand-deep"></div>
                 
                 <div className="p-6 sm:p-8">
                     <div className="flex flex-wrap gap-2 mb-4">
                         <Badge variant="secondary" className="bg-slate-100 text-slate-700">{event.category || "General"}</Badge>
                         {state === "REGISTERED" && <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none">Registered</Badge>}
-                        {state === "CHECK_IN_AVAILABLE" && <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none animate-pulse">Check-in Open</Badge>}
+                        {state === "CHECK_IN_AVAILABLE" && <Badge className="bg-pink-100 text-brand hover:bg-pink-100 border-none animate-pulse">Check-in Open</Badge>}
                         {state === "ATTENDED" && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">Attended</Badge>}
                     </div>
-                    
-                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">{event.title}</h1>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-slate-600 font-medium mb-6">
                         <div className="flex items-center gap-2">
@@ -114,8 +113,8 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
             {/* Organizing Team */}
             {event.members.length > 0 && (
                 <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
-                    <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <Users className="w-5 h-5 text-purple-600" /> Organizing Team
+                    <h2 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                        <Users className="w-5 h-5 text-brand" /> Organizing Team
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {event.members.map(em => (
@@ -134,7 +133,7 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
             {/* Associated Project */}
             {event.project && (
                 <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm">
-                    <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <h2 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
                         <Clock className="w-5 h-5 text-indigo-600" /> Part of Project
                     </h2>
                     <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">

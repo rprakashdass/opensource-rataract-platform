@@ -70,16 +70,16 @@ export default function EventActions({ eventId, memberId, state, volunteerHours 
 
   if (state === "CHECK_IN_AVAILABLE") {
     return (
-      <div className="p-6 bg-purple-50 rounded-2xl border border-purple-100 text-center">
-        <QrCode className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-        <h3 className="font-bold text-purple-900 mb-1">Check-in is open!</h3>
-        <p className="text-sm text-purple-700 mb-4">You can now mark your attendance for this event.</p>
+      <div className="p-6 bg-pink-50 rounded-2xl border border-pink-100 text-center">
+        <QrCode className="w-8 h-8 text-brand mx-auto mb-2" />
+        <h3 className="font-bold text-brand-deep mb-1">Check-in is open!</h3>
+        <p className="text-sm text-brand-deep mb-4">You can now mark your attendance for this event.</p>
         
         {!showPinInput ? (
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Button 
               onClick={() => setShowPinInput(true)} 
-              className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 rounded-xl text-white"
+              className="w-full sm:w-auto bg-brand hover:bg-brand-deep rounded-xl text-white"
             >
               Enter 6-Digit PIN
             </Button>
@@ -92,7 +92,7 @@ export default function EventActions({ eventId, memberId, state, volunteerHours 
               placeholder="000000"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-              className="w-full text-center text-2xl tracking-[0.3em] font-black text-purple-900 py-3 rounded-xl border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full text-center text-2xl tracking-[0.3em] font-bold text-brand-deep py-3 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <div className="flex gap-2">
               <Button 
@@ -106,7 +106,7 @@ export default function EventActions({ eventId, memberId, state, volunteerHours 
               <Button 
                 type="submit" 
                 disabled={loading || pin.length !== 6}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 rounded-xl text-white"
+                className="flex-1 bg-brand hover:bg-brand-deep rounded-xl text-white"
               >
                 {loading ? "..." : "Check In"}
               </Button>
@@ -123,7 +123,7 @@ export default function EventActions({ eventId, memberId, state, volunteerHours 
         <CheckCircle2 className="w-10 h-10 text-green-600 mb-2" />
         <h3 className="font-bold text-green-900">Attendance Recorded</h3>
         <p className="text-sm text-green-700 mt-1">
-          Volunteer Hours: <span className="font-black">{volunteerHours || "0"}</span>
+          Volunteer Hours: <span className="font-bold">{volunteerHours || "0"}</span>
         </p>
       </div>
     );

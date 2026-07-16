@@ -28,7 +28,7 @@ export default function AnnouncementActions({ id, status }: { id: string, status
 
   if (status === "PUBLISHED") {
     return (
-      <div className="flex items-center gap-2 text-green-600 bg-green-50 px-4 py-2 rounded-lg font-medium">
+      <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg font-medium">
         <CheckCircle2 className="h-5 w-5" />
         Published & Sent
       </div>

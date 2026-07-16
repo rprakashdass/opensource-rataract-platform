@@ -66,7 +66,7 @@ export function DeleteAlbumButton({ albumId, albumTitle }: { albumId: string; al
               handleDelete();
             }} 
             disabled={loading} 
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-rose-600 hover:bg-rose-700 text-white"
           >
             {loading ? "Deleting..." : "Delete Album"}
           </Button>

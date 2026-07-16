@@ -24,7 +24,7 @@ export function MemberListView({ members }: { members: any[] }) {
                 <tr key={member.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold shrink-0">
                         {member.name?.[0] || "?"}
                       </div>
                       <div>
@@ -69,7 +69,7 @@ export function MemberListView({ members }: { members: any[] }) {
             <div key={member.id} className="p-4 space-y-3">
               <div className="flex justify-between items-start gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold shrink-0 text-lg">
+                  <div className="w-12 h-12 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold shrink-0 text-lg">
                     {member.name?.[0] || "?"}
                   </div>
                   <div>

@@ -111,7 +111,7 @@ export default function AssignmentsManager({
                   {availableYears.map(y => <option key={y.name} value={y.name}>{y.name}</option>)}
                 </select>
               </div>
-              <Button onClick={handleAddPortfolio} disabled={loading} className="shrink-0 bg-purple-600">Save</Button>
+              <Button onClick={handleAddPortfolio} disabled={loading} className="shrink-0 bg-brand hover:bg-brand-deep text-white">Save</Button>
             </div>
           )}
 
@@ -128,7 +128,7 @@ export default function AssignmentsManager({
                       <p className="text-xs text-slate-500">{p.roleTitle} • {p.tenureYear}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeletePortfolio(p.id)} disabled={loading} className="text-slate-400 hover:text-red-600">
+                  <Button variant="ghost" size="sm" onClick={() => handleDeletePortfolio(p.id)} disabled={loading} className="text-slate-400 hover:text-rose-600">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -182,7 +182,7 @@ export default function AssignmentsManager({
                       <p className="text-xs text-slate-500">{b.financialYear?.name}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteRole(b.id)} disabled={loading} className="text-slate-400 hover:text-red-600">
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteRole(b.id)} disabled={loading} className="text-slate-400 hover:text-rose-600">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

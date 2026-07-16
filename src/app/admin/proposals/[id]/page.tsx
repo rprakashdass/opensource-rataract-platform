@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInitiativeForAdmin } from "@/features/initiatives/queries/getInitiatives";
 import { getSession } from "@/lib/auth/session";
@@ -6,7 +5,8 @@ import { InitiativeStatusBadge } from "@/components/initiatives/InitiativeStatus
 import { CommentThread } from "@/components/initiatives/CommentThread";
 import { ReviewActions } from "../_components/ReviewActions";
 import { ROUTES } from "@/lib/constants";
-import { ArrowLeft, User, Layers, Wallet, CalendarClock } from "lucide-react";
+import { Layers, Wallet, CalendarClock } from "lucide-react";
+import { PageHeader } from "@/components/portal";
 
 export default async function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -18,22 +18,15 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href={`${ROUTES.ADMIN}/proposals`} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-          <ArrowLeft className="w-5 h-5 text-slate-500" />
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{initiative.title}</h1>
-            <InitiativeStatusBadge status={initiative.status} />
-          </div>
-          <p className="text-slate-500 mt-1 text-sm flex items-center gap-1">
-            <User className="w-3.5 h-3.5" /> Proposed by {initiative.proposedBy?.name || "Unknown"}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={initiative.title}
+        description={`Proposed by ${initiative.proposedBy?.name || "Unknown"}`}
+        backHref={`${ROUTES.ADMIN}/proposals`}
+        backLabel="Back to Proposals"
+        actions={<InitiativeStatusBadge status={initiative.status} />}
+      />
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">
         <div>
           <p className="text-xs font-bold text-slate-400 uppercase mb-1">Description</p>
           <p className="text-slate-700 whitespace-pre-wrap">{initiative.description}</p>
@@ -97,12 +90,12 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-        <h2 className="text-sm font-bold text-slate-700 uppercase mb-4">Review</h2>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h2 className="text-sm font-semibold text-slate-900 uppercase mb-4">Review</h2>
         <ReviewActions initiativeId={initiative.id} status={initiative.status} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <CommentThread initiativeId={initiative.id} comments={initiative.comments} currentUserId={session?.id} />
       </div>
     </div>

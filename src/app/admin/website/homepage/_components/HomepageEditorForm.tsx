@@ -164,8 +164,8 @@ export default function HomepageEditorForm({
           <button
             onClick={() => setActiveTab("layout")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
-              activeTab === "layout" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "layout" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/50"
             )}
           >
             <Layout className="w-4 h-4" /> Layout
@@ -173,8 +173,8 @@ export default function HomepageEditorForm({
           <button
             onClick={() => setActiveTab("style")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
-              activeTab === "style" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "style" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/50"
             )}
           >
             <Palette className="w-4 h-4" /> Styling
@@ -182,8 +182,8 @@ export default function HomepageEditorForm({
           <button
             onClick={() => setActiveTab("content")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
-              activeTab === "content" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/50"
             )}
           >
             <FileText className="w-4 h-4" /> Content
@@ -191,8 +191,8 @@ export default function HomepageEditorForm({
           <button
             onClick={() => setActiveTab("metrics")}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all",
-              activeTab === "metrics" ? "bg-white text-[#0B132B] shadow-sm" : "text-slate-500 hover:bg-white/50"
+              "flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all",
+              activeTab === "metrics" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/50"
             )}
           >
             <BarChart3 className="w-4 h-4" /> Stats
@@ -205,7 +205,7 @@ export default function HomepageEditorForm({
           {activeTab === "layout" && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-black text-[#0B132B] mb-1">Section Composer</h3>
+                <h3 className="text-base font-semibold text-slate-900 mb-1">Section Composer</h3>
                 <p className="text-slate-400 text-xs font-medium">Toggle section visibility and customize display order.</p>
               </div>
 
@@ -245,8 +245,8 @@ export default function HomepageEditorForm({
                       <button
                         onClick={() => toggleSection(idx)}
                         className={cn(
-                          "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all",
-                          sec.enabled ? "bg-[#003DA5]/10 text-[#003DA5] hover:bg-[#003DA5]/20" : "bg-slate-200 text-slate-500"
+                          "px-3 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-all",
+                          sec.enabled ? "bg-brand/10 text-brand hover:bg-brand/20" : "bg-slate-200 text-slate-500"
                         )}
                       >
                         {sec.enabled ? "Visible" : "Hidden"}
@@ -262,13 +262,13 @@ export default function HomepageEditorForm({
           {activeTab === "style" && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-black text-[#0B132B] mb-1">Color Aesthetics</h3>
+                <h3 className="text-base font-semibold text-slate-900 mb-1">Color Aesthetics</h3>
                 <p className="text-slate-400 text-xs font-medium">Tailor the brand color theme dynamically across the public portal.</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Primary Accent</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Primary Accent</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -285,7 +285,7 @@ export default function HomepageEditorForm({
                 </div>
 
                 <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Secondary Color</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Secondary Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -302,7 +302,7 @@ export default function HomepageEditorForm({
                 </div>
 
                 <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Accent Strip</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Accent Strip</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -319,7 +319,7 @@ export default function HomepageEditorForm({
                 </div>
 
                 <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Background Cream</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Background Cream</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -335,8 +335,8 @@ export default function HomepageEditorForm({
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl col-span-2">
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Ink Dark Text & Headings</label>
+                <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl sm:col-span-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Ink Dark Text & Headings</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -360,7 +360,7 @@ export default function HomepageEditorForm({
             <div className="space-y-6 pb-6">
               {/* HERO SECTION EDIT */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("hero")}>
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Hero Section</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Hero Section</h4>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">Headline Copy</label>
                   <Input
@@ -378,7 +378,7 @@ export default function HomepageEditorForm({
                     rows={2}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">CTA text</label>
                     <Input
@@ -396,7 +396,7 @@ export default function HomepageEditorForm({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Secondary CTA text</label>
                     <Input
@@ -417,20 +417,20 @@ export default function HomepageEditorForm({
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between bg-slate-50 p-4 border border-slate-100 rounded-2xl">
                     <div>
-                      <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Auto Scroll Slideshow</label>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">Auto Scroll Slideshow</label>
                       <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Automatically cycle through background photos.</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={localSettings.heroScrollAuto}
                       onChange={e => handleSettingChange("heroScrollAuto", e.target.checked)}
-                      className="w-5 h-5 accent-[#0B132B] rounded cursor-pointer"
+                      className="w-5 h-5 accent-brand rounded cursor-pointer"
                     />
                   </div>
 
                   {localSettings.heroScrollAuto && (
                     <div className="bg-slate-50 p-4 border border-slate-100 rounded-2xl">
-                      <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Auto Scroll Interval (seconds)</label>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Auto Scroll Interval (seconds)</label>
                       <Input
                         type="number"
                         min={1}
@@ -444,7 +444,7 @@ export default function HomepageEditorForm({
                   )}
 
                   <div className="space-y-3">
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Hero Slide Images</label>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">Hero Slide Images</label>
                     <p className="text-[10px] text-slate-400 font-bold uppercase -mt-2">Upload multiple images to rotate in the background.</p>
                     
                     <div className="space-y-3">
@@ -488,21 +488,19 @@ export default function HomepageEditorForm({
 
               {/* PRESIDENT'S MESSAGE COPY */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("president")}>
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">President's Message</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">President's Message</h4>
+                
+                <div className="p-3.5 bg-amber-50 border border-amber-200/60 rounded-xl text-xs text-amber-800 space-y-1">
+                  <p className="font-bold">Dynamic President Data Active</p>
+                  <p>The President's Name and Photo are automatically pulled from the active President assigned in <span className="font-semibold">Board Management</span>, avoiding redundant schema configurations.</p>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">Eyebrow Label</label>
                   <Input
                     value={localSettings.aboutEyebrow}
                     onChange={e => handleSettingChange("aboutEyebrow", e.target.value)}
                     placeholder="e.g. A Word From Our President"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">President's Name</label>
-                  <Input
-                    value={localSettings.presName}
-                    onChange={e => handleSettingChange("presName", e.target.value)}
-                    placeholder="e.g. Rtr. Prakash Dass"
                   />
                 </div>
                 <div>
@@ -522,31 +520,20 @@ export default function HomepageEditorForm({
                     placeholder="e.g. Leadership through fellowship"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">President Photo</label>
-                    <FileUpload
-                      value={localSettings.presPhoto}
-                      onChange={url => handleSettingChange("presPhoto", url)}
-                      accept="image/*"
-                      albumTitle="Homepage"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Signature Image</label>
-                    <FileUpload
-                      value={localSettings.presSignature}
-                      onChange={url => handleSettingChange("presSignature", url)}
-                      accept="image/*"
-                      albumTitle="Homepage"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Signature Image</label>
+                  <FileUpload
+                    value={localSettings.presSignature}
+                    onChange={url => handleSettingChange("presSignature", url)}
+                    accept="image/*"
+                    albumTitle="Homepage"
+                  />
                 </div>
               </div>
 
               {/* CORPORATE SPONSORSHIP CTA */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("sponsor")}>
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Sponsorship Card</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Sponsorship Card</h4>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">Section Title</label>
                   <Input
@@ -572,7 +559,7 @@ export default function HomepageEditorForm({
                     rows={3}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">CTA Label</label>
                     <Input
@@ -603,12 +590,12 @@ export default function HomepageEditorForm({
 
               {/* STATIC PAGES TEXT OVERRIDES */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4">
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Public Pages Texts</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Public Pages Texts</h4>
                 <p className="text-xs text-slate-400 -mt-2">
                   About page story, mission, and vision text now live in the dedicated{" "}
-                  <a href="/admin/website/about" className="text-purple-600 hover:underline font-semibold">About Page Editor</a>.
+                  <a href="/admin/website/about" className="text-brand hover:underline font-semibold">About Page Editor</a>.
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Eyebrow</label>
                     <Input
@@ -635,7 +622,7 @@ export default function HomepageEditorForm({
                     rows={2}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Board Section Title</label>
                     <Input
@@ -653,7 +640,7 @@ export default function HomepageEditorForm({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Join Button Text</label>
                     <Input
@@ -675,9 +662,9 @@ export default function HomepageEditorForm({
 
               {/* HOMEPAGE NOTICE BOARD LABELS */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("events_news")}>
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Homepage Notice Board</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Homepage Notice Board</h4>
                 <p className="text-xs text-slate-400 -mt-2">Labels for the announcements column inside the "Events & Notice Board" homepage section.</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Eyebrow Label</label>
                     <Input
@@ -699,7 +686,7 @@ export default function HomepageEditorForm({
 
               {/* FOOTER PITCH */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("footer")}>
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">Footer Setup</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Footer Setup</h4>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">Footer Biography / Mission Pitch</label>
                   <Textarea
@@ -709,7 +696,7 @@ export default function HomepageEditorForm({
                     rows={3}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">Twitter / X URL</label>
                     <Input
@@ -771,7 +758,7 @@ export default function HomepageEditorForm({
                         size="icon"
                         onClick={() => handleSettingChange("footerQuickLinks", localSettings.footerQuickLinks.filter((_: any, i: number) => i !== idx))}
                       >
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                        <Trash2 className="w-4 h-4 text-rose-500" />
                       </Button>
                     </div>
                   ))}
@@ -788,7 +775,7 @@ export default function HomepageEditorForm({
 
               {/* SEO */}
               <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4">
-                <h4 className="font-black text-[#0B132B] text-sm uppercase tracking-wide border-b border-slate-200 pb-2">SEO</h4>
+                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">SEO</h4>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">Site Title (browser tab / search results)</label>
                   <Input
@@ -815,7 +802,7 @@ export default function HomepageEditorForm({
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-lg font-black text-[#0B132B] mb-1">Homepage Metrics</h3>
+                  <h3 className="text-base font-semibold text-slate-900 mb-1">Homepage Metrics</h3>
                   <p className="text-slate-400 text-xs font-medium">Add stats like total volunteers or project counts.</p>
                 </div>
                 <Button onClick={addMetric} size="sm" className="rounded-xl flex items-center gap-1.5 h-9">
@@ -833,8 +820,8 @@ export default function HomepageEditorForm({
                       <Trash2 className="w-4 h-4" />
                     </button>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-1">
                         <label className="block text-[10px] font-bold text-slate-500 mb-1">Number/Stat</label>
                         <Input
                           value={m.number}
@@ -842,7 +829,7 @@ export default function HomepageEditorForm({
                           placeholder="e.g. 50+"
                         />
                       </div>
-                      <div className="col-span-2">
+                      <div className="sm:col-span-2">
                         <label className="block text-[10px] font-bold text-slate-500 mb-1">Label</label>
                         <Input
                           value={m.label}
@@ -879,11 +866,11 @@ export default function HomepageEditorForm({
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-bold text-[#003DA5] hover:underline"
+            className="flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
           >
             Visit Live Site <ExternalLink className="w-3.5 h-3.5" />
           </a>
-          <Button onClick={handleSave} disabled={loading} className="rounded-xl px-6 bg-[#0B132B] hover:bg-[#F7A800]">
+          <Button onClick={handleSave} disabled={loading} className="rounded-xl px-6 bg-brand hover:bg-brand-deep text-white">
             {loading ? "Saving Changes..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
           </Button>
         </div>

@@ -105,7 +105,7 @@ export default function EventMediaModeration({ eventId, media, driveFolderId, ba
                     </Button>
                     <Button
                       variant={isPoster ? "default" : "secondary"}
-                      className={`flex-1 text-xs h-8 ${isPoster ? "bg-purple-500 hover:bg-purple-600 text-white" : ""}`}
+                      className={`flex-1 text-xs h-8 ${isPoster ? "bg-brand hover:bg-brand-deep text-white" : ""}`}
                       onClick={() => handleSetRole(item.id, "poster")}
                       disabled={loadingId === item.id || isPoster}
                     >
@@ -136,7 +136,7 @@ export default function EventMediaModeration({ eventId, media, driveFolderId, ba
                   </div>
                 )}
                 {isPoster && (
-                  <div className="bg-purple-500 text-white p-1 rounded-full shadow-sm">
+                  <div className="bg-brand text-white p-1 rounded-full shadow-sm">
                     <FileImage className="w-3 h-3" />
                   </div>
                 )}

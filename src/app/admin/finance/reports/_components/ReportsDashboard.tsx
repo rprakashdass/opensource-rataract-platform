@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Download, AlertTriangle, Activity, TrendingUp, TrendingDown, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader, StatCard, StatGrid, TableWrap } from "@/components/portal";
 
 interface ReportsDashboardProps {
   data: {
@@ -88,62 +89,29 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* Header & Export */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Financial Reports</h2>
-          <p className="text-sm text-slate-500 font-medium">Summary for {data.financialYear.name}</p>
-        </div>
-        <Button onClick={exportToCSV} className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
-          <Download className="w-4 h-4" /> Export CSV
-        </Button>
-      </div>
+      <PageHeader
+        title="Financial Reports"
+        description={`Summary for ${data.financialYear.name}`}
+        backHref="/admin/finance"
+        backLabel="Back to Finance"
+        actions={
+          <Button onClick={exportToCSV} className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white border-slate-100 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Total Income</p>
-                <h3 className="text-3xl font-black text-emerald-600">₹{totalIncome.toLocaleString()}</h3>
-              </div>
-              <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white border-slate-100 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Total Expense</p>
-                <h3 className="text-3xl font-black text-rose-600">₹{totalExpense.toLocaleString()}</h3>
-              </div>
-              <div className="p-2 bg-rose-50 rounded-lg text-rose-600">
-                <TrendingDown className="w-5 h-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-white border-slate-100 shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-1">Net Position</p>
-                <h3 className={`text-3xl font-black ${netPosition >= 0 ? 'text-purple-600' : 'text-rose-600'}`}>
-                  {netPosition >= 0 ? '+' : ''}₹{netPosition.toLocaleString()}
-                </h3>
-              </div>
-              <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
-                <Activity className="w-5 h-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid className="lg:grid-cols-3">
+        <StatCard label="Total Income" value={`₹${totalIncome.toLocaleString()}`} icon={TrendingUp} tone="positive" />
+        <StatCard label="Total Expense" value={`₹${totalExpense.toLocaleString()}`} icon={TrendingDown} tone="critical" />
+        <StatCard
+          label="Net Position"
+          value={`${netPosition >= 0 ? '+' : ''}₹${netPosition.toLocaleString()}`}
+          icon={Activity}
+          tone={netPosition >= 0 ? "brand" : "critical"}
+        />
+      </StatGrid>
 
       {/* Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -152,7 +120,7 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
         <Card className="border-slate-100 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-purple-500" />
+              <PieChart className="w-5 h-5 text-brand" />
               Expense by Category
             </CardTitle>
           </CardHeader>
@@ -168,7 +136,7 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
                         <span className="font-bold text-slate-900">₹{amount.toLocaleString()}</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
+                        <div className="bg-brand h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
                       </div>
                     </div>
                   );
@@ -184,7 +152,7 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
         <Card className="border-slate-100 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-purple-500" />
+              <Activity className="w-5 h-5 text-brand" />
               Spending by Source
             </CardTitle>
           </CardHeader>
@@ -195,7 +163,7 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
                     <p className="text-sm font-semibold text-slate-900">Project Expenses</p>
                     <p className="text-xs text-slate-500 mt-0.5">Linked to active projects</p>
                   </div>
-                  <p className="text-lg font-black text-rose-600">₹{projectSpending.toLocaleString()}</p>
+                  <p className="text-lg font-bold text-rose-600">₹{projectSpending.toLocaleString()}</p>
                 </div>
                 
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
@@ -203,7 +171,7 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
                     <p className="text-sm font-semibold text-slate-900">Event Expenses</p>
                     <p className="text-xs text-slate-500 mt-0.5">Linked to official events</p>
                   </div>
-                  <p className="text-lg font-black text-rose-600">₹{eventSpending.toLocaleString()}</p>
+                  <p className="text-lg font-bold text-rose-600">₹{eventSpending.toLocaleString()}</p>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
@@ -211,7 +179,7 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
                     <p className="text-sm font-semibold text-slate-900">General/Operational</p>
                     <p className="text-xs text-slate-500 mt-0.5">Unlinked or administrative</p>
                   </div>
-                  <p className="text-lg font-black text-rose-600">₹{otherSpending.toLocaleString()}</p>
+                  <p className="text-lg font-bold text-rose-600">₹{otherSpending.toLocaleString()}</p>
                 </div>
              </div>
           </CardContent>
@@ -225,14 +193,29 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
           </CardHeader>
           <CardContent>
             {Object.keys(monthlyData).length > 0 ? (
-              <div className="overflow-x-auto">
+              <TableWrap
+                mobile={Object.entries(monthlyData).map(([month, data]) => (
+                  <div key={month} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-slate-900">{month}</span>
+                      <span className={`font-bold ${data.income - data.expense >= 0 ? 'text-brand' : 'text-slate-900'}`}>
+                        Net ₹{(data.income - data.expense).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 text-xs">
+                      <span className="text-emerald-600 font-semibold">Income ₹{data.income.toLocaleString()}</span>
+                      <span className="text-rose-600 font-semibold">Expense ₹{data.expense.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))}
+              >
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50 text-slate-500 font-medium uppercase text-xs tracking-wider">
                     <tr>
-                      <th className="p-4 rounded-l-lg">Month</th>
+                      <th className="p-4">Month</th>
                       <th className="p-4">Income</th>
                       <th className="p-4">Expense</th>
-                      <th className="p-4 rounded-r-lg">Net</th>
+                      <th className="p-4">Net</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -241,14 +224,14 @@ export default function ReportsDashboard({ data }: ReportsDashboardProps) {
                         <td className="p-4 font-medium text-slate-900">{month}</td>
                         <td className="p-4 text-emerald-600 font-bold">₹{data.income.toLocaleString()}</td>
                         <td className="p-4 text-rose-600 font-bold">₹{data.expense.toLocaleString()}</td>
-                        <td className={`p-4 font-bold ${data.income - data.expense >= 0 ? 'text-purple-600' : 'text-slate-900'}`}>
+                        <td className={`p-4 font-bold ${data.income - data.expense >= 0 ? 'text-brand' : 'text-slate-900'}`}>
                           ₹{(data.income - data.expense).toLocaleString()}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableWrap>
             ) : (
               <p className="text-sm text-slate-500 py-4 text-center">No transactions recorded yet.</p>
             )}

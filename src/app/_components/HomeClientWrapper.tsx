@@ -69,7 +69,7 @@ export default function HomeClientWrapper({
     }),
   });
 
-  const { club, settings, metrics } = data;
+  const { club, settings, metrics, president } = data;
 
   const [currentSlide, setCurrentSlide] = React.useState(0);
   const rawHeroImages = (settings?.heroImages as string[]) || [];
@@ -202,9 +202,11 @@ export default function HomeClientWrapper({
 
             /* ── ACT 2 · BELIEF — why we exist, then the president's voice ── */
             case "president": {
-              const presName = settings?.presName || "The President";
+              const presName = president?.name || settings?.presName || "The President";
+              const presPhoto = president?.avatar || settings?.presPhoto;
               const presMessage =
                 settings?.presMessage ||
+                president?.websiteQuote ||
                 club.presidentMessage ||
                 "This year we walk further together — more hands, more service, more marks left on the city we love.";
               const belief =
@@ -227,7 +229,7 @@ export default function HomeClientWrapper({
                       quote={presMessage}
                       name={presName}
                       role={settings?.presQuote || club.name}
-                      photoUrl={settings?.presPhoto}
+                      photoUrl={presPhoto}
                       signatureUrl={settings?.presSignature}
                     />
                   </MaxWidthWrapper>
@@ -438,11 +440,40 @@ export default function HomeClientWrapper({
         })();
 
         return content ? (
-          <div key={sec.id} id={sec.id}>
-            {content}
-          </div>
+          <React.Fragment key={sec.id}>
+            <div id={sec.id}>
+              {content}
+            </div>
+            {sec.id === "president" && <MarqueeStrip />}
+          </React.Fragment>
         ) : null;
       })}
     </main>
+  );
+}
+
+function MarqueeStrip() {
+  const text = "WE SERVE • WE LEAD • WE GROW • THADAM";
+  return (
+    <div className="w-full overflow-hidden bg-chapter border-y border-parchment/10 py-5 select-none" data-thadam-dark>
+      <div className="flex w-max min-w-full animate-marquee whitespace-nowrap text-gold uppercase tracking-[0.2em] font-display font-medium text-sm md:text-base">
+        <div className="flex shrink-0 gap-16 px-8">
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+        </div>
+        <div className="flex shrink-0 gap-16 px-8" aria-hidden="true">
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+          <span>{text}</span>
+        </div>
+      </div>
+    </div>
   );
 }

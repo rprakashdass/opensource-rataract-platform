@@ -78,10 +78,10 @@ function shelfSupport(shelf: Shelf): string | undefined {
   return `${format(newest, "MMMM yyyy")} · ${count} ${count === 1 ? "photograph" : "photographs"}`;
 }
 
-function Masonry({ photos }: { photos: GalleryPhoto[] }) {
+function Masonry({ photos, eagerCount = 0 }: { photos: GalleryPhoto[]; eagerCount?: number }) {
   return (
     <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
-      {photos.map((photo) => {
+      {photos.map((photo, photoIndex) => {
         const label = photo.title || photo.event?.title || photo.project?.title;
         const tag = photo.event ? "Event memory" : photo.project ? "Initiative" : null;
         return (
@@ -94,6 +94,7 @@ function Masonry({ photos }: { photos: GalleryPhoto[] }) {
               alt={label || "Club memory"}
               width={600}
               height={400}
+              priority={photoIndex < eagerCount}
               className="w-full h-auto object-cover thadam-grade"
             />
             {label && (
@@ -187,7 +188,8 @@ export default async function GalleryPage({
                 support={shelfSupport(shelf)}
               />
               <RevealBlock>
-                <Masonry photos={shelf.photos} />
+                {/* First shelf's opening images sit above the fold — eager-load them (LCP) */}
+                <Masonry photos={shelf.photos} eagerCount={i === 0 ? 4 : 0} />
               </RevealBlock>
             </MaxWidthWrapper>
           </section>

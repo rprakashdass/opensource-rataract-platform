@@ -45,7 +45,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Profile Picture</label>
         <FileUpload 
           value={formData.avatar}
           onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
@@ -55,24 +55,24 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
           <input
             type="text"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
+            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm motion-input"
             placeholder="+91 9876543210"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Blood Group</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Blood Group</label>
           <select
             name="bloodGroup"
             value={formData.bloodGroup}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white motion-input"
+            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm bg-white motion-input"
           >
             <option value="">Select Blood Group</option>
             {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
@@ -82,77 +82,77 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Profession</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Profession</label>
           <input
             type="text"
             name="profession"
             value={formData.profession}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
+            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm motion-input"
             placeholder="e.g. Software Engineer, Student"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Company / University</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Company / University</label>
           <input
             type="text"
             name="companyName"
             value={formData.companyName}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
+            className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm motion-input"
             placeholder="e.g. Google, Anna University"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
         <input
           type="text"
           name="location"
           value={formData.location}
           onChange={handleChange}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
+          className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm motion-input"
           placeholder="e.g. Chennai, TN"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Bio</label>
         <textarea
           name="bio"
           value={formData.bio}
           onChange={handleChange}
           rows={3}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
+          className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm motion-input"
           placeholder="Tell us a little bit about yourself..."
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Website Quote (Public Testimonial)</label>
-        <p className="text-xs text-gray-500 mb-1.5">For Board Members: This quote is displayed publicly alongside your picture on the Team page.</p>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Website Quote (Public Testimonial)</label>
+        <p className="text-xs text-slate-500 mb-1.5">For Board Members: This quote is displayed publicly alongside your picture on the Team page.</p>
         <textarea
           name="websiteQuote"
           value={formData.websiteQuote}
           onChange={handleChange}
           rows={2}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm motion-input"
+          className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm motion-input"
           placeholder="e.g. Serving as President allows me to build the future of Coimbatore..."
         />
       </div>
 
-      <div className="flex items-center space-x-2 border p-4 rounded-md border-gray-300">
+      <div className="flex items-center space-x-2 border p-4 rounded-md border-slate-300">
         <input 
           type="checkbox" 
           id="showOnWebsite" 
           name="showOnWebsite" 
           checked={formData.showOnWebsite}
           onChange={(e) => setFormData(prev => ({ ...prev, showOnWebsite: e.target.checked }))}
-          className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-600" 
+          className="w-4 h-4 rounded border-slate-300 text-brand focus:ring-brand"
         />
-        <label htmlFor="showOnWebsite" className="text-sm font-medium text-gray-700 cursor-pointer">
+        <label htmlFor="showOnWebsite" className="text-sm font-medium text-slate-700 cursor-pointer">
           Show my profile on the public website (Club Directory / Project Teams)
         </label>
       </div>
@@ -161,7 +161,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 disabled:opacity-50 transition motion-button"
+          className="rounded-md bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50 transition motion-button"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import AnnouncementForm from "../AnnouncementForm";
+import { PageHeader } from "@/components/portal";
 
 export default async function NewAnnouncementPage() {
   // Assume a single club for now, or get the first one
@@ -11,8 +12,8 @@ export default async function NewAnnouncementPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Announcement</h1>
+      <PageHeader title="Create New Announcement" backHref="/admin/announcements" backLabel="Back to Announcements" />
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <AnnouncementForm clubId={club.id} />
       </div>
     </div>

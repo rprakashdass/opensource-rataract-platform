@@ -99,7 +99,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
       case "ANNOUNCEMENT": return <Bell className="h-4 w-4 text-amber-500" />;
       case "EVENT": return <Calendar className="h-4 w-4 text-emerald-500" />;
       case "FINANCE": return <Banknote className="h-4 w-4 text-blue-500" />;
-      case "MINUTE": return <FileText className="h-4 w-4 text-purple-500" />;
+      case "MINUTE": return <FileText className="h-4 w-4 text-brand" />;
       default: return <Bell className="h-4 w-4 text-slate-500" />;
     }
   };
@@ -122,12 +122,12 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                   <Image src={club.logoUrl} alt={club.name} fill className="object-cover" sizes="40px" />
                 </div>
               ) : (
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm md:text-base flex-shrink-0">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold text-sm md:text-base flex-shrink-0">
                   {getInitials(club.name)}
                 </div>
               )}
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-slate-900 truncate text-sm md:text-base group-hover:text-purple-700 transition-colors">
+                <span className="font-bold text-slate-900 truncate text-sm md:text-base group-hover:text-brand transition-colors">
                   {club.name}
                 </span>
                 <span className="text-xs text-slate-500 truncate hidden sm:block">
@@ -174,7 +174,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                         {hasUnread && (
                           <button 
                             onClick={markAllAsRead}
-                            className="text-xs text-purple-600 hover:text-purple-700 font-medium bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors"
+                            className="text-xs text-brand hover:text-brand-deep font-medium bg-pink-50 hover:bg-pink-100 px-2.5 py-1 rounded-md transition-colors"
                           >
                             Mark all as read
                           </button>
@@ -205,8 +205,8 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                                     {n.description && (
                                       <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{n.description}</p>
                                     )}
-                                    <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
-                                      {formatDistanceToNow(n.date, { addSuffix: true })}
+                                    <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold" suppressHydrationWarning>
+                                      {formatDistanceToNow(new Date(n.date), { addSuffix: true })}
                                     </p>
                                   </div>
                                   {!isRead && (
@@ -238,7 +238,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 p-1 md:pr-2 md:pl-1 bg-slate-50 hover:bg-slate-100 rounded-full border border-slate-200 transition-colors"
               >
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 text-white flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-tr from-brand to-gold text-white flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
                   {getInitials(user.name)}
                 </div>
                 <div className="hidden md:flex flex-col items-start pr-1">
@@ -261,7 +261,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                         <p className="text-xs text-slate-500 truncate">{user.email}</p>
                         <div className="mt-2 flex flex-wrap gap-1">
                           {user.roles.slice(0, 2).map((role) => (
-                            <span key={role} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold uppercase">
+                            <span key={role} className="text-[10px] bg-pink-50 text-brand px-1.5 py-0.5 rounded font-semibold uppercase">
                               {role.replace("_", " ")}
                             </span>
                           ))}

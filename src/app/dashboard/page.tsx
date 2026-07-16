@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { PageHeader, StatCard, StatGrid } from "@/components/portal";
 
 export default async function MemberDashboardPage() {
   const { member, profileCompletion, stats, upcomingEvents, checkInEvents, pendingPaymentRequests, timeline, error } = await getMemberDashboard();
@@ -47,33 +48,32 @@ export default async function MemberDashboardPage() {
       
       {/* Welcome Header */}
       <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-        <div className="flex items-center gap-4 relative z-10">
+        <PageHeader
+          className="mb-0"
+          title={`Hello, ${(member.name || "Member").split(" ")[0]} 👋`}
+          description="Here's what's happening in your club today."
+          actions={
             <MemberAvatar name={member.name} avatarUrl={member.avatar} className="w-14 h-14 border-2 border-white shadow-sm" textClassName="text-lg" />
-            <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Hello,</p>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                    {(member.name || "Member").split(" ")[0]} <span className="animate-wave inline-block origin-bottom-right">👋</span>
-                </h1>
-            </div>
-        </div>
+          }
+        />
       </section>
 
       {/* Today Section (Urgent Actions) */}
       <section className="space-y-3">
-          <h2 className="text-lg font-bold text-slate-900 px-1">Today</h2>
+          <h2 className="text-base font-semibold text-slate-900 px-1">Today</h2>
           
           {checkInEvents && checkInEvents.length > 0 ? (
               checkInEvents.map((event: any) => (
-                  <div key={event.id} className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white shadow-md relative overflow-hidden flex flex-col gap-3 justify-between">
+                  <div key={event.id} className="bg-gradient-to-br from-brand to-brand-deep rounded-2xl p-5 text-white shadow-md relative overflow-hidden flex flex-col gap-3 justify-between">
                       <div className="absolute top-0 right-0 p-4 opacity-10">
                           <MapPin className="w-20 h-20" />
                       </div>
                       <div className="relative z-10">
-                          <p className="text-purple-100 font-semibold text-sm mb-1">Ongoing Right Now</p>
+                          <p className="text-white/80 font-semibold text-sm mb-1">Ongoing Right Now</p>
                           <h3 className="text-xl font-bold leading-tight">{event.title}</h3>
                       </div>
                       <Link href={`/dashboard/events/${event.id}`} className="relative z-10 w-full mt-2">
-                          <Button className="w-full bg-white text-purple-700 hover:bg-slate-50 rounded-xl font-bold">I'm Here / Check In</Button>
+                          <Button className="w-full bg-white text-brand hover:bg-slate-50 rounded-xl font-bold">I'm Here / Check In</Button>
                       </Link>
                   </div>
               ))
@@ -81,7 +81,7 @@ export default async function MemberDashboardPage() {
               <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">
                   <div>
                       <h3 className="font-bold text-slate-900">{upcomingEvents[0].title}</h3>
-                      <p className="text-xs text-slate-500 font-medium mt-1">Starts {new Date(upcomingEvents[0].startDate).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500 font-medium mt-1" suppressHydrationWarning>Starts {new Date(upcomingEvents[0].startDate).toLocaleDateString()}</p>
                   </div>
                   <Link href={`/dashboard/events/${upcomingEvents[0].id}`}>
                       <Button variant="secondary" size="sm" className="rounded-xl font-semibold">View</Button>
@@ -91,7 +91,7 @@ export default async function MemberDashboardPage() {
               <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm text-center">
                   <p className="text-slate-500 font-medium text-sm">No events happening today.</p>
                   <Link href="/dashboard/events">
-                      <Button variant="link" className="text-purple-600 px-0">Explore Upcoming Events <ArrowRight className="w-3 h-3 ml-1" /></Button>
+                      <Button variant="link" className="text-brand px-0">Explore Upcoming Events <ArrowRight className="w-3 h-3 ml-1" /></Button>
                   </Link>
               </div>
           )}
@@ -100,7 +100,7 @@ export default async function MemberDashboardPage() {
       {/* Pending Payments Section */}
       {pendingPaymentRequests && pendingPaymentRequests.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-bold text-slate-900 px-1">Payment Requests</h2>
+          <h2 className="text-base font-semibold text-slate-900 px-1">Payment Requests</h2>
           <div className="space-y-3">
             {pendingPaymentRequests.map((pr: any) => {
               // Generate UPI link
@@ -123,9 +123,9 @@ export default async function MemberDashboardPage() {
                       {pr.description && <p className="text-xs text-slate-600 mt-1">{pr.description}</p>}
                     </div>
                     <div className="text-right">
-                      <span className="text-xl font-black text-rose-700">₹{pr.amount}</span>
+                      <span className="text-xl font-bold text-rose-700">₹{pr.amount}</span>
                       {pr.dueDate && (
-                        <p className="text-[10px] text-slate-500 font-semibold mt-0.5 whitespace-nowrap">
+                        <p className="text-[10px] text-slate-500 font-semibold mt-0.5 whitespace-nowrap" suppressHydrationWarning>
                           Due {new Date(pr.dueDate).toLocaleDateString()}
                         </p>
                       )}
@@ -156,7 +156,7 @@ export default async function MemberDashboardPage() {
 
       {/* Next Actions (Scrollable Pills) */}
       <section className="space-y-3">
-          <h2 className="text-lg font-bold text-slate-900 px-1">Next Actions</h2>
+          <h2 className="text-base font-semibold text-slate-900 px-1">Next Actions</h2>
           <div className="flex gap-3 overflow-x-auto pb-4 pt-1 px-1 -mx-1 snap-x scrollbar-hide">
               
               {profileCompletion < 100 && (
@@ -205,37 +205,19 @@ export default async function MemberDashboardPage() {
 
       {/* Stats Grid */}
       <section className="space-y-3">
-          <h2 className="text-lg font-bold text-slate-900 px-1">Your Impact</h2>
-          <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center items-start">
-                  <div className="p-2 rounded-xl bg-blue-50 mb-2">
-                      <Calendar className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900">{stats?.eventsAttended || 0}</h3>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Events</p>
-              </div>
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center items-start">
-                  <div className="p-2 rounded-xl bg-green-50 mb-2">
-                      <Clock className="w-4 h-4 text-green-600" />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900">{stats?.volunteerHours || 0}</h3>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Hours</p>
-              </div>
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center items-start">
-                  <div className="p-2 rounded-xl bg-amber-50 mb-2">
-                      <Briefcase className="w-4 h-4 text-amber-600" />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900">{stats?.projectsJoined || 0}</h3>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Projects</p>
-              </div>
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-2xl shadow-sm border border-indigo-100 flex flex-col justify-center items-start relative overflow-hidden">
+          <h2 className="text-base font-semibold text-slate-900 px-1">Your Impact</h2>
+          <StatGrid>
+              <StatCard label="Events" value={stats?.eventsAttended || 0} icon={Calendar} tone="brand" />
+              <StatCard label="Hours" value={stats?.volunteerHours || 0} icon={Clock} tone="positive" />
+              <StatCard label="Projects" value={stats?.projectsJoined || 0} icon={Briefcase} tone="warning" />
+              <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-4 rounded-xl shadow-sm border border-indigo-100 flex flex-col justify-center items-start relative overflow-hidden">
                   <Bell className="w-16 h-16 text-indigo-900/10 absolute -right-2 -bottom-2" />
                   <div className="relative z-10">
                       <h3 className="font-bold text-indigo-900 mb-1 text-sm">Updates</h3>
                       <p className="text-xs text-indigo-700 font-medium">You're all caught up!</p>
                   </div>
               </div>
-          </div>
+          </StatGrid>
       </section>
 
     </div>

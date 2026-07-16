@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import WebsiteModuleToggles from "./_components/WebsiteModuleToggles";
+import { PageHeader } from "@/components/portal";
 
 export default async function WebsiteControlCenter() {
   const club = await getCurrentClub();
@@ -40,7 +41,7 @@ export default async function WebsiteControlCenter() {
       description: "Write your club's story and manage your history.",
       icon: BookOpen,
       href: "/admin/website/about",
-      color: "bg-purple-100 text-purple-600"
+      color: "bg-pink-100 text-brand"
     },
     {
       title: "Club Milestones",
@@ -123,24 +124,24 @@ export default async function WebsiteControlCenter() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Website Control Center</h1>
-          <p className="text-slate-500 mt-1">Manage public pages, marketing copy, and website features.</p>
-        </div>
-        <Link href="/" target="_blank">
-          <Button className="bg-slate-900 text-white rounded-xl shadow-md hover:bg-slate-800">
-            View Live Website <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Website Control Center"
+        description="Manage public pages, marketing copy, and website features."
+        actions={
+          <Link href="/" target="_blank">
+            <Button className="bg-brand hover:bg-brand-deep text-white rounded-xl">
+              View Live Website <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column: Quick Links to Editors */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">Content Editors</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-6">Content Editors</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {modules.map((mod, idx) => {
                 const Icon = mod.icon;
@@ -151,7 +152,7 @@ export default async function WebsiteControlCenter() {
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{mod.title}</h3>
+                        <h3 className="font-semibold text-slate-900 group-hover:text-brand transition-colors">{mod.title}</h3>
                         <p className="text-sm text-slate-500 mt-1">{mod.description}</p>
                       </div>
                     </div>

@@ -40,7 +40,7 @@ export default function Footer({ layoutData }: { layoutData?: any }) {
             <FootprintGlyph />
             <span className="text-xs font-semibold uppercase tracking-[0.18em]">Thadam · 2026–27</span>
           </div>
-          <p className="font-display font-medium text-parchment tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,7vw,5rem)] max-w-4xl text-balance">
+          <p className="font-statement font-medium text-parchment tracking-[-0.015em] leading-[1.05] text-[clamp(2.4rem,7vw,5rem)] max-w-4xl text-balance">
             {manifesto}
           </p>
         </div>

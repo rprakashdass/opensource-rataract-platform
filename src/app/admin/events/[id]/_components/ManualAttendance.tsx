@@ -42,11 +42,11 @@ export default function ManualAttendance({ eventId, availableMembers }: { eventI
   if (availableMembers.length === 0) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+    <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
       <select 
         value={selectedMemberId} 
         onChange={(e) => setSelectedMemberId(e.target.value)}
-        className="w-full sm:w-64 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500"
+        className="w-full sm:w-64 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-brand focus:border-brand"
       >
         <option value="">Select member to mark present...</option>
         {availableMembers.map(m => (
@@ -56,7 +56,7 @@ export default function ManualAttendance({ eventId, availableMembers }: { eventI
       <button
         onClick={handleManualMark}
         disabled={loading || !selectedMemberId}
-        className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full sm:w-auto bg-brand hover:bg-brand-deep text-white font-semibold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
       >
         <Plus className="h-4 w-4" />
         {loading ? "Marking..." : "Mark Present"}

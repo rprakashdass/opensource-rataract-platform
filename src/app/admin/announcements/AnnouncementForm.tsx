@@ -113,21 +113,21 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
-        <div className="p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+        <div className="p-4 bg-rose-50 text-rose-700 rounded-lg text-sm">
           {error}
         </div>
       )}
 
       {/* Basic Info Section */}
       <div className="space-y-6 bg-white p-6 rounded-xl border border-slate-200">
-        <h3 className="text-lg font-semibold border-b pb-2">Basic Details</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="text-base font-semibold text-slate-900 border-b border-slate-200 pb-2">Basic Details</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Category</label>
+            <label className="text-sm font-medium text-slate-700">Category</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as AnnouncementType)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
             >
               <option value="GENERAL">General Update</option>
               <option value="BOARD_MEETING">Board Meeting</option>
@@ -139,11 +139,11 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Visibility</label>
+            <label className="text-sm font-medium text-slate-700">Visibility</label>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
             >
               <option value="PUBLIC">Public & Members (BOTH)</option>
               <option value="MEMBERS_ONLY">Members Only</option>
@@ -152,13 +152,13 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700">Title / Subject</label>
+            <label className="text-sm font-medium text-slate-700">Title / Subject</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
               placeholder="e.g., Monthly Board Meeting"
             />
           </div>
@@ -166,31 +166,31 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
           {isMeeting && (
             <>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Date & Time</label>
+                <label className="text-sm font-medium text-slate-700">Date & Time</label>
                 <input
                   type="datetime-local"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Location (Venue)</label>
+                <label className="text-sm font-medium text-slate-700">Location (Venue)</label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
                   placeholder="e.g., Community Center"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-700">Meeting Link (Optional)</label>
+                <label className="text-sm font-medium text-slate-700">Meeting Link (Optional)</label>
                 <input
                   type="url"
                   value={meetingLink}
                   onChange={(e) => setMeetingLink(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
                   placeholder="https://zoom.us/..."
                 />
               </div>
@@ -199,12 +199,12 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
 
           {!isMeeting && (
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Summary (Optional)</label>
+              <label className="text-sm font-medium text-slate-700">Summary (Optional)</label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
                 placeholder="Brief summary of the announcement"
               />
             </div>
@@ -213,23 +213,23 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
       </div>
 
       {/* Generated Content Section */}
-      <div className="space-y-6 bg-purple-50/50 p-6 rounded-xl border border-purple-100">
-        <h3 className="text-lg font-semibold border-b border-purple-200 pb-2 text-purple-900">Communication Content</h3>
-        <p className="text-sm text-purple-700">This content was auto-generated based on your details. You can edit it before sending.</p>
+      <div className="space-y-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <h3 className="text-base font-semibold text-slate-900 border-b border-slate-200 pb-2">Communication Content</h3>
+        <p className="text-sm text-slate-500">This content was auto-generated based on your details. You can edit it before sending.</p>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Email Subject</label>
+            <label className="text-sm font-medium text-slate-700">Email Subject</label>
             <input
               type="text"
               value={emailSubject}
               onChange={(e) => setEmailSubject(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Email Body</label>
+            <label className="text-sm font-medium text-slate-700">Email Body</label>
             <RichTextEditor
               value={emailBody}
               onChange={setEmailBody}
@@ -239,8 +239,8 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
 
           {isMeeting && (
             <div className="space-y-2 pt-4">
-              <label className="text-sm font-medium text-gray-700">Agenda Document</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <label className="text-sm font-medium text-slate-700">Agenda Document</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <p className="text-xs text-slate-500 mb-2">Build agenda text inline</p>
                   <RichTextEditor
@@ -265,7 +265,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
         </div>
       </div>
 
-      <div className="flex justify-end gap-4 pt-4">
+      <div className="flex flex-wrap justify-end gap-4 pt-4">
         <Button
           type="button"
           variant="outline"

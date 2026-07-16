@@ -110,7 +110,7 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
             </button>
           </div>
           
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="col-span-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">Year</label>
               <Input 
@@ -120,7 +120,7 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
                 required 
               />
             </div>
-            <div className="col-span-3">
+            <div className="col-span-1 md:col-span-3">
               <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
               <Input 
                 value={formData.title} 
@@ -159,11 +159,11 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
                 <h4 className="font-bold text-slate-900 text-lg">{m.title}</h4>
                 {m.description && <p className="text-slate-500 mt-1 text-sm">{m.description}</p>}
               </div>
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Button type="button" variant="ghost" size="sm" onClick={() => handleEdit(m)} className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50">
                   <Edit2 className="w-4 h-4" />
                 </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => handleDelete(m.id)} className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50">
+                <Button type="button" variant="ghost" size="sm" onClick={() => handleDelete(m.id)} className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-rose-600 hover:bg-rose-50">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
