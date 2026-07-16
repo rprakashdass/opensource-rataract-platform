@@ -2,7 +2,7 @@
 
 export async function generateTemplate(data: {
   type: string;
-  title: string;
+  title?: string;
   date?: string;
   location?: string;
   link?: string;
@@ -11,67 +11,97 @@ export async function generateTemplate(data: {
   let emailBody = '';
   let agendaContent = '';
 
+  const titleStr = data.title || '[Topic / Title]';
   const formattedDate = data.date ? new Date(data.date).toLocaleString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     hour: 'numeric',
     minute: 'numeric',
-  }) : 'TBD';
+  }) : '[Date & Time]';
+
+  const venueStr = data.location || '[Meeting Venue]';
+  const linkStr = data.link ? `\n- **Meeting Link:** [Join Here](${data.link})` : '';
 
   if (data.type === 'BOARD_MEETING') {
-    emailSubject = `Board Meeting: ${data.title}`;
+    emailSubject = `Notice of Board Meeting: ${titleStr}`;
     emailBody = `Dear Board Members,
 
-You are invited to our upcoming Board Meeting.
+You are cordially invited to our upcoming Board Meeting.
 
 **Meeting Details:**
-- **Topic:** ${data.title}
+- **Agenda:** ${titleStr}
 - **Date & Time:** ${formattedDate}
-- **Venue:** ${data.location || 'TBD'}
-${data.link ? `- **Meeting Link:** [Join Here](${data.link})` : ''}
+- **Venue:** ${venueStr}${linkStr}
 
 Please review the agenda and come prepared to discuss your respective avenues.
 
 Yours in Rotaract,
 Secretary`;
-    agendaContent = `**Agenda for ${data.title}**\n\n1. Call to order\n2. Roll call\n3. Review of previous minutes\n4. President's remarks\n5. Avenue reports\n6. Any other business (AOB)\n7. Adjournment`;
+    agendaContent = `**Agenda for ${titleStr}**\n\n1. Call to order\n2. Roll call & apologies\n3. Review & approval of previous minutes\n4. President's remarks\n5. Avenue/Portfolio updates\n6. Special agenda discussions\n7. Any other business (AOB)\n8. Adjournment`;
   } else if (data.type === 'CLUB_MEETING') {
-    emailSubject = `Club Meeting: ${data.title}`;
+    emailSubject = `Club Meeting Notice: ${titleStr}`;
     emailBody = `Dear Members,
 
-Join us for our upcoming general body meeting!
+Please join us for our upcoming general body meeting!
 
 **Meeting Details:**
-- **Topic:** ${data.title}
+- **Topic:** ${titleStr}
 - **Date & Time:** ${formattedDate}
-- **Venue:** ${data.location || 'TBD'}
+- **Venue:** ${venueStr}${linkStr}
 
 Looking forward to seeing you all!
 
 Yours in Rotaract,
-President`;
-    agendaContent = `**Agenda**\n\n1. Welcome Address\n2. Project Updates\n3. Upcoming Events\n4. Member Spotlight\n5. Fellowship`;
+Joint Secretary`;
+    agendaContent = `**Agenda**\n\n1. Fellowship & Welcome\n2. Project updates\n3. Financial highlights\n4. Upcoming plan overview\n5. Member spotlight`;
+  } else if (data.type === 'EVENT_UPDATE') {
+    emailSubject = `Important Event Update: ${titleStr}`;
+    emailBody = `Dear Members and Partners,
+
+We have an exciting update regarding our upcoming event: **${titleStr}**.
+
+**Event Details:**
+- **Date & Time:** ${formattedDate}
+- **Venue:** ${venueStr}${linkStr}
+
+Please read the details and make sure to RSVP and spread the word!
+
+Best regards,
+Event Committee`;
   } else if (data.type === 'FINANCE_NOTICE') {
-    emailSubject = `Important Finance Update: ${data.title}`;
+    emailSubject = `Important Finance Update: ${titleStr}`;
     emailBody = `Dear Members,
 
-Please take note of this financial update:
+Please take note of this financial notice:
 
-**${data.title}**
+**${titleStr}**
 
-Kindly review the details and ensure all dues/payments are cleared on time.
+Kindly review the details and ensure all dues/payments are cleared by the deadline.
 
 Regards,
 Treasurer`;
-  } else {
-    emailSubject = `Announcement: ${data.title}`;
+  } else if (data.type === 'IMPORTANT_NOTICE') {
+    emailSubject = `URGENT NOTICE: ${titleStr}`;
     emailBody = `Dear Members,
 
-We have an important announcement regarding: **${data.title}**
+Please read this urgent and important notice regarding:
 
-Date: ${formattedDate}
-${data.location ? `Location: ${data.location}` : ''}
+**${titleStr}**
+
+Ensure you read the attachment and respond if necessary.
+
+Best regards,
+President`;
+  } else {
+    emailSubject = `Rotaract Club Update: ${titleStr}`;
+    emailBody = `Dear Members,
+
+Here is a general update regarding our club activities:
+
+**${titleStr}**
+
+Thank you for your active participation.
 
 Best regards,
 Rotaract Club`;

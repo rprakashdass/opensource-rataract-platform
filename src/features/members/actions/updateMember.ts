@@ -13,8 +13,17 @@ export async function updateMember(id: string, data: any) {
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };
 
+    const existing = await prisma.member.findUnique({
+      where: { id },
+      select: { clubId: true }
+    });
+
+    if (!existing) {
+      return { error: "Member not found" };
+    }
+
     const member = await prisma.member.update({
-      where: { id, clubId: club.id },
+      where: { id },
       data: {
         name: data.name,
         email: data.email,

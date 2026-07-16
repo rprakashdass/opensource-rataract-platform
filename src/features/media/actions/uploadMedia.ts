@@ -11,17 +11,32 @@ export async function uploadMedia(formData: FormData) {
     const session = await getSession();
     if (!session || !session.id) return { error: "Unauthorized" };
 
+    const sanitizeField = (val: any) => {
+      if (!val) return null;
+      const str = String(val).trim();
+      if (str === "" || str === "null" || str === "undefined") return null;
+      return str;
+    };
+
     const file = formData.get("file") as File;
-    const title = formData.get("title") as string;
-    const caption = formData.get("caption") as string | null;
-    const altText = formData.get("altText") as string | null;
-    const type = (formData.get("type") as MediaType) || "IMAGE";
-    const usage = (formData.get("usage") as MediaUsage) || "GALLERY";
+    const title = sanitizeField(formData.get("title"));
+    const caption = sanitizeField(formData.get("caption"));
+    const altText = sanitizeField(formData.get("altText"));
+    
+    const typeVal = sanitizeField(formData.get("type"));
+    let type = (typeVal as MediaType) || "IMAGE";
+    if (file && !file.type.startsWith("image/") && type === "IMAGE") {
+      type = "DOCUMENT";
+    }
+    
+    const usageVal = sanitizeField(formData.get("usage"));
+    const usage = (usageVal as MediaUsage) || "GALLERY";
+
     const isCover = formData.get("isCover") === "true";
-    const eventId = (formData.get("eventId") as string | null) || null;
-    const projectId = (formData.get("projectId") as string | null) || null;
-    let albumId = (formData.get("albumId") as string | null) || null;
-    const albumTitle = (formData.get("albumTitle") as string | null) || null;
+    const eventId = sanitizeField(formData.get("eventId"));
+    const projectId = sanitizeField(formData.get("projectId"));
+    let albumId = sanitizeField(formData.get("albumId"));
+    const albumTitle = sanitizeField(formData.get("albumTitle"));
 
     // Security check: Only admins can assign files to albums, events, projects, or set as covers.
     const isAdmin = canManageClub(session);

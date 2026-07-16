@@ -2,7 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageWebsite } from "@/lib/auth/session";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { getCurrentClub } from "@/lib/club";
 
 export async function saveClubAbout(data: {
   aboutTitle?: string;
@@ -18,15 +19,12 @@ export async function saveClubAbout(data: {
     const session = await getSession();
     if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
-    const member = await prisma.member.findUnique({
-      where: { userId: session.id }
-    });
-
-    if (!member) return { error: "Member not found" };
+    const currentClub = await getCurrentClub();
+    if (!currentClub) return { error: "Club not found" };
 
     // Build update payload (ignore empty strings - treat them as intentional clear)
     const club = await prisma.club.update({
-      where: { id: member.clubId },
+      where: { id: currentClub.id },
       data: {
         aboutTitle: data.aboutTitle || null,
         aboutSubtitle: data.aboutSubtitle || null,
@@ -42,6 +40,7 @@ export async function saveClubAbout(data: {
     revalidatePath("/about");
     revalidatePath("/admin/website/about");
     revalidatePath("/");
+    revalidateTag("club", "max");
 
     return { success: true, club };
   } catch (error: any) {

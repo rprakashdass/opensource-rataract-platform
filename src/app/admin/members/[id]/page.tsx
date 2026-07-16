@@ -11,6 +11,8 @@ import { prisma } from "@/lib/prisma";
 import AssignmentsManager from "../_components/AssignmentsManager";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{
     id: string;
@@ -25,16 +27,29 @@ export default async function MemberProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  const activeBoard = member.boardMemberships?.find(b => !b.leftAt);
-  const boardHistory = member.boardMemberships?.filter(b => b.leftAt);
+  const sanitizedBoardMemberships = JSON.parse(JSON.stringify(member.boardMemberships || [])).map((b: any) => ({
+    ...b,
+    financialYear: b.financialYear ? {
+      ...b.financialYear,
+      openingBalance: Number(b.financialYear.openingBalance),
+      closingBalance: b.financialYear.closingBalance ? Number(b.financialYear.closingBalance) : null
+    } : null
+  }));
 
-  const [availablePortfolios, availableRoles, rawAvailableYears] = await Promise.all([
-    prisma.portfolio.findMany({ where: { clubId: member.clubId }, orderBy: { displayOrder: 'asc' } }),
-    prisma.clubRole.findMany({ where: { clubId: member.clubId }, orderBy: { displayOrder: 'asc' } }),
-    prisma.financialYear.findMany({ where: { clubId: member.clubId }, orderBy: { name: 'desc' } })
+  const activeBoard = sanitizedBoardMemberships.find((b: any) => !b.leftAt);
+  const boardHistory = sanitizedBoardMemberships.filter((b: any) => b.leftAt);
+
+  const club = await prisma.club.findFirst();
+  if (!club) {
+    notFound();
+  }
+
+  const [availableRoles, rawAvailableYears] = await Promise.all([
+    prisma.clubRole.findMany({ where: { clubId: club.id }, orderBy: { displayOrder: 'asc' } }),
+    prisma.financialYear.findMany({ where: { clubId: club.id }, orderBy: { name: 'desc' } })
   ]);
 
-  const availableYears = rawAvailableYears.map(fy => ({
+  const availableYears = JSON.parse(JSON.stringify(rawAvailableYears)).map((fy: any) => ({
     ...fy,
     openingBalance: Number(fy.openingBalance),
     closingBalance: fy.closingBalance ? Number(fy.closingBalance) : null
@@ -164,9 +179,7 @@ export default async function MemberProfilePage({ params }: PageProps) {
 
           <AssignmentsManager 
             memberId={member.id}
-            portfolioAssignments={member.portfolioAssignments || []}
-            boardMemberships={member.boardMemberships || []}
-            availablePortfolios={availablePortfolios}
+            boardMemberships={sanitizedBoardMemberships}
             availableRoles={availableRoles}
             availableYears={availableYears}
           />

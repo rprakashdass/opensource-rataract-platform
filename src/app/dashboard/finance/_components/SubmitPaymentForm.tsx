@@ -6,6 +6,7 @@ import { Upload, FileType, QrCode, Smartphone, Info } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { TRANSACTION_CATEGORIES } from "@/lib/constants";
+import { FileUpload } from "@/components/ui/file-upload";
 
 export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiId: string | null, paymentQr: string | null, clubName: string }) {
   const router = useRouter();
@@ -145,34 +146,12 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Receipt Image</label>
-        <div className="mt-1 border-2 border-dashed border-slate-300 rounded-lg px-4 py-6 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition relative">
-          <input
-            type="file"
-            accept="image/*"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => setReceiptUrl(reader.result as string);
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-          {receiptUrl ? (
-            <div className="flex flex-col items-center text-emerald-600">
-              <FileType className="h-8 w-8 mb-2" />
-              <span className="text-sm font-medium">Image attached</span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center text-slate-500">
-              <Upload className="h-8 w-8 mb-2 text-brand" />
-              <span className="text-sm font-medium">Click to upload receipt screenshot</span>
-              <span className="text-xs mt-1">PNG, JPG up to 5MB</span>
-            </div>
-          )}
-        </div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Receipt / Proof (PDF or Image)</label>
+        <FileUpload
+          value={receiptUrl}
+          onChange={setReceiptUrl}
+          accept="image/*,application/pdf"
+        />
       </div>
 
         <button type="submit" disabled={submitting} className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep transition disabled:opacity-50 mt-4">

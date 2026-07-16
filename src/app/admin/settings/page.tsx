@@ -122,8 +122,18 @@ export default function SettingsAdmin() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState("info");
+
+  const tabs = [
+    { id: "info", label: "Club Info" },
+    { id: "theme", label: "Identity & Theme" },
+    { id: "statements", label: "About & Vision" },
+    { id: "meetings", label: "Meetings" },
+    { id: "socials", label: "Socials & Payments" }
+  ];
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <PageHeader
         title="Club Configurations"
         description="Configure your organization and active tenure details"
@@ -157,7 +167,7 @@ export default function SettingsAdmin() {
       </div>
 
       {message && (
-        <div className="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-xl text-sm font-semibold">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-semibold">
           {message}
         </div>
       )}
@@ -165,262 +175,295 @@ export default function SettingsAdmin() {
       {loading ? (
         <div className="text-slate-500 text-sm">Loading configurations...</div>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 p-6 rounded-2xl space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Rotaract Club Name *</label>
-              <input
-                type="text"
-                required
-                value={clubName}
-                onChange={(e) => setClubName(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. Rotaract Club of Delhi"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Short Name / Acronym</label>
-              <input
-                type="text"
-                value={shortName}
-                onChange={(e) => setShortName(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. RAC Delhi"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+          {/* Sidebar Tabs */}
+          <div className="space-y-1.5 md:sticky md:top-20">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-pink-50 text-brand font-semibold shadow-sm"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">District Number</label>
-              <input
-                type="text"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. 3011"
-              />
-            </div>
+          {/* Form Content */}
+          <form onSubmit={handleSubmit} className="md:col-span-3 bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-sm space-y-6">
+            
+            {activeTab === "info" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <h3 className="font-display font-bold text-lg text-slate-900 border-b pb-2">Club Info</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rotaract Club Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={clubName}
+                      onChange={(e) => setClubName(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. Rotaract Club of Delhi"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Short Name / Acronym</label>
+                    <input
+                      type="text"
+                      value={shortName}
+                      onChange={(e) => setShortName(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. RAC Delhi"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Active Tenure *</label>
-              <input
-                type="text"
-                required
-                value={tenureYear}
-                onChange={(e) => setTenureYear(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. 2026-27"
-              />
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">District Number</label>
+                    <input
+                      type="text"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. 3011"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Active Tenure *</label>
+                    <input
+                      type="text"
+                      required
+                      value={tenureYear}
+                      onChange={(e) => setTenureYear(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. 2026-27"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Founded Year</label>
+                    <input
+                      type="number"
+                      value={foundedYear}
+                      onChange={(e) => setFoundedYear(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. 1999"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Founded Year</label>
-              <input
-                type="number"
-                value={foundedYear}
-                onChange={(e) => setFoundedYear(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. 1999"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club Logo</label>
-              <FileUpload 
-                value={logoUrl} 
-                onChange={setLogoUrl} 
-                accept="image/*"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club Banner</label>
-              <FileUpload 
-                value={bannerUrl} 
-                onChange={setBannerUrl} 
-                accept="image/*"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Theme Color</label>
-              <div className="flex gap-4 items-center">
-                <input
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-12 h-12 rounded cursor-pointer border-0 p-0"
-                />
-                <span className="text-sm font-medium">{primaryColor}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contact Email Address</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. contact@yourclub.org"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contact Phone</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. +1 234 567 890"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Contact Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. contact@yourclub.org"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Contact Phone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. +1 234 567 890"
-              />
-            </div>
-          </div>
+            {activeTab === "theme" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <h3 className="font-display font-bold text-lg text-slate-900 border-b pb-2">Identity & Theme</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Club Logo</label>
+                    <FileUpload value={logoUrl} onChange={setLogoUrl} accept="image/*" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Club Banner</label>
+                    <FileUpload value={bannerUrl} onChange={setBannerUrl} accept="image/*" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Theme Color</label>
+                  <div className="flex gap-4 items-center">
+                    <input
+                      type="color"
+                      value={primaryColor}
+                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      className="w-12 h-12 rounded cursor-pointer border border-slate-200 p-0"
+                    />
+                    <span className="text-sm font-medium text-slate-700">{primaryColor}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club Description / About Us</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="Brief description of your club..."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Mission Statement</label>
-              <textarea
-                value={missionStatement}
-                onChange={(e) => setMissionStatement(e.target.value)}
-                rows={2}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="Our mission is..."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Vision Statement</label>
-              <textarea
-                value={visionStatement}
-                onChange={(e) => setVisionStatement(e.target.value)}
-                rows={2}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="Our vision is..."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">President's Message</label>
-              <textarea
-                value={presidentMessage}
-                onChange={(e) => setPresidentMessage(e.target.value)}
-                rows={4}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="Welcome to our club..."
-              />
-            </div>
-          </div>
+            {activeTab === "statements" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <h3 className="font-display font-bold text-lg text-slate-900 border-b pb-2">About & Vision Statements</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Club Description / About Us</label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={3}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="Brief description of your club..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Mission Statement</label>
+                    <textarea
+                      value={missionStatement}
+                      onChange={(e) => setMissionStatement(e.target.value)}
+                      rows={2}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="Our mission is..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Vision Statement</label>
+                    <textarea
+                      value={visionStatement}
+                      onChange={(e) => setVisionStatement(e.target.value)}
+                      rows={2}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="Our vision is..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">President's Message</label>
+                    <textarea
+                      value={presidentMessage}
+                      onChange={(e) => setPresidentMessage(e.target.value)}
+                      rows={4}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="Welcome to our club..."
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-200">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Meeting Day</label>
-              <input
-                type="text"
-                value={meetingDay}
-                onChange={(e) => setMeetingDay(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. Every 1st and 3rd Sunday"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Meeting Time</label>
-              <input
-                type="text"
-                value={meetingTime}
-                onChange={(e) => setMeetingTime(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. 10:00 AM"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Meeting Venue</label>
-              <input
-                type="text"
-                value={meetingVenue}
-                onChange={(e) => setMeetingVenue(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. Rotary Sadan"
-              />
-            </div>
-          </div>
+            {activeTab === "meetings" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <h3 className="font-display font-bold text-lg text-slate-900 border-b pb-2">Meeting Details</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Meeting Day</label>
+                    <input
+                      type="text"
+                      value={meetingDay}
+                      onChange={(e) => setMeetingDay(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. Every 1st and 3rd Sunday"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Meeting Time</label>
+                    <input
+                      type="text"
+                      value={meetingTime}
+                      onChange={(e) => setMeetingTime(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. 10:00 AM"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Meeting Venue</label>
+                    <input
+                      type="text"
+                      value={meetingVenue}
+                      onChange={(e) => setMeetingVenue(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. Rotary Sadan"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-200">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Instagram URL</label>
-              <input
-                type="url"
-                value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="https://instagram.com/..."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">LinkedIn URL</label>
-              <input
-                type="url"
-                value={linkedin}
-                onChange={(e) => setLinkedin(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="https://linkedin.com/..."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">YouTube URL</label>
-              <input
-                type="url"
-                value={youtube}
-                onChange={(e) => setYoutube(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="https://youtube.com/..."
-              />
-            </div>
-          </div>
+            {activeTab === "socials" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <h3 className="font-display font-bold text-lg text-slate-900 border-b pb-2">Socials & UPI Payments</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Instagram URL</label>
+                    <input
+                      type="url"
+                      value={instagram}
+                      onChange={(e) => setInstagram(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="https://instagram.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">LinkedIn URL</label>
+                    <input
+                      type="url"
+                      value={linkedin}
+                      onChange={(e) => setLinkedin(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="https://linkedin.com/..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">YouTube URL</label>
+                    <input
+                      type="url"
+                      value={youtube}
+                      onChange={(e) => setYoutube(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="https://youtube.com/..."
+                    />
+                  </div>
+                </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Club UPI ID</label>
-              <input
-                type="text"
-                value={upiId}
-                onChange={(e) => setUpiId(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
-                placeholder="e.g. rotaractclub@upi"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-widest mb-2">Payment QR Code</label>
-              <FileUpload 
-                value={paymentQr} 
-                onChange={setPaymentQr} 
-                accept="image/*"
-              />
-            </div>
-          </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Club UPI ID</label>
+                    <input
+                      type="text"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="e.g. rotaractclub@upi"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Payment QR Code</label>
+                    <FileUpload value={paymentQr} onChange={setPaymentQr} accept="image/*" />
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-brand hover:bg-brand-deep text-white font-semibold py-3 px-6 rounded-xl text-xs uppercase tracking-widest transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {saving ? "Saving..." : "Save Settings"}
-          </button>
-        </form>
+            <div className="pt-6 border-t border-slate-200 flex justify-end">
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-brand hover:bg-brand-deep text-white font-bold py-3 px-6 rounded-xl text-xs uppercase tracking-widest transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? "Saving..." : "Save Settings"}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

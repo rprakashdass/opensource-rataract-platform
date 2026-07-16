@@ -140,6 +140,7 @@ export default function PasswordChangeForm() {
                   <input
                     type="text"
                     maxLength={6}
+                    autoComplete="one-time-code"
                     value={formData.code}
                     onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
                     className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input font-mono text-center tracking-widest text-lg font-bold"
@@ -151,6 +152,7 @@ export default function PasswordChangeForm() {
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">New Password</label>
                   <input
                     type="password"
+                    autoComplete="new-password"
                     value={formData.newPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
                     className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input"
@@ -162,6 +164,7 @@ export default function PasswordChangeForm() {
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Confirm New Password</label>
                   <input
                     type="password"
+                    autoComplete="new-password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input"

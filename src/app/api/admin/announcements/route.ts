@@ -36,7 +36,8 @@ export async function POST(req: Request) {
       emailSubject,
       emailBody,
       agendaContent,
-      visibility
+      visibility,
+      specificRecipientIds
     } = data;
 
     if (!clubId || !title) {
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
         agendaContent,
         calendarEventId,
         visibility: visibility || "PUBLIC",
+        specificRecipientIds: specificRecipientIds || [],
       }
     });
 

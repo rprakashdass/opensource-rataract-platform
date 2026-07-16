@@ -449,6 +449,7 @@ enum Visibility {
   INTERNAL
   MEMBERS_ONLY
   BOARD_ONLY
+  SPECIFIC_MEMBERS
 }
 
 enum EventType {
@@ -684,7 +685,7 @@ model Member {
 
 model BoardMember {
   id       String @id @default(cuid())
-  memberId String @unique
+  memberId String
   member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   clubId String
@@ -1241,6 +1242,7 @@ model Announcement {
   type            AnnouncementType   @default(GENERAL)
   status          AnnouncementStatus @default(DRAFT)
   visibility      Visibility         @default(PUBLIC)
+  specificRecipientIds String[]
 
   // Delivery Tracking
   sendInvite      Boolean   @default(false)

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession, canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { getCurrentClub } from "@/lib/club";
 
 export async function saveWebsiteMetrics(metrics: any[]) {
   try {
@@ -11,24 +12,19 @@ export async function saveWebsiteMetrics(metrics: any[]) {
       return { error: "Unauthorized" };
     }
 
-    const member = await prisma.member.findUnique({
-      where: { userId: session.id },
-    });
-
-    if (!member) {
-      return { error: "User not found" };
-    }
+    const club = await getCurrentClub();
+    if (!club) return { error: "Club not found" };
 
     // Delete existing metrics for the club
     await prisma.websiteMetric.deleteMany({
-      where: { clubId: member.clubId },
+      where: { clubId: club.id },
     });
 
     // Bulk create new metrics
     if (metrics.length > 0) {
       await prisma.websiteMetric.createMany({
         data: metrics.map((m, idx) => ({
-          clubId: member.clubId,
+          clubId: club.id,
           number: m.number,
           label: m.label,
           description: m.description || "",

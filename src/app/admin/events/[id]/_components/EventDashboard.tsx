@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   MapPin,
   Users,
@@ -14,7 +15,8 @@ import {
   Check,
   XCircle,
   Briefcase,
-  Percent
+  Percent,
+  QrCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -397,9 +399,16 @@ export default function EventDashboard({ event }: EventDashboardProps) {
       {/* Attendance Tab */}
       {activeTab === "attendance" && (
         <Card>
-          <CardHeader>
-            <CardTitle>Attendance Metrics</CardTitle>
-            <CardDescription>Visual breakdown of registered vs checked-in participants.</CardDescription>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 gap-4">
+            <div>
+              <CardTitle>Attendance Metrics</CardTitle>
+              <CardDescription>Visual breakdown of registered vs checked-in participants.</CardDescription>
+            </div>
+            <Link href={`/admin/events/${event.id}/attendance`}>
+              <Button className="bg-brand hover:bg-brand-deep text-white rounded-xl gap-2 font-semibold w-full sm:w-auto">
+                <QrCode className="w-4 h-4" /> Manage Attendance & Session
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <StatGrid className="lg:grid-cols-3">

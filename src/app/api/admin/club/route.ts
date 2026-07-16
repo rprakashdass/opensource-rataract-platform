@@ -1,44 +1,35 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function getRequiredAppName() {
-  const appName = process.env.NEXT_PUBLIC_APP_NAME?.trim();
-  if (!appName) {
-    throw new Error("NEXT_PUBLIC_APP_NAME is required.");
-  }
-  return appName;
-}
+import { revalidateTag } from "next/cache";
 
 export async function getOrCreateDefaultClub() {
-  const appName = getRequiredAppName();
-
   try {
-    let club = await prisma.club.findFirst({
-      where: { name: appName }
-    });
+    let club = await prisma.club.findFirst();
     if (!club) {
-      club = await prisma.club.findFirst();
-      if (club) {
+      const appName = process.env.NEXT_PUBLIC_APP_NAME?.trim() || "Rotaract Club";
+      club = await prisma.club.create({
+        data: {
+          name: appName,
+          shortName: appName,
+          district: null,
+          email: null,
+          description: null,
+          tenureYear: "2026-27",
+          foundedYear: new Date().getFullYear(),
+          meetingDay: null,
+          meetingTime: null,
+          meetingVenue: null,
+          presidentMessage: null,
+        },
+      });
+    } else {
+      const appName = process.env.NEXT_PUBLIC_APP_NAME?.trim();
+      if (appName && club.name !== appName) {
         club = await prisma.club.update({
           where: { id: club.id },
           data: { name: appName, shortName: appName }
         });
-      } else {
-        club = await prisma.club.create({
-          data: {
-            name: appName,
-            shortName: appName,
-            district: null,
-            email: null,
-            description: null,
-            tenureYear: "2026-27",
-            foundedYear: new Date().getFullYear(),
-            meetingDay: null,
-            meetingTime: null,
-            meetingVenue: null,
-            presidentMessage: null,
-          },
-        });
+        revalidateTag("club", "max");
       }
     }
     return club;
@@ -95,6 +86,7 @@ export async function POST(req: Request) {
         paymentQr: typeof data.paymentQr === "string" ? data.paymentQr.trim() : null,
       },
     });
+    revalidateTag("club", "max");
     return NextResponse.json(updated);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";

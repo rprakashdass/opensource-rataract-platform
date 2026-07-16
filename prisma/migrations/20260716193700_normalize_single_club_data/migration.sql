@@ -1,0 +1,27 @@
+-- Re-associate all records to the default club to complete the transition to a single-club architecture
+DO $$
+DECLARE
+    default_club_id TEXT;
+BEGIN
+    -- Get the ID of the first club
+    SELECT id INTO default_club_id FROM "Club" ORDER BY "createdAt" ASC LIMIT 1;
+    
+    IF default_club_id IS NOT NULL THEN
+        UPDATE "Member" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "BoardMember" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "ClubRole" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Portfolio" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "FinancialYear" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Account" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Transaction" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Budget" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Transfer" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Sponsor" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "WebsiteSettings" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "MembershipInquiry" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Announcement" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Initiative" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Project" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+        UPDATE "Event" SET "clubId" = default_club_id WHERE "clubId" <> default_club_id OR "clubId" IS NULL;
+    END IF;
+END $$;

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         clubId: club.id,
         name: data.name.trim(),
         category: data.category,
-        maxMembers: data.maxMembers ? parseInt(data.maxMembers) : null,
+        maxMembers: (data.maxMembers !== undefined && data.maxMembers !== null && data.maxMembers !== "") ? parseInt(data.maxMembers) : 1,
         displayOrder
       }
     });
@@ -80,7 +80,9 @@ export async function PUT(req: Request) {
     const club = await getCurrentClub();
     if (!club) return NextResponse.json({ error: "Club not found" }, { status: 404 });
     
-    if (updateData.maxMembers !== undefined && updateData.maxMembers !== null) {
+    if (updateData.maxMembers === "" || updateData.maxMembers === null || updateData.maxMembers === undefined) {
+        updateData.maxMembers = 1;
+    } else {
         updateData.maxMembers = parseInt(updateData.maxMembers);
     }
 

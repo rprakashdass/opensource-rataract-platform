@@ -167,7 +167,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                       animate="visible"
                       exit="exit"
                       variants={motionVariants.dropdown}
-                      className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50 origin-top-right"
+                      className="absolute -right-12 md:right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 md:w-96 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50 origin-top-right"
                     >
                       <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <h3 className="font-semibold text-slate-900">Notifications</h3>

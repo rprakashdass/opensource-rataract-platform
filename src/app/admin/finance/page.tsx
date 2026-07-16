@@ -29,7 +29,7 @@ export default async function AdminFinancePage() {
   });
 
   const club = await getOrCreateDefaultClub();
-  const activeClubId = adminUser?.member?.clubId || club.id;
+  const activeClubId = club.id;
 
   // 1. Seed default active Financial Year if none exists
   let fy = await prisma.financialYear.findFirst({

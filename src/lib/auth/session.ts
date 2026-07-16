@@ -14,12 +14,12 @@ async function getSigningKey() {
   );
 }
 
-export async function signJWT(payload: any) {
+export async function signJWT(payload: any, maxAgeSeconds: number = 60 * 60 * 24) {
   const header = { alg: "HS256", typ: "JWT" };
   const enc = new TextEncoder();
 
   const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const encodedPayload = btoa(JSON.stringify({ ...payload, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 })).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const encodedPayload = btoa(JSON.stringify({ ...payload, exp: Math.floor(Date.now() / 1000) + maxAgeSeconds })).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 
   const key = await getSigningKey();
   const signatureBuffer = await crypto.subtle.sign(
@@ -70,14 +70,18 @@ export async function verifyJWT(token: string) {
 }
 
 export async function setSession(user: { id: string; email: string; name: string; roles: string[] }) {
-  const token = await signJWT(user);
+  const adminRoles = ["SUPER_ADMIN", "ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN", "FINANCE_VIEWER", "EVENTS_ADMIN", "CONTENT_ADMIN"];
+  const isAdmin = user.roles && user.roles.some((r: string) => adminRoles.includes(r));
+  const maxAgeSeconds = isAdmin ? 60 * 60 * 24 * 2 : 60 * 60 * 24; // 2 days for admin, 1 day for member
+
+  const token = await signJWT(user, maxAgeSeconds);
   const cookieStore = await cookies();
   cookieStore.set("session", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24, // 1 day
+    maxAge: maxAgeSeconds,
   });
 }
 

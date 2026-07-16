@@ -118,7 +118,7 @@ export default function EditMemberForm({ member }: { member: any }) {
             <CardContent className="space-y-4">
               <div className="space-y-1.5 md:col-span-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
                 <p className="text-xs text-slate-600">
-                  Board designation and portfolio assignments are managed in the{" "}
+                  Board designations are managed in the{" "}
                   <Link href={`/admin/members/${member.id}`} className="font-bold underline text-brand hover:text-brand-deep">
                     Assignments &amp; Roles
                   </Link>{" "}

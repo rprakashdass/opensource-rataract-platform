@@ -18,21 +18,43 @@ export async function sendAnnouncement(id: string) {
       return { error: "Announcement not found" };
     }
 
-    // Fetch members to send to based on type
+    // Fetch recipients to send to based on Visibility rules
     let userEmails: string[] = [];
-    
-    if (announcement.type === 'BOARD_MEETING') {
-        const boardMembers = await prisma.boardMember.findMany({
-            where: { clubId: announcement.clubId },
-            include: { member: { include: { user: true } } }
-        });
-        userEmails = boardMembers.map(bm => bm.member.user?.email).filter(Boolean) as string[];
+
+    if (announcement.visibility === "BOARD_ONLY") {
+      const boardMembers = await prisma.boardMember.findMany({
+        where: { clubId: announcement.clubId },
+        include: { member: { include: { user: true } } }
+      });
+      userEmails = boardMembers.map(bm => bm.member.user?.email).filter(Boolean) as string[];
+    } else if (announcement.visibility === "MEMBERS_ONLY") {
+      const members = await prisma.member.findMany({
+        where: { clubId: announcement.clubId },
+        include: { user: true }
+      });
+      userEmails = members.map(m => m.user?.email).filter(Boolean) as string[];
+    } else if (announcement.visibility === "SPECIFIC_MEMBERS") {
+      const members = await prisma.member.findMany({
+        where: { id: { in: announcement.specificRecipientIds } },
+        include: { user: true }
+      });
+      userEmails = members.map(m => m.user?.email).filter(Boolean) as string[];
     } else {
-        const members = await prisma.member.findMany({
-            where: { clubId: announcement.clubId },
-            include: { user: true }
-        });
-        userEmails = members.map(m => m.user?.email).filter(Boolean) as string[];
+      // For PUBLIC or INTERNAL: Send to both Board and General members
+      const [boardMembers, members] = await Promise.all([
+        prisma.boardMember.findMany({
+          where: { clubId: announcement.clubId },
+          include: { member: { include: { user: true } } }
+        }),
+        prisma.member.findMany({
+          where: { clubId: announcement.clubId },
+          include: { user: true }
+        })
+      ]);
+      const emailsSet = new Set<string>();
+      boardMembers.forEach(bm => { if (bm.member.user?.email) emailsSet.add(bm.member.user.email); });
+      members.forEach(m => { if (m.user?.email) emailsSet.add(m.user.email); });
+      userEmails = Array.from(emailsSet);
     }
 
     const recipientsCount = userEmails.length;

@@ -19,6 +19,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { PageHeader, StatCard, StatGrid } from "@/components/portal";
+import DashboardCheckInCard from "./_components/DashboardCheckInCard";
 
 export default async function MemberDashboardPage() {
   const { member, profileCompletion, stats, upcomingEvents, checkInEvents, pendingPaymentRequests, timeline, error } = await getMemberDashboard();
@@ -64,18 +65,7 @@ export default async function MemberDashboardPage() {
           
           {checkInEvents && checkInEvents.length > 0 ? (
               checkInEvents.map((event: any) => (
-                  <div key={event.id} className="bg-gradient-to-br from-brand to-brand-deep rounded-2xl p-5 text-white shadow-md relative overflow-hidden flex flex-col gap-3 justify-between">
-                      <div className="absolute top-0 right-0 p-4 opacity-10">
-                          <MapPin className="w-20 h-20" />
-                      </div>
-                      <div className="relative z-10">
-                          <p className="text-white/80 font-semibold text-sm mb-1">Ongoing Right Now</p>
-                          <h3 className="text-xl font-bold leading-tight">{event.title}</h3>
-                      </div>
-                      <Link href={`/dashboard/events/${event.id}`} className="relative z-10 w-full mt-2">
-                          <Button className="w-full bg-white text-brand hover:bg-slate-50 rounded-xl font-bold">I'm Here / Check In</Button>
-                      </Link>
-                  </div>
+                  <DashboardCheckInCard key={event.id} event={event} />
               ))
           ) : upcomingEvents && upcomingEvents.length > 0 ? (
               <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">

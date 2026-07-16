@@ -44,7 +44,12 @@ export async function createMember(data: any) {
         return { error: "A user with this email already exists" };
     }
 
-    const defaultPassword = data.name.trim().toLowerCase().replace(/\s+/g, ".") + "@nexus";
+    const regexPattern = process.env.DEFAULT_PASSWORD_REGEX || "\\s+";
+    const replaceValue = process.env.DEFAULT_PASSWORD_REPLACE !== undefined ? process.env.DEFAULT_PASSWORD_REPLACE : ".";
+    const nameRegex = new RegExp(regexPattern, "g");
+    const formattedName = data.name.trim().toLowerCase().replace(nameRegex, replaceValue);
+    const suffix = process.env.DEFAULT_PASSWORD_SUFFIX || "@nexus";
+    const defaultPassword = formattedName + suffix;
 
     const result = await prisma.$transaction(async (tx) => {
         // 1. Create User account (with default MEMBER role)
@@ -67,6 +72,7 @@ export async function createMember(data: any) {
                 email: data.email,
                 phone: data.phone || null,
                 profession: data.profession || null,
+                avatar: data.avatar || null,
                 bloodGroup: data.bloodGroup || null,
                 emergencyContact: data.emergencyContact || null,
                 location: data.location || null,
@@ -77,23 +83,28 @@ export async function createMember(data: any) {
             }
         });
 
-        // Handle Board Role (Designation) — chosen from the club's configured roles
-        if (data.roleId) {
-            const role = await tx.clubRole.findUnique({ where: { id: data.roleId } });
+        // Handle Board Roles (Designations) — chosen from the club's configured roles
+        const roleIds = data.roleIds || (data.roleId ? [data.roleId] : []);
+        if (roleIds.length > 0) {
             const activeYear = await tx.financialYear.findFirst({
                 where: { clubId, status: "ACTIVE" }
             });
-            if (role && activeYear) {
-                await tx.boardMember.create({
-                    data: {
-                        clubId,
-                        memberId: newMember.id,
-                        financialYearId: activeYear.id,
-                        roleId: role.id,
-                        position: role.name,
-                        order: role.displayOrder,
-                    }
+            if (activeYear) {
+                const roles = await tx.clubRole.findMany({
+                    where: { id: { in: roleIds } }
                 });
+                for (const role of roles) {
+                    await tx.boardMember.create({
+                        data: {
+                            clubId,
+                            memberId: newMember.id,
+                            financialYearId: activeYear.id,
+                            roleId: role.id,
+                            position: role.name,
+                            order: role.displayOrder,
+                        }
+                    });
+                }
             }
         }
 

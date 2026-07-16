@@ -77,7 +77,16 @@ export async function deletePortfolio(id: string) {
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };
 
-    await prisma.portfolio.delete({ where: { id, clubId: club.id } });
+    const existing = await prisma.portfolio.findUnique({
+      where: { id },
+      select: { clubId: true }
+    });
+
+    if (!existing || existing.clubId !== club.id) {
+      return { error: "Portfolio not found" };
+    }
+
+    await prisma.portfolio.delete({ where: { id } });
 
     revalidatePortfolios();
     return { success: true };
@@ -94,10 +103,19 @@ export async function reorderPortfolios(orderedPairs: { id: string; displayOrder
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };
 
+    const portfolios = await prisma.portfolio.findMany({
+      where: { id: { in: orderedPairs.map(p => p.id) }, clubId: club.id },
+      select: { id: true }
+    });
+
+    const validIds = new Set(portfolios.map(p => p.id));
+
     await prisma.$transaction(
-      orderedPairs.map(({ id, displayOrder }) =>
-        prisma.portfolio.update({ where: { id, clubId: club.id }, data: { displayOrder } })
-      )
+      orderedPairs
+        .filter(({ id }) => validIds.has(id))
+        .map(({ id, displayOrder }) =>
+          prisma.portfolio.update({ where: { id }, data: { displayOrder } })
+        )
     );
 
     revalidatePortfolios();

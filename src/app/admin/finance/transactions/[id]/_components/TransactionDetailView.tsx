@@ -273,19 +273,27 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
               <CardTitle>Receipt / Proof</CardTitle>
             </CardHeader>
             <CardContent>
-              {transaction.receiptUrl ? (
-                <div className="space-y-3">
-                  <div className="aspect-[3/4] w-full bg-slate-100 rounded-lg overflow-hidden border flex items-center justify-center relative">
-                    {/* Assuming image. PDF would need an iframe or direct link */}
-                    <Image src={transaction.receiptUrl} alt="Receipt" fill sizes="400px" className="object-cover" />
+              {transaction.receiptUrl ? (() => {
+                const isPdf = transaction.receiptUrl.toLowerCase().endsWith(".pdf") || 
+                              transaction.receiptUrl.toLowerCase().includes("/media/document/") || 
+                              transaction.receiptUrl.startsWith("data:application/pdf");
+                return (
+                  <div className="space-y-3">
+                    <div className="aspect-[3/4] w-full bg-slate-100 rounded-lg overflow-hidden border flex items-center justify-center relative">
+                      {isPdf ? (
+                        <iframe src={transaction.receiptUrl} className="w-full h-full border-0" title="Receipt PDF" />
+                      ) : (
+                        <img src={transaction.receiptUrl} alt="Receipt" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <Button variant="outline" className="w-full" asChild>
+                      <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer">
+                        View Full Size
+                      </a>
+                    </Button>
                   </div>
-                  <Button variant="outline" className="w-full" asChild>
-                    <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer">
-                      View Full Size
-                    </a>
-                  </Button>
-                </div>
-              ) : (
+                );
+              })() : (
                 <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-sm font-medium text-slate-500">No receipt uploaded</p>

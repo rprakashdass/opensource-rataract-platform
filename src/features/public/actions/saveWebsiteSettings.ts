@@ -3,26 +3,22 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { getCurrentClub } from "@/lib/club";
 
 export async function saveWebsiteSettings(data: any) {
   try {
     const session = await getSession();
     if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
-    const member = await prisma.member.findUnique({
-      where: { userId: session.id }
-    });
-
-    if (!member) {
-      return { error: "User not found" };
-    }
+    const club = await getCurrentClub();
+    if (!club) return { error: "Club not found" };
 
     // Upsert WebsiteSettings
     const settings = await prisma.websiteSettings.upsert({
-      where: { clubId: member.clubId },
+      where: { clubId: club.id },
       update: data,
       create: {
-        clubId: member.clubId,
+        clubId: club.id,
         ...data
       }
     });

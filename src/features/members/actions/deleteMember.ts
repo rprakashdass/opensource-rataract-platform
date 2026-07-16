@@ -14,8 +14,8 @@ export async function deleteMember(id: string) {
     if (!club) return { error: "Club not found" };
 
     const member = await prisma.member.findUnique({
-      where: { id, clubId: club.id },
-      select: { userId: true }
+      where: { id },
+      select: { userId: true, clubId: true }
     });
 
     if (!member) {

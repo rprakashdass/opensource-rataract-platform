@@ -36,16 +36,58 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
   // File State
   const [agendaUrl, setAgendaUrl] = useState(initialData?.agendaUrl || "");
 
-  // Auto-generate template when key fields change (only if not editing an existing one)
+  // Recipients State
+  const [members, setMembers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState<string[]>(initialData?.specificRecipientIds || []);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+
   useEffect(() => {
-    if (!initialData && title && type) {
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch("/api/admin/members");
+        if (res.ok) {
+          const data = await res.json();
+          setMembers(data);
+        }
+      } catch (err) {
+        console.error("Failed to load members:", err);
+      }
+    };
+    fetchMembers();
+  }, []);
+
+  const handleAutoFill = async () => {
+    setLoadingTemplate(true);
+    try {
+      const template = await generateTemplate({
+        type,
+        title: title || undefined,
+        date: startDate || undefined,
+        location: location || undefined,
+        link: meetingLink || undefined
+      });
+      setEmailSubject(template.emailSubject);
+      setEmailBody(template.emailBody);
+      setAgendaContent(template.agendaContent);
+      toast.success("Template outlines filled from form details!");
+    } catch (err) {
+      toast.error("Failed to generate templates");
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  // Auto-generate template when key fields change (only if not editing an existing one and email is empty)
+  useEffect(() => {
+    if (!initialData && type && !emailSubject && !emailBody) {
       const fetchTemplate = async () => {
         const template = await generateTemplate({
           type,
-          title,
-          date: startDate,
-          location,
-          link: meetingLink
+          title: title || undefined,
+          date: startDate || undefined,
+          location: location || undefined,
+          link: meetingLink || undefined
         });
         setEmailSubject(template.emailSubject);
         setEmailBody(template.emailBody);
@@ -53,7 +95,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
       };
       fetchTemplate();
     }
-  }, [type, title, startDate, location, meetingLink, initialData]);
+  }, [type, initialData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,6 +114,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
       agendaContent,
       agendaUrl,
       visibility,
+      specificRecipientIds: selectedRecipientIds,
       clubId,
       status: "DRAFT" as any
     };
@@ -139,17 +182,66 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Visibility</label>
+            <label className="text-sm font-medium text-slate-700">Visibility / Target Audience</label>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white"
             >
-              <option value="PUBLIC">Public & Members (BOTH)</option>
+              <option value="PUBLIC">Public (Website)</option>
+              <option value="INTERNAL">Board & Members (Internal Only)</option>
               <option value="MEMBERS_ONLY">Members Only</option>
               <option value="BOARD_ONLY">Board Only</option>
+              <option value="SPECIFIC_MEMBERS">Specific Members Only</option>
             </select>
           </div>
+
+          {visibility === "SPECIFIC_MEMBERS" && (
+            <div className="space-y-3 md:col-span-2 bg-slate-50 border border-slate-200 p-4 rounded-xl animate-in fade-in duration-200">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Select Recipients *</label>
+              <input
+                type="text"
+                placeholder="Search members by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white"
+              />
+              <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100 bg-white">
+                {members
+                  .filter(m => 
+                    m.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    m.email?.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map(m => {
+                    const isChecked = selectedRecipientIds.includes(m.id);
+                    return (
+                      <label key={m.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors text-sm">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            if (isChecked) {
+                              setSelectedRecipientIds(selectedRecipientIds.filter(id => id !== m.id));
+                            } else {
+                              setSelectedRecipientIds([...selectedRecipientIds, m.id]);
+                            }
+                          }}
+                          className="rounded border-slate-300 text-brand focus:ring-brand"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-900">{m.name}</p>
+                          <p className="text-xs text-slate-500">{m.email}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                {members.length === 0 && (
+                  <p className="text-xs text-slate-500 text-center py-4">No members found.</p>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 font-semibold">{selectedRecipientIds.length} members selected.</p>
+            </div>
+          )}
 
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium text-slate-700">Title / Subject</label>
@@ -214,8 +306,20 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
 
       {/* Generated Content Section */}
       <div className="space-y-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
-        <h3 className="text-base font-semibold text-slate-900 border-b border-slate-200 pb-2">Communication Content</h3>
-        <p className="text-sm text-slate-500">This content was auto-generated based on your details. You can edit it before sending.</p>
+        <div className="flex flex-wrap justify-between items-center border-b border-slate-200 pb-2 gap-4">
+          <h3 className="text-base font-semibold text-slate-900">Communication Content</h3>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAutoFill}
+            disabled={loadingTemplate}
+            className="text-xs gap-1 cursor-pointer bg-white text-brand border-brand/20 hover:bg-brand/5 font-semibold"
+          >
+            {loadingTemplate ? "Generating..." : "✨ Fill Template from Form"}
+          </Button>
+        </div>
+        <p className="text-sm text-slate-500">This content is suggested based on your category selection. Customize it freely, or click the button above to regenerate it using form inputs.</p>
 
         <div className="space-y-4">
           <div className="space-y-2">

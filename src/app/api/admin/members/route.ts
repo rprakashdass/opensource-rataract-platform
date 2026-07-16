@@ -38,7 +38,12 @@ export async function POST(req: Request) {
     const club = await getOrCreateDefaultClub();
 
     // Create User first
-    const defaultPassword = payload.name.trim().toLowerCase().replace(/\s+/g, ".") + "@nexus"; // e.g. "john.doe@nexus"
+    const regexPattern = process.env.DEFAULT_PASSWORD_REGEX || "\\s+";
+    const replaceValue = process.env.DEFAULT_PASSWORD_REPLACE !== undefined ? process.env.DEFAULT_PASSWORD_REPLACE : ".";
+    const nameRegex = new RegExp(regexPattern, "g");
+    const formattedName = payload.name.trim().toLowerCase().replace(nameRegex, replaceValue);
+    const suffix = process.env.DEFAULT_PASSWORD_SUFFIX || "@nexus";
+    const defaultPassword = formattedName + suffix;
     
     // Check if user already exists
     let user = await prisma.user.findUnique({

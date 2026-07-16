@@ -18,6 +18,10 @@ export async function dispatchNotification(opts: DispatchOptions) {
   if (!recipients.length) return;
   if (!sendEmailFlag && !attachCalendarFlag) return;
 
+  const club = await prisma.club.findFirst();
+  const primaryColor = club?.primaryColor || "#D41367";
+  const clubName = club?.name || "Rotaract Club";
+
   let subject = "";
   let body = "";
   let attachments: any[] = [];
@@ -59,26 +63,26 @@ export async function dispatchNotification(opts: DispatchOptions) {
           <p style="font-size: 15px; margin-top: 0; margin-bottom: 20px; color: #1f2937;">Hi {{memberName}},</p>
           <p style="font-size: 15px; margin-bottom: 24px; color: #4b5563; line-height: 1.6;">You are cordially invited to attend our upcoming event: <strong>${event.title}</strong>. Here are the details:</p>
           
-          <div style="background-color: #faf5ff; border: 1px solid #f3e8ff; border-radius: 12px; padding: 20px; margin-bottom: 28px;">
+          <div style="background-color: ${primaryColor}08; border: 1px solid ${primaryColor}22; border-radius: 12px; padding: 20px; margin-bottom: 28px;">
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
-                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: #6b21a8; width: 100px; vertical-align: top;">Date:</td>
+                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: ${primaryColor}; width: 100px; vertical-align: top;">Date:</td>
                 <td style="padding: 6px 0; font-size: 14px; color: #1f2937; font-weight: 600;">${dateStr}</td>
               </tr>
               <tr>
-                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: #6b21a8; vertical-align: top;">Time:</td>
+                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: ${primaryColor}; vertical-align: top;">Time:</td>
                 <td style="padding: 6px 0; font-size: 14px; color: #1f2937; font-weight: 600;">${timeStr}</td>
               </tr>
               ${event.location ? `
               <tr>
-                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: #6b21a8; vertical-align: top;">Location:</td>
+                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: ${primaryColor}; vertical-align: top;">Location:</td>
                 <td style="padding: 6px 0; font-size: 14px; color: #1f2937; font-weight: 600;">${event.location}</td>
               </tr>
               ` : ""}
               ${event.meetingLink ? `
               <tr>
-                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: #6b21a8; vertical-align: top;">Online Link:</td>
-                <td style="padding: 6px 0; font-size: 14px; color: #1f2937;"><a href="${event.meetingLink}" style="color: #6d28d9; font-weight: bold; text-decoration: underline;">Join Online Meeting</a></td>
+                <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: ${primaryColor}; vertical-align: top;">Online Link:</td>
+                <td style="padding: 6px 0; font-size: 14px; color: #1f2937;"><a href="${event.meetingLink}" style="color: ${primaryColor}; font-weight: bold; text-decoration: underline;">Join Online Meeting</a></td>
               </tr>
               ` : ""}
             </table>
@@ -92,13 +96,13 @@ export async function dispatchNotification(opts: DispatchOptions) {
           ` : ""}
 
           <div style="text-align: center; margin: 32px 0 24px 0;">
-            <a href="${eventUrl}" style="background-color: #6d28d9; color: #ffffff; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; padding: 14px 28px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(109, 40, 217, 0.2);">
+            <a href="${eventUrl}" style="background-color: ${primaryColor}; color: #ffffff; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; padding: 14px 28px; border-radius: 8px; display: inline-block;">
               View Event Details & RSVP
             </a>
           </div>
 
           <div style="text-align: center; border-top: 1px solid #f3f4f6; padding-top: 16px; margin-top: 24px;">
-            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" style="color: #6b21a8; font-size: 12px; font-weight: 700; text-decoration: underline; display: inline-block;">
+            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" style="color: ${primaryColor}; font-size: 12px; font-weight: 700; text-decoration: underline; display: inline-block;">
               + Add to Google Calendar
             </a>
           </div>
@@ -162,18 +166,32 @@ export async function dispatchNotification(opts: DispatchOptions) {
          select: { email: true, name: true }
        });
 
-        const htmlSkeleton = (body: string) => `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
-          <div style="background-color: #6d28d9; padding: 24px; text-align: center; border-radius: 12px 12px 0 0;">
-            <h2 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${headerTitle}</h2>
-          </div>
-          <div style="padding: 30px 24px; border: 1px solid #e5e7eb; border-top: none; background-color: #ffffff;">
-            ${body}
-          </div>
-          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 12px 12px; font-size: 11px; color: #9ca3af; border: 1px solid #e5e7eb; border-top: none; font-weight: 500;">
-            You are receiving this email because you are a member of our club.
-          </div>
-        </div>`;
+       const htmlSkeleton = (bodyContent: string) => `
+       <div style="background-color: #FAF8F5; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #1F2937; line-height: 1.6;">
+         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); border: 1px solid #E5E7EB;">
+           
+           <!-- Dynamic Theme Color Accent Line -->
+           <div style="background-color: ${primaryColor}; height: 6px; width: 100%;"></div>
+           
+           <!-- Header Banner -->
+           <div style="padding: 24px 32px; border-bottom: 1px solid #F3F4F6; text-align: center; background-color: #FFFFFF;">
+             <h2 style="margin: 0; color: ${primaryColor}; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;">${headerTitle}</h2>
+             <p style="margin: 4px 0 0 0; font-size: 13px; color: #6B7280; font-weight: 500;">${clubName}</p>
+           </div>
+           
+           <!-- Email Body Content -->
+           <div style="padding: 36px 32px; font-size: 15px; color: #1F2937; background-color: #FFFFFF;">
+             ${bodyContent}
+           </div>
+           
+           <!-- Email Footer -->
+           <div style="background-color: #FAF8F5; padding: 24px 32px; text-align: center; border-top: 1px solid #E5E7EB; font-size: 12px; color: #6B7280; font-weight: 500;">
+             <p style="margin: 0 0 8px 0;">You are receiving this email because you are a member of <strong>${clubName}</strong>.</p>
+             <p style="margin: 0; font-size: 11px; color: #9CA3AF;">© ${new Date().getFullYear()} ${clubName}. All rights reserved.</p>
+           </div>
+           
+         </div>
+       </div>`;
 
        for (const u of users) {
          if (!u.email) continue;

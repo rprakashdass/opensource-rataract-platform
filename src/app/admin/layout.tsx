@@ -48,6 +48,8 @@ export default async function AdminLayout({
     );
   }
 
+
+
   const notifications = await getRecentNotifications(club.id);
   const attentionSummary = await getAttentionSummary(club.id, session.roles);
 

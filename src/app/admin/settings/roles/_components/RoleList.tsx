@@ -207,7 +207,7 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
             <div className="flex-1">
               {isEditing === role.id ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <label className="text-xs font-bold text-slate-500 uppercase">Role Name</label>
                       <input
@@ -216,16 +216,6 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
                         onChange={e => setEditForm({ ...editForm, name: e.target.value })}
                         className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand outline-none"
                         placeholder="e.g. President, Secretary"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Max Members (Optional)</label>
-                      <input
-                        type="number"
-                        value={editForm.maxMembers || ""}
-                        onChange={e => setEditForm({ ...editForm, maxMembers: e.target.value })}
-                        className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand outline-none"
-                        placeholder="Leave blank for unlimited"
                       />
                     </div>
                   </div>
@@ -243,9 +233,6 @@ export default function RoleList({ initialRoles }: { initialRoles: any[] }) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 h-full">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">{role.name}</h3>
-                    {role.maxMembers && (
-                      <p className="text-xs text-slate-500 mt-0.5">Max {role.maxMembers} member{role.maxMembers > 1 ? "s" : ""} allowed</p>
-                    )}
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <Button variant="outline" size="sm" onClick={() => { setIsEditing(role.id); setEditForm(role); }} disabled={isEditing !== null}>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import Link from "next/link";
 import { createMember } from "@/features/members/actions/createMember";
+import { FileUpload } from "@/components/ui/file-upload";
 
 interface ClubRoleOption {
   id: string;
@@ -31,19 +32,21 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
     bloodGroup: "",
     emergencyContact: "",
     profession: "",
-    roleId: "",
+    avatar: "",
     location: "",
     joinedAt: new Date().toISOString().split("T")[0]
   });
-
-  const selectedRole = roles.find(r => r.id === formData.roleId);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await createMember(formData);
+      const res = await createMember({
+        ...formData,
+        roleIds: selectedRoleIds
+      });
       if (res.error) throw new Error(res.error);
 
       toast.success("Member added successfully!");
@@ -69,6 +72,14 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
               <CardTitle className="text-lg">Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2 mb-4">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">Profile Picture</label>
+                <FileUpload 
+                  value={formData.avatar}
+                  onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
+                  accept="image/*"
+                />
+              </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Full Name *</label>
                 <input
@@ -119,36 +130,42 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Club Designation (Board Role)</label>
-                <select
-                  value={formData.roleId}
-                  onChange={e => setFormData({...formData, roleId: e.target.value})}
-                  className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
-                >
-                  <option value="">No designation</option>
-                  {Object.entries(groupedRoles).map(([category, categoryRoles]) => (
-                    <optgroup key={category} label={CATEGORY_LABELS[category] || category}>
-                      {categoryRoles.map(role => (
-                        <option key={role.id} value={role.id}>{role.name}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-                {roles.length === 0 && (
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Club Designation (Board Roles)</label>
+                {roles.length === 0 ? (
                   <p className="text-xs text-slate-400 mt-1">
                     No roles configured yet. <Link href="/admin/settings/roles" className="underline hover:text-brand">Set up roles</Link> to enable this.
                   </p>
+                ) : (
+                  <div className="border border-slate-300 rounded-xl p-3 bg-slate-50 max-h-48 overflow-y-auto space-y-3">
+                    {Object.entries(groupedRoles).map(([category, categoryRoles]) => (
+                      <div key={category} className="space-y-1.5">
+                        <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">{CATEGORY_LABELS[category] || category}</p>
+                        <div className="space-y-1 pl-1">
+                          {categoryRoles.map(role => {
+                            const isChecked = selectedRoleIds.includes(role.id);
+                            return (
+                              <label key={role.id} className="flex items-center gap-2.5 text-sm text-slate-700 cursor-pointer hover:text-slate-900 select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    if (isChecked) {
+                                      setSelectedRoleIds(selectedRoleIds.filter(id => id !== role.id));
+                                    } else {
+                                      setSelectedRoleIds([...selectedRoleIds, role.id]);
+                                    }
+                                  }}
+                                  className="rounded border-slate-300 text-brand focus:ring-brand h-4 w-4"
+                                />
+                                <span>{role.name}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Display Order</label>
-                <input
-                  type="text"
-                  readOnly
-                  value={selectedRole ? selectedRole.displayOrder : "—"}
-                  className="w-full border border-slate-200 bg-slate-50 p-2.5 rounded-xl text-sm text-slate-500 outline-none cursor-not-allowed"
-                />
-                <p className="text-xs text-slate-400">Set automatically from the role's order in Settings → Roles.</p>
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Profession / College</label>
