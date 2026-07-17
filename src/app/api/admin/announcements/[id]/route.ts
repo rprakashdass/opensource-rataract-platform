@@ -76,20 +76,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     });
 
     if (announcement.calendarEventId && announcement.startDate) {
-      await updateCalendarEvent(announcement.calendarEventId, {
-        title: announcement.title,
-        description: announcement.description,
-        startDate: announcement.startDate,
-        endDate: announcement.endDate,
-        location: announcement.location,
-        meetingLink: announcement.meetingLink,
-      });
+      try {
+        await updateCalendarEvent(announcement.calendarEventId, {
+          title: announcement.title,
+          description: announcement.description,
+          startDate: announcement.startDate,
+          endDate: announcement.endDate,
+          location: announcement.location,
+          meetingLink: announcement.meetingLink,
+        });
+      } catch (calendarError) {
+        console.error("Calendar sync failed (non-fatal):", calendarError);
+      }
     }
 
     return NextResponse.json(announcement);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to update announcement:", error);
-    return NextResponse.json({ error: "Failed to update announcement" }, { status: 500 });
+    const detail = error?.code
+      ? `Database error (${error.code}): ${error.meta?.cause || error.message}`
+      : error?.message || "Unknown error";
+    return NextResponse.json({ error: `Failed to update announcement — ${detail}` }, { status: 500 });
   }
 }
 
@@ -99,9 +106,13 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const existing = await prisma.announcement.findUnique({ where: { id } });
     
     if (existing?.calendarEventId) {
-      await deleteCalendarEvent(existing.calendarEventId);
+      try {
+        await deleteCalendarEvent(existing.calendarEventId);
+      } catch (calendarError) {
+        console.error("Calendar sync failed (non-fatal):", calendarError);
+      }
     }
-    
+
     await prisma.announcement.delete({ where: { id } });
     
     return NextResponse.json({ success: true });

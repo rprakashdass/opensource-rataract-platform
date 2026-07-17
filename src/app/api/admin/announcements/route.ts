@@ -48,15 +48,21 @@ export async function POST(req: Request) {
 
     let calendarEventId = null;
     if (startDate) {
-      // Call calendar stub
-      calendarEventId = await createCalendarEvent({
-        title,
-        description,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : undefined,
-        location,
-        meetingLink,
-      });
+      // Calendar sync is a secondary feature — never let a misconfigured
+      // Google Calendar integration (bad service-account JSON, missing
+      // calendar ID/permissions) block creating the announcement itself.
+      try {
+        calendarEventId = await createCalendarEvent({
+          title,
+          description,
+          startDate: new Date(startDate),
+          endDate: endDate ? new Date(endDate) : undefined,
+          location,
+          meetingLink,
+        });
+      } catch (calendarError) {
+        console.error("Calendar sync failed (non-fatal):", calendarError);
+      }
     }
 
     const announcement = await prisma.announcement.create({
@@ -83,8 +89,14 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(announcement);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to create announcement:", error);
-    return NextResponse.json({ error: "Failed to create announcement" }, { status: 500 });
+    const detail =
+      error?.code === "P2002"
+        ? "An announcement with conflicting unique data already exists."
+        : error?.code
+          ? `Database error (${error.code}): ${error.meta?.cause || error.message}`
+          : error?.message || "Unknown error";
+    return NextResponse.json({ error: `Failed to create announcement — ${detail}` }, { status: 500 });
   }
 }
