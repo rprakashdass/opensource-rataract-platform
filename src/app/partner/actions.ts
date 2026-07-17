@@ -1,6 +1,8 @@
 "use server";
 
 import { sendEmail } from "@/lib/email";
+import { prisma } from "@/lib/prisma";
+import { getPartnerReplyEmailHtml } from "@/lib/email-templates";
 
 interface InquiryData {
   name: string;
@@ -11,9 +13,28 @@ interface InquiryData {
   subject: string;
   contactEmail: string;
   clubName: string;
+  _honey?: string;
 }
 
+const globalRateLimit = globalThis as unknown as {
+  partnerInquiryRateLimits?: Map<string, number>;
+};
+
 export async function submitPartnerInquiry(data: InquiryData) {
+  if (data._honey) {
+    return { success: true };
+  }
+
+  const limits = globalRateLimit.partnerInquiryRateLimits ?? new Map<string, number>();
+  globalRateLimit.partnerInquiryRateLimits = limits;
+  
+  const now = Date.now();
+  const lastSubmitted = limits.get(data.email) || 0;
+  if (now - lastSubmitted < 60 * 1000) {
+    return { error: "Please wait a minute before submitting another inquiry." };
+  }
+  limits.set(data.email, now);
+
   if (!data.name || !data.email || !data.message) {
     return { error: "Please fill in all required fields." };
   }
@@ -65,10 +86,14 @@ export async function submitPartnerInquiry(data: InquiryData) {
   `;
 
   try {
+    const club = await prisma.club.findFirst();
+    const plainText = `New Partnership Inquiry for ${data.clubName}:\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || "None"}\nCompany: ${data.company || "None"}\nTopic/Pledge: ${data.subject}\nMessage: ${data.message}`;
+
     const res = await sendEmail({
       to: data.contactEmail,
       subject: emailSubject,
-      html: emailHtml,
+      text: plainText,
+      html: getPartnerReplyEmailHtml(data, club),
       from: `"Partnership System" <${process.env.GMAIL_USER}>`
     });
 

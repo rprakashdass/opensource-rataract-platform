@@ -38,7 +38,8 @@ export default function PartnerCTAButton({
     company: "",
     message: subject.startsWith("Sponsoring:")
       ? `Hi! We are interested in pledging the support tier: "${subject.replace("Sponsoring: ", "")}". Please get in touch with us.`
-      : "Hi! We are interested in partnering with your club. Please send us your campaign briefs and active pitch decks."
+      : "Hi! We are interested in partnering with your club. Please send us your campaign briefs and active pitch decks.",
+    _honey: ""
   });
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -90,7 +91,8 @@ export default function PartnerCTAButton({
         company: "",
         message: subject.startsWith("Sponsoring:")
           ? `Hi! We are interested in pledging the support tier: "${subject.replace("Sponsoring: ", "")}". Please get in touch with us.`
-          : "Hi! We are interested in partnering with your club. Please send us your campaign briefs and active pitch decks."
+          : "Hi! We are interested in partnering with your club. Please send us your campaign briefs and active pitch decks.",
+        _honey: ""
       });
     }, 200);
   };
@@ -206,6 +208,16 @@ export default function PartnerCTAButton({
                       className={INPUT_CLASSES}
                     />
                   </div>
+
+                  <input
+                    type="text"
+                    name="website_url"
+                    value={formData._honey}
+                    onChange={(e) => setFormData({ ...formData, _honey: e.target.value })}
+                    className="hidden"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
 
                   <button
                     disabled={submitting}

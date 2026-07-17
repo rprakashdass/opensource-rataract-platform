@@ -20,8 +20,13 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
   const [error, setError] = useState<string | null>(null);
 
   // Form State
-  const [type, setType] = useState<AnnouncementType>(initialData?.type || "GENERAL");
-  const [visibility, setVisibility] = useState<string>(initialData?.visibility || "PUBLIC");
+  const [type, setType] = useState<AnnouncementType | "CUSTOM">(() => {
+    if (initialData?.emailBody?.includes("<!-- CUSTOM_EMAIL -->")) {
+      return "CUSTOM";
+    }
+    return initialData?.type || "GENERAL";
+  });
+  const [visibility, setVisibility] = useState<string>(initialData?.visibility || "INTERNAL");
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [startDate, setStartDate] = useState(initialData?.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : "");
@@ -30,11 +35,23 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
 
   // Content State
   const [emailSubject, setEmailSubject] = useState(initialData?.emailSubject || "");
-  const [emailBody, setEmailBody] = useState(initialData?.emailBody || "");
+  const [emailBody, setEmailBody] = useState(() => {
+    const bodyVal = initialData?.emailBody || "";
+    if (bodyVal.includes("<!-- CUSTOM_EMAIL -->")) {
+      return bodyVal.replace("<!-- CUSTOM_EMAIL -->", "").trim();
+    }
+    const parts = bodyVal.split("<!-- NOTES_START -->");
+    if (parts.length > 1) {
+      return parts[1].trim();
+    }
+    return bodyVal;
+  });
   const [agendaContent, setAgendaContent] = useState(initialData?.agendaContent || "");
+  const [minutesContent, setMinutesContent] = useState(initialData?.minutesContent || "");
 
   // File State
   const [agendaUrl, setAgendaUrl] = useState(initialData?.agendaUrl || "");
+  const [minutesUrl, setMinutesUrl] = useState(initialData?.minutesUrl || "");
 
   // Recipients State
   const [members, setMembers] = useState<any[]>([]);
@@ -58,17 +75,17 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
   }, []);
 
   const handleAutoFill = async () => {
+    if (type === "CUSTOM") return;
     setLoadingTemplate(true);
     try {
       const template = await generateTemplate({
-        type,
+        type: type as AnnouncementType,
         title: title || undefined,
         date: startDate || undefined,
         location: location || undefined,
         link: meetingLink || undefined
       });
       setEmailSubject(template.emailSubject);
-      setEmailBody(template.emailBody);
       setAgendaContent(template.agendaContent);
       toast.success("Template outlines filled from form details!");
     } catch (err) {
@@ -80,17 +97,17 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
 
   // Auto-generate template when key fields change (only if not editing an existing one and email is empty)
   useEffect(() => {
-    if (!initialData && type && !emailSubject && !emailBody) {
+    if (!initialData && type && type !== "CUSTOM" && !emailSubject && !emailBody) {
       const fetchTemplate = async () => {
         const template = await generateTemplate({
-          type,
+          type: type as AnnouncementType,
           title: title || undefined,
           date: startDate || undefined,
           location: location || undefined,
           link: meetingLink || undefined
         });
         setEmailSubject(template.emailSubject);
-        setEmailBody(template.emailBody);
+        setEmailBody("");
         setAgendaContent(template.agendaContent);
       };
       fetchTemplate();
@@ -102,21 +119,47 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
     setIsSubmitting(true);
     setError(null);
 
+    let compiledBody = emailBody;
+    const dbType = type === "CUSTOM" ? "GENERAL" : type;
+
+    if (type === "CUSTOM") {
+      compiledBody = `${emailBody.trim()}\n\n<!-- CUSTOM_EMAIL -->`;
+    } else {
+      try {
+        const template = await generateTemplate({
+          type: type as AnnouncementType,
+          title: title || undefined,
+          date: startDate || undefined,
+          location: location || undefined,
+          link: meetingLink || undefined
+        });
+        compiledBody = template.emailBody;
+        if (emailBody.trim()) {
+          compiledBody += `\n\nAdditional Notes:\n${emailBody.trim()}`;
+        }
+        compiledBody += `\n\n<!-- NOTES_START -->\n${emailBody.trim()}`;
+      } catch (err) {
+        console.error("Failed to generate template plain text:", err);
+      }
+    }
+
     const data = {
       title,
       description,
       startDate: startDate || undefined,
       location,
       meetingLink,
-      type,
+      type: dbType,
       emailSubject,
-      emailBody,
+      emailBody: compiledBody,
       agendaContent,
       agendaUrl,
+      minutesContent,
+      minutesUrl,
       visibility,
       specificRecipientIds: selectedRecipientIds,
       clubId,
-      status: "DRAFT" as any
+      status: initialData?.status || ("DRAFT" as any)
     };
 
     try {
@@ -149,6 +192,133 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
       setError(err.message);
       setIsSubmitting(false);
     }
+  };
+
+  const getPreviewHtml = () => {
+    const primaryColor = "#D41367";
+    const clubName = "Rotaract Club of Coimbatore Nexus";
+    
+    if (type === "CUSTOM") {
+      return `
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #FAF8F5; color: #1F2937; line-height: 1.6;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #E5E7EB; box-shadow: 0 4px 12px rgba(0,0,0,0.02); padding: 24px;">
+    <h3 style="margin-top: 0; margin-bottom: 16px; color: #1F2937; font-size: 18px; font-weight: 800;">${title || "Notice Board Update"}</h3>
+    <div style="font-size: 14px; color: #374151; line-height: 1.6;">
+      ${emailBody || "<p>Here is a notice regarding our latest update.</p>"}
+    </div>
+  </div>
+</body>
+</html>
+      `;
+    }
+
+    const formattedDate = startDate
+      ? new Date(startDate).toLocaleString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }) + " (IST)"
+      : null;
+
+    let headerTitle = "Club Notification";
+    if (type === "BOARD_MEETING") headerTitle = "Board Meeting Invitation";
+    if (type === "CLUB_MEETING") headerTitle = "Club Meeting Notice";
+    if (type === "EVENT_UPDATE") headerTitle = "Event Notice";
+    if (type === "FINANCE_NOTICE") headerTitle = "Finance Notice";
+    if (type === "IMPORTANT_NOTICE") headerTitle = "Important Club Notice";
+
+    const detailsRows = [
+      { label: "Topic/Title", val: title },
+      { label: "Date & Time", val: formattedDate },
+      { label: "Location", val: location },
+      { label: "Online Link", val: meetingLink, isLink: true }
+    ].filter(r => r.val);
+
+    const detailsBlock = detailsRows.length > 0
+      ? `
+      <div style="background-color: #D4136706; border: 1px solid #D4136715; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+          ${detailsRows.map(r => `
+            <tr>
+              <td valign="top" style="padding: 6px 12px 6px 0; font-size: 13px; font-weight: bold; color: #D41367; width: 110px;">${r.label}:</td>
+              <td valign="top" style="padding: 6px 0; font-size: 13px; color: #1F2937; font-weight: 600;">
+                ${r.isLink ? `<a href="${r.val}" target="_blank" style="color: #D41367; font-weight: bold; text-decoration: underline;">Join Link</a>` : r.val}
+              </td>
+            </tr>
+          `).join("")}
+        </table>
+      </div>
+      `
+      : "";
+
+    const notesBlock = emailBody
+      ? `<div style="margin-bottom: 20px;"><p style="font-size: 14px; margin: 0; color: #4B5563; line-height: 1.6; white-space: pre-wrap;">${emailBody}</p></div>`
+      : "";
+
+    const ctaButton = meetingLink
+      ? `
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 20px 0 12px 0;">
+        <tr>
+          <td align="center">
+            <a href="${meetingLink}" target="_blank" style="background-color: ${primaryColor}; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 12px 24px; display: inline-block; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">
+              Join Meeting
+            </a>
+          </td>
+        </tr>
+      </table>
+      `
+      : "";
+
+    const attachmentsBlock = agendaUrl
+      ? `
+      <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #F3F4F6;">
+        <p style="margin: 0; font-size: 11px; color: #6B7280; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">Attachments included:</p>
+        <ul style="margin: 6px 0 0 0; padding-left: 20px; font-size: 12px; color: #4B5563;">
+          <li>Agenda PDF (Attached)</li>
+        </ul>
+      </div>
+      `
+      : "";
+
+    return `
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #FAF8F5; color: #1F2937; line-height: 1.6;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #E5E7EB; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+    <tr>
+      <td style="background-color: ${primaryColor}; height: 5px;"></td>
+    </tr>
+    <tr>
+      <td align="center" style="padding: 24px; border-bottom: 1px solid #F3F4F6;">
+        <div style="height: 48px; width: 48px; border-radius: 50%; background-color: ${primaryColor}10; color: ${primaryColor}; font-size: 20px; font-weight: bold; line-height: 48px; text-align: center; margin: 0 auto 12px auto;">RC</div>
+        <h2 style="margin: 0; color: ${primaryColor}; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${headerTitle}</h2>
+        <p style="margin: 2px 0 0 0; font-size: 11px; color: #6B7280;">${clubName}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 24px;">
+        ${detailsBlock}
+        ${notesBlock}
+        ${ctaButton}
+        ${attachmentsBlock}
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="background-color: #FAF8F5; padding: 20px; border-top: 1px solid #E5E7EB; font-size: 11px; color: #6B7280;">
+        <p style="margin: 0 0 6px 0;">You are receiving this email because you are a member of <strong>${clubName}</strong>.</p>
+        <p style="margin: 0;">© ${new Date().getFullYear()} ${clubName}. All rights reserved.</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
   };
 
   const isMeeting = ["BOARD_MEETING", "CLUB_MEETING"].includes(type);
@@ -332,39 +502,96 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Email Body</label>
-            <RichTextEditor
-              value={emailBody}
-              onChange={setEmailBody}
-              placeholder="Write the email content here..."
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              {type === "CUSTOM" ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Email Body (Custom Free-text)</label>
+                  <RichTextEditor
+                    value={emailBody}
+                    onChange={setEmailBody}
+                    placeholder="Write the custom email content here..."
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Additional Notes (Optional)</label>
+                  <textarea
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                    placeholder="Add personal notes, customized remarks or additional announcements..."
+                    rows={12}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none text-sm font-medium min-h-[300px]"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Live Email Preview</label>
+              <div className="border border-slate-200 rounded-xl overflow-hidden bg-white h-[360px] relative">
+                <iframe
+                  title="Email Preview"
+                  srcDoc={getPreviewHtml()}
+                  className="w-full h-full border-none"
+                  sandbox="allow-same-origin"
+                />
+              </div>
+            </div>
           </div>
 
           {isMeeting && (
-            <div className="space-y-2 pt-4">
-              <label className="text-sm font-medium text-slate-700">Agenda Document</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-xs text-slate-500 mb-2">Build agenda text inline</p>
-                  <RichTextEditor
-                    value={agendaContent}
-                    onChange={setAgendaContent}
-                    placeholder="1. Call to order..."
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500 mb-2">Or upload an Agenda PDF</p>
-                  <DocumentUpload
-                    value={agendaUrl}
-                    onChange={setAgendaUrl}
-                    type="AGENDA"
-                    accept=".pdf,.doc,.docx"
-                    linkedEntityType="ANNOUNCEMENT"
-                  />
+            <>
+              <div className="space-y-2 pt-4">
+                <label className="text-sm font-medium text-slate-700">Agenda Document</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-2">Build agenda text inline</p>
+                    <RichTextEditor
+                      value={agendaContent}
+                      onChange={setAgendaContent}
+                      placeholder="1. Call to order..."
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-2">Or upload an Agenda PDF</p>
+                    <DocumentUpload
+                      value={agendaUrl}
+                      onChange={setAgendaUrl}
+                      type="AGENDA"
+                      accept=".pdf,.doc,.docx"
+                      linkedEntityType="ANNOUNCEMENT"
+                      label="Agenda"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <div className="space-y-2 pt-6 border-t border-slate-200">
+                <label className="text-sm font-medium text-slate-700">Meeting Minutes (Optional)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-2">Record minutes text inline</p>
+                    <RichTextEditor
+                      value={minutesContent}
+                      onChange={setMinutesContent}
+                      placeholder="Record the minutes of the meeting here..."
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 mb-2">Or upload a Minutes PDF</p>
+                    <DocumentUpload
+                      value={minutesUrl}
+                      onChange={setMinutesUrl}
+                      type="MINUTES"
+                      accept=".pdf,.doc,.docx"
+                      linkedEntityType="ANNOUNCEMENT"
+                      label="Minutes"
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>

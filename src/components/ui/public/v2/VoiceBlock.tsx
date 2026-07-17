@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 import { RevealBlock } from "./reveal";
@@ -29,6 +29,7 @@ export function VoiceBlock({
   onDark?: boolean;
   className?: string;
 }) {
+  const [photoError, setPhotoError] = useState(false);
   const photo = photoUrl ? getGoogleDriveDirectLink(photoUrl) : null;
   const signature = signatureUrl ? getGoogleDriveDirectLink(signatureUrl) : null;
 
@@ -46,9 +47,13 @@ export function VoiceBlock({
         </blockquote>
       </div>
       <div className="lg:col-span-3 lg:col-start-10 flex lg:flex-col items-center lg:items-start gap-4 lg:justify-end">
-        {photo && (
+        {photo && !photoError ? (
           <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0">
-            <Image src={photo} alt={name} fill sizes="64px" className="object-cover thadam-grade" />
+            <Image src={photo} alt={name} fill sizes="64px" className="object-cover thadam-grade" onError={() => setPhotoError(true)} />
+          </div>
+        ) : (
+          <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-wash flex items-center justify-center">
+             <span className="font-display font-medium italic text-ink-faint text-2xl">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
         <div>

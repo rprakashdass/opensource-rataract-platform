@@ -5,6 +5,7 @@ import { getSession , canManageClub } from "@/lib/auth/session";
 import { PublishStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { sendEmail } from "@/lib/email";
+import { getNotificationEmailHtml } from "@/lib/email-templates";
 
 export type PublishActionInput = {
   entityType: "EVENT" | "PROJECT" | "ANNOUNCEMENT";
@@ -112,18 +113,7 @@ export async function publishContent(input: PublishActionInput) {
             select: { email: true, name: true }
           });
 
-          const htmlSkeleton = (body: string) => `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-            <div style="background-color: #6d28d9; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-              <h2 style="margin: 0; color: #ffffff;">Club Update</h2>
-            </div>
-            <div style="padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none;">
-              ${body}
-            </div>
-            <div style="background-color: #f9fafb; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb; border-top: none;">
-              You are receiving this email because you are a member of our club.
-            </div>
-          </div>`;
+          const club = await prisma.club.findFirst();
 
           // Send individually so we can replace {{memberName}}
           for (const u of users) {
@@ -133,10 +123,12 @@ export async function publishContent(input: PublishActionInput) {
               personalBody = personalBody.replace(/{{memberName}}/g, u.name || "Member");
             }
             
+            const plainText = personalBody.replace(/<[^>]*>/g, ""); // Strip HTML tags
             await sendEmail({
               to: u.email,
               subject: comm.subject,
-              html: htmlSkeleton(personalBody),
+              text: plainText,
+              html: getNotificationEmailHtml(comm.subject, personalBody, u.name || "Member", club),
             });
           }
 

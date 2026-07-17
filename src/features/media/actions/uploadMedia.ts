@@ -5,6 +5,10 @@ import { getSession , canManageClub } from "@/lib/auth/session";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 import { MediaType, MediaUsage } from "@prisma/client";
 import { getCurrentClub } from "@/lib/club";
+import { getMediaTypeFromExtension, ALLOWED_MEDIA_TYPES } from "@/lib/media-helpers";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
+
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 export async function uploadMedia(formData: FormData) {
   try {
@@ -18,15 +22,23 @@ export async function uploadMedia(formData: FormData) {
       return str;
     };
 
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | null;
     const title = sanitizeField(formData.get("title"));
     const caption = sanitizeField(formData.get("caption"));
     const altText = sanitizeField(formData.get("altText"));
     
     const typeVal = sanitizeField(formData.get("type"));
     let type = (typeVal as MediaType) || "IMAGE";
-    if (file && !file.type.startsWith("image/") && type === "IMAGE") {
-      type = "DOCUMENT";
+    
+    if (file) {
+      if (file.size > MAX_SIZE_BYTES) {
+        return { error: `File is too large (${(file.size / (1024 * 1024)).toFixed(2)}MB). Max size is 10MB.` };
+      }
+      // Detect type if it's set to IMAGE but is actually a document (e.g. PDF/DOCX)
+      const detected = getMediaTypeFromExtension(file.name);
+      if (type === "IMAGE" && detected === "DOCUMENT") {
+        type = "DOCUMENT";
+      }
     }
     
     const usageVal = sanitizeField(formData.get("usage"));
@@ -65,7 +77,8 @@ export async function uploadMedia(formData: FormData) {
     let publicUrl = "";
 
     if (type === "IMAGE" || type === "DOCUMENT") {
-      const fileExt = file.name.split('.').pop();
+      if (!file) return { error: "File data is missing for upload." };
+      const fileExt = file.name.split('.').pop() || "bin";
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${club.id}/media/${type.toLowerCase()}/${fileName}`;
 
@@ -78,13 +91,13 @@ export async function uploadMedia(formData: FormData) {
         .storage
         .from('rotaract-media')
         .upload(filePath, buffer, {
-          contentType: file.type,
+          contentType: file.type || "application/octet-stream",
           upsert: false
         });
 
       if (uploadError) {
         console.error("Supabase upload error:", uploadError);
-        return { error: "Failed to upload file to storage" };
+        return { error: `Failed to upload file to storage: ${uploadError.message}` };
       }
 
       const { data: publicUrlData } = supabase
@@ -131,6 +144,7 @@ export async function uploadMedia(formData: FormData) {
       }
     });
 
+    revalidatePublicRoutes();
     return { success: true, media };
   } catch (error: any) {
     console.error("Media upload error:", error);

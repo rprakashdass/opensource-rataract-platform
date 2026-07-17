@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { EventStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function transitionEvent(eventId: string, newStatus: EventStatus) {
   try {
@@ -68,11 +69,8 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
     });
 
     revalidatePath(`/admin/events/${eventId}`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
     revalidatePath("/admin/events");
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
-    revalidatePath("/events");
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true, event: updatedEvent };
   } catch (error: any) {

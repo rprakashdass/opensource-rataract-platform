@@ -7,6 +7,8 @@ import { uploadMedia } from '@/features/media/actions/uploadMedia';
 import { Input } from './input';
 import { Label } from './label';
 import { MediaType, MediaUsage } from '@prisma/client';
+import { ALLOWED_MEDIA_TYPES } from '@/lib/media-helpers';
+import imageCompression from 'browser-image-compression';
 
 interface MediaUploadProps {
   value?: string; // This will be the Media ID now
@@ -18,13 +20,20 @@ interface MediaUploadProps {
   albumId?: string | null;
 }
 
-export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY", accept = "image/*", isCover = false, albumId }: MediaUploadProps) {
+export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY", accept, isCover = false, albumId }: MediaUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const defaultAccept = type === "IMAGE" 
+    ? ALLOWED_MEDIA_TYPES.image 
+    : type === "DOCUMENT" 
+      ? ALLOWED_MEDIA_TYPES.document 
+      : ALLOWED_MEDIA_TYPES.any;
+  const finalAccept = accept || defaultAccept;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -39,8 +48,26 @@ export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY"
     if (!file || !title) return;
     
     setIsUploading(true);
+    let uploadFile = file;
+    
+    if (type === 'IMAGE') {
+      try {
+        const options = {
+          maxSizeMB: 10,
+          maxWidthOrHeight: 2000,
+          useWebWorker: true,
+          fileType: 'image/webp'
+        };
+        uploadFile = await imageCompression(file, options);
+        const newName = file.name.split('.').slice(0, -1).join('.') + '.webp';
+        uploadFile = new File([uploadFile], newName, { type: 'image/webp' });
+      } catch (error) {
+        console.warn("Compression failed, uploading original:", error);
+      }
+    }
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", uploadFile);
     formData.append("title", title);
     formData.append("type", type);
     formData.append("usage", usage);
@@ -87,8 +114,8 @@ export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY"
       <div className="border border-slate-200 rounded-md p-4 space-y-4 bg-slate-50">
         <div className="flex items-center justify-between border-b pb-3">
           <div className="flex items-center gap-3">
-            <FileIcon className="h-5 w-5 text-purple-600" />
-            <span className="text-sm font-medium">{file.name}</span>
+            <FileIcon className="h-5 w-5 text-brand flex-shrink-0" />
+            <span className="text-sm truncate font-medium">{file.name}</span>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setFile(null)} disabled={isUploading}>
             <X className="h-4 w-4" />
@@ -107,7 +134,7 @@ export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY"
           type="button" 
           onClick={handleUpload} 
           disabled={!title || isUploading}
-          className="w-full"
+          className="w-full bg-brand hover:bg-brand-deep text-white"
         >
           {isUploading ? (
             <>
@@ -124,7 +151,7 @@ export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY"
   return (
     <div
       className={`border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${
-        isDragging ? 'border-purple-500 bg-purple-50' : 'border-slate-300 hover:bg-slate-50'
+        isDragging ? 'border-brand bg-slate-50' : 'border-slate-300 hover:bg-slate-50'
       }`}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
@@ -147,7 +174,7 @@ export function MediaUpload({ value, onChange, type = "IMAGE", usage = "GALLERY"
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
-        accept={accept}
+        accept={finalAccept}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageMembers } from "@/lib/auth/session";
 import { getCurrentClub } from "@/lib/club";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function addPortfolioAssignment(memberId: string, data: { portfolioId: string, roleTitle: string, tenureYear: string }) {
   try {
@@ -23,7 +24,7 @@ export async function addPortfolioAssignment(memberId: string, data: { portfolio
     });
 
     revalidatePath(`/admin/members/${memberId}`);
-    revalidatePath("/about");
+    revalidatePublicRoutes();
     return { success: true, assignment };
   } catch (error: any) {
     if (error.code === 'P2002') return { error: "Assignment already exists for this portfolio in this year." };
@@ -41,7 +42,7 @@ export async function deletePortfolioAssignment(assignmentId: string, memberId: 
     });
 
     revalidatePath(`/admin/members/${memberId}`);
-    revalidatePath("/about");
+    revalidatePublicRoutes();
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Failed to delete assignment" };
@@ -71,8 +72,7 @@ export async function addBoardRole(memberId: string, data: { roleId: string, fin
     });
 
     revalidatePath(`/admin/members/${memberId}`);
-    revalidatePath("/about");
-    revalidateTag("team", "max");
+    revalidatePublicRoutes();
     return { success: true, boardMember };
   } catch (error: any) {
     if (error.code === 'P2002') return { error: "Member already holds this role for the given year." };
@@ -90,8 +90,7 @@ export async function deleteBoardRole(boardMemberId: string, memberId: string) {
     });
 
     revalidatePath(`/admin/members/${memberId}`);
-    revalidatePath("/about");
-    revalidateTag("team", "max");
+    revalidatePublicRoutes();
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Failed to delete board role" };

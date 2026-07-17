@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { getNotificationEmailHtml } from "@/lib/email-templates";
 
 export async function GET(request: Request) {
   try {
@@ -89,10 +90,13 @@ export async function GET(request: Request) {
         const emails = users.map(u => u.email).filter(Boolean) as string[];
 
         if (emails.length > 0) {
+          const club = await prisma.club.findFirst();
+          const plainText = comm.body.replace(/<[^>]*>/g, ""); // Strip HTML tags
           await sendEmail({
             to: emails,
             subject: comm.subject,
-            html: comm.body,
+            text: plainText,
+            html: getNotificationEmailHtml(comm.subject, comm.body, "Member", club),
           });
           emailsSentCount++;
         }

@@ -20,10 +20,10 @@ export default async function CheckInPage({ params }: PageProps) {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 p-8 text-center">
-                <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <ClipboardCheck className="w-10 h-10 text-purple-600" />
+                <div className="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ClipboardCheck className="w-10 h-10 text-brand" />
                 </div>
-                <h1 className="text-2xl font-black text-slate-900 mb-2">Event Check-in</h1>
+                <h1 className="text-2xl font-extrabold text-slate-900 mb-2">Event Check-in</h1>
                 <p className="text-slate-500 mb-8">Please wait while we verify your attendance...</p>
                 
                 <QRCheckInHandler token={token} />

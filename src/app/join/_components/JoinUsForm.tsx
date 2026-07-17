@@ -33,6 +33,7 @@ export default function JoinUsForm({
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       interestMessage: formData.get("interestMessage") as string,
+      _honey: formData.get("_honey") as string,
     });
     setLoading(false);
 
@@ -93,6 +94,8 @@ export default function JoinUsForm({
           />
         </div>
       </div>
+
+      <input type="text" name="_honey" className="hidden" tabIndex={-1} autoComplete="off" />
 
       <button
         type="submit"

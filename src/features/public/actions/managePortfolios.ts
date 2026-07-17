@@ -4,13 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { getSession, canManageWebsite } from "@/lib/auth/session";
 import { getCurrentClub } from "@/lib/club";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 function revalidatePortfolios() {
-  revalidatePath("/about");
-  revalidatePath("/team");
+  revalidatePublicRoutes();
   revalidatePath("/admin/settings/portfolios");
-  revalidateTag("club", "max");
-  revalidateTag("homepage", "max");
   revalidateTag("portfolios", "max");
   revalidateTag("team", "max");
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 
@@ -20,19 +20,21 @@ export function PersonCard({
   compact?: boolean;
   className?: string;
 }) {
+  const [error, setError] = useState(false);
   const url = photoUrl ? getGoogleDriveDirectLink(photoUrl) : null;
   const initial = name?.charAt(0)?.toUpperCase() || "•";
 
   return (
     <div className={cn("group", className)}>
       <div className={cn("relative overflow-hidden rounded-xl bg-wash", compact ? "aspect-square" : "aspect-[4/5]")}>
-        {url ? (
+        {url && !error ? (
           <Image
             src={url}
             alt={name}
             fill
             sizes={compact ? "(max-width: 768px) 50vw, 20vw" : "(max-width: 768px) 100vw, 25vw"}
             className="object-cover thadam-grade transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            onError={() => setError(true)}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">

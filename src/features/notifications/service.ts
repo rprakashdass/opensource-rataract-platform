@@ -2,6 +2,9 @@ import { NotificationTrigger } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import * as ics from "ics";
+import { getAnnouncementHtml, getEventInviteEmailHtml, getNotificationEmailHtml } from "@/lib/email-templates";
+import { generateTemplate } from "@/features/communication/actions/generateTemplate";
+import { getSupabaseAdmin } from "@/lib/db/supabase";
 
 interface DispatchOptions {
   trigger: NotificationTrigger;
@@ -27,10 +30,16 @@ export async function dispatchNotification(opts: DispatchOptions) {
   let attachments: any[] = [];
   
   let headerTitle = "Club Update";
+  let event: any = null;
+  let ann: any = null;
+  let googleCalUrl = "";
+  let dateStr = "";
+  let timeStr = "";
+  let fallbackAttachmentsHtml = "";
   
   // 1. Fetch Context
   if (eventId) {
-    const event = await prisma.event.findUnique({ where: { id: eventId }, include: { club: true } });
+    event = await prisma.event.findUnique({ where: { id: eventId }, include: { club: true } });
     if (event) {
       subject = `Event Update: ${event.title}`;
       body = `<p>Hi there,</p><p>We have a new update regarding <strong>${event.title}</strong>.</p>`;
@@ -40,13 +49,13 @@ export async function dispatchNotification(opts: DispatchOptions) {
         subject = `[Invitation] ${event.title}`;
         
         const start = new Date(event.startDate);
-        const dateStr = start.toLocaleDateString("en-US", {
+        dateStr = start.toLocaleDateString("en-US", {
           weekday: "long",
           year: "numeric",
           month: "long",
           day: "numeric",
         });
-        const timeStr = start.toLocaleTimeString("en-US", {
+        timeStr = start.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
         });
@@ -57,7 +66,7 @@ export async function dispatchNotification(opts: DispatchOptions) {
         // Generate Google Calendar Link
         const end = event.endTime ? new Date(event.endTime) : new Date(start.getTime() + 60 * 60 * 1000);
         const formatForGoogle = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-        const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatForGoogle(start)}/${formatForGoogle(end)}&details=${encodeURIComponent(event.description || "")}&location=${encodeURIComponent(event.location || event.meetingLink || "")}`;
+        googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${formatForGoogle(start)}/${formatForGoogle(end)}&details=${encodeURIComponent(event.description || "")}&location=${encodeURIComponent(event.location || event.meetingLink || "")}`;
 
         body = `
           <p style="font-size: 15px; margin-top: 0; margin-bottom: 20px; color: #1f2937;">Hi {{memberName}},</p>
@@ -126,7 +135,7 @@ export async function dispatchNotification(opts: DispatchOptions) {
       }
     }
   } else if (announcementId) {
-    const ann = await prisma.announcement.findUnique({ where: { id: announcementId } });
+    ann = await prisma.announcement.findUnique({ where: { id: announcementId } });
     if (ann) {
       subject = ann.emailSubject || `Notice: ${ann.title}`;
       body = ann.emailBody || `<p>${ann.description}</p>`;
@@ -148,6 +157,45 @@ export async function dispatchNotification(opts: DispatchOptions) {
            });
         }
       }
+
+      // Fetch and attach agenda / minutes / other files
+      const fileUrlsToAttach = [
+        { url: ann.agendaUrl, defaultName: "Agenda.pdf", label: "Agenda Document" },
+        { url: ann.minutesUrl, defaultName: "Minutes.pdf", label: "Meeting Minutes" }
+      ];
+      
+      let fallbackHtmlStr = "";
+      
+      if (ann.attachments && Array.isArray(ann.attachments)) {
+        ann.attachments.forEach((url: string, i: number) => {
+          if (url) {
+            fileUrlsToAttach.push({ url, defaultName: `Attachment-${i+1}`, label: `Attachment ${i+1}` });
+          }
+        });
+      }
+
+      for (const item of fileUrlsToAttach) {
+        if (item.url) {
+          const fileData = await fetchAttachment(item.url, item.defaultName);
+          if (fileData) {
+            if (fileData.size > 10 * 1024 * 1024) {
+              console.log(`[Email Service] File ${fileData.filename} is too large (${(fileData.size / (1024 * 1024)).toFixed(2)}MB). Linking instead.`);
+              fallbackHtmlStr += `<p style="margin-top: 15px; font-size: 14px;">📎 <strong>${item.label}:</strong> <a href="${item.url}" style="color: ${primaryColor}; text-decoration: underline;">Download ${fileData.filename}</a></p>`;
+            } else {
+              attachments.push({
+                filename: fileData.filename,
+                content: fileData.content,
+                contentType: fileData.contentType
+              });
+            }
+          } else {
+            fallbackHtmlStr += `<p style="margin-top: 15px; font-size: 14px;">📎 <strong>${item.label}:</strong> <a href="${item.url}" style="color: ${primaryColor}; text-decoration: underline;">Download File</a> (Attachment fetch failed)</p>`;
+          }
+        }
+      }
+      
+      fallbackAttachmentsHtml = fallbackHtmlStr;
+      body += fallbackHtmlStr;
     }
   }
 
@@ -159,71 +207,81 @@ export async function dispatchNotification(opts: DispatchOptions) {
   let status = "FAILED";
   let errorMsg = null;
   
-  if (sendEmailFlag || attachCalendarFlag) {
+if (sendEmailFlag || attachCalendarFlag) {
      try {
        const users = await prisma.user.findMany({
          where: { email: { in: recipients } },
          select: { email: true, name: true }
        });
 
-       const htmlSkeleton = (bodyContent: string) => `
-       <div style="background-color: #FAF8F5; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #1F2937; line-height: 1.6;">
-         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); border: 1px solid #E5E7EB;">
-           
-           <!-- Dynamic Theme Color Accent Line -->
-           <div style="background-color: ${primaryColor}; height: 6px; width: 100%;"></div>
-           
-           <!-- Header Banner -->
-           <div style="padding: 24px 32px; border-bottom: 1px solid #F3F4F6; text-align: center; background-color: #FFFFFF;">
-             <h2 style="margin: 0; color: ${primaryColor}; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;">${headerTitle}</h2>
-             <p style="margin: 4px 0 0 0; font-size: 13px; color: #6B7280; font-weight: 500;">${clubName}</p>
-           </div>
-           
-           <!-- Email Body Content -->
-           <div style="padding: 36px 32px; font-size: 15px; color: #1F2937; background-color: #FFFFFF;">
-             ${bodyContent}
-           </div>
-           
-           <!-- Email Footer -->
-           <div style="background-color: #FAF8F5; padding: 24px 32px; text-align: center; border-top: 1px solid #E5E7EB; font-size: 12px; color: #6B7280; font-weight: 500;">
-             <p style="margin: 0 0 8px 0;">You are receiving this email because you are a member of <strong>${clubName}</strong>.</p>
-             <p style="margin: 0; font-size: 11px; color: #9CA3AF;">© ${new Date().getFullYear()} ${clubName}. All rights reserved.</p>
-           </div>
-           
-         </div>
-       </div>`;
-
-       for (const u of users) {
-         if (!u.email) continue;
-         let personalBody = body;
-         if (personalBody) {
-           personalBody = personalBody.replace(/{{memberName}}/g, u.name || "Member");
-         }
-
-         await sendEmail({
-           to: u.email,
-           subject,
-           html: htmlSkeleton(personalBody),
-           attachments: attachments.length > 0 ? attachments : undefined
-         });
-       }
-       
-       // Handle any recipients that weren't found in the DB (fallback)
-       const foundEmails = new Set(users.map(u => u.email));
-       const missingRecipients = recipients.filter(r => !foundEmails.has(r));
-       if (missingRecipients.length > 0) {
-         for (const email of missingRecipients) {
-            let personalBody = body;
-            if (personalBody) personalBody = personalBody.replace(/{{memberName}}/g, "Member");
-            await sendEmail({
-               to: email,
-               subject,
-               html: htmlSkeleton(personalBody),
-               attachments: attachments.length > 0 ? attachments : undefined
+       const getEmailParts = async (recipientEmail: string, name: string) => {
+          let html = "";
+          let text = "";
+          
+          if (announcementId && ann) {
+            html = getAnnouncementHtml(ann, club, fallbackAttachmentsHtml);
+            const templ = await generateTemplate({
+              type: ann.type,
+              title: ann.title,
+              date: ann.startDate ? ann.startDate.toISOString() : undefined,
+              location: ann.location || undefined,
+              link: ann.meetingLink || undefined
             });
-         }
-       }
-       status = "SUCCESS";
+            text = templ.emailBody;
+            if (ann.emailBody) {
+              text += `\n\nAdditional Notes:\n${ann.emailBody}`;
+            }
+          } else if (eventId && event) {
+            html = getEventInviteEmailHtml(event, name, club, googleCalUrl);
+            const start = new Date(event.startDate);
+            const formattedDate = start.toLocaleString("en-US", {
+              timeZone: "Asia/Kolkata",
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            }) + " (IST)";
+            text = `Hi ${name},\n\nYou are cordially invited to attend our upcoming event: ${event.title}.\n\nDate & Time: ${formattedDate}\nLocation: ${event.location || "TBD"}\nLink: ${event.meetingLink || "None"}\n\nSee you there!`;
+          } else {
+            const personalBody = body.replace(/{{memberName}}/g, name);
+            html = getNotificationEmailHtml(subject, personalBody, name, club);
+            text = personalBody.replace(/<[^>]*>/g, ""); // Strip HTML tags
+          }
+          
+          return { html, text };
+        };
+
+        for (const u of users) {
+          if (!u.email) continue;
+          const { html: emailHtml, text: emailText } = await getEmailParts(u.email, u.name || "Member");
+          await sendEmail({
+            to: u.email,
+            subject,
+            text: emailText,
+            html: emailHtml,
+            attachments: attachments.length > 0 ? attachments : undefined
+          });
+        }
+        
+        // Handle any recipients that weren't found in the DB (fallback)
+        const foundEmails = new Set(users.map(u => u.email));
+        const missingRecipients = recipients.filter(r => !foundEmails.has(r));
+        if (missingRecipients.length > 0) {
+          for (const email of missingRecipients) {
+             const { html: emailHtml, text: emailText } = await getEmailParts(email, "Member");
+             await sendEmail({
+                to: email,
+                subject,
+                text: emailText,
+                html: emailHtml,
+                attachments: attachments.length > 0 ? attachments : undefined
+             });
+          }
+        }
+        status = "SUCCESS";
      } catch (e: any) {
        errorMsg = e.message;
        console.error("Notification email failed:", e);
@@ -271,4 +329,43 @@ function generateIcs(event: any) {
     return null;
   }
   return value;
+}
+
+async function fetchAttachment(url: string, defaultName: string) {
+  try {
+    let content: Buffer;
+    let contentType = "application/octet-stream";
+
+    const parts = url.split("/rotaract-media/");
+    if (parts.length >= 2) {
+      const filePath = parts[1];
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await supabase.storage.from("rotaract-media").download(filePath);
+      if (error) throw error;
+      contentType = data.type || "application/octet-stream";
+      const arrayBuffer = await data.arrayBuffer();
+      content = Buffer.from(arrayBuffer);
+    } else {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Status ${response.status}`);
+      }
+      contentType = response.headers.get("content-type") || "application/octet-stream";
+      const arrayBuffer = await response.arrayBuffer();
+      content = Buffer.from(arrayBuffer);
+    }
+    
+    const filename = url.split("/").pop() || defaultName;
+    const cleanName = filename.replace(/^\d+_[a-z0-9]+_/i, "") || defaultName;
+
+    return {
+      filename: cleanName,
+      content,
+      contentType,
+      size: content.length
+    };
+  } catch (error) {
+    console.error(`[Email Service] Failed to fetch attachment from ${url}:`, error);
+    return null;
+  }
 }

@@ -1,9 +1,11 @@
 import nodemailer from "nodemailer";
+import { prisma } from "@/lib/prisma";
 
 interface EmailOptions {
   to: string | string[];
   subject: string;
   html: string;
+  text?: string;
   from?: string;
   attachments?: { filename: string; content: string | Buffer; contentType?: string }[];
 }
@@ -11,7 +13,7 @@ interface EmailOptions {
 /**
  * Sends an email using Nodemailer and Gmail App Password.
  */
-export async function sendEmail({ to, subject, html, from, attachments }: EmailOptions) {
+export async function sendEmail({ to, subject, html, text, from, attachments }: EmailOptions) {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
 
@@ -31,10 +33,17 @@ export async function sendEmail({ to, subject, html, from, attachments }: EmailO
   });
 
   try {
+    const club = await prisma.club.findFirst();
+    const clubName = club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
+    const defaultFrom = `"${clubName}" <${user}>`;
+    const defaultReplyTo = club?.email || user;
+
     const info = await transporter.sendMail({
-      from: from || `"Rotaract Club" <${user}>`,
+      from: from || defaultFrom,
+      replyTo: defaultReplyTo,
       to,
       subject,
+      text,
       html,
       attachments,
     });

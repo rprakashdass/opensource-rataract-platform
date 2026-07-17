@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageMembers } from "@/lib/auth/session";
 import { getCurrentClub } from "@/lib/club";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function updateMember(id: string, data: any) {
   try {
@@ -38,11 +39,8 @@ export async function updateMember(id: string, data: any) {
     });
 
     revalidatePath("/admin/members");
-    revalidateTag("team", "max"); revalidateTag("homepage", "max");
     revalidatePath(`/admin/members/${id}`);
-    revalidateTag("team", "max"); revalidateTag("homepage", "max");
-    revalidatePath("/team");
-    revalidateTag("team", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true, member };
   } catch (error: any) {

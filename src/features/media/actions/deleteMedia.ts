@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function deleteMedia(mediaId: string) {
   try {
@@ -47,10 +48,7 @@ export async function deleteMedia(mediaId: string) {
 
     revalidatePath("/admin/gallery");
     if (media.albumId) revalidatePath(`/admin/gallery/albums/${media.albumId}`);
-    revalidatePath("/gallery");
-    revalidatePath("/");
-    revalidateTag("gallery", "max");
-    revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true };
   } catch (error: any) {

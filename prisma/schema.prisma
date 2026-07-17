@@ -809,7 +809,7 @@ model Event {
 
   // Impact
   volunteerHours Int?
-  fundsRaised    Float?
+  fundsRaised    Decimal? @db.Decimal(10, 2)
   impactMetrics  Json?
 
   visibility    Visibility    @default(PUBLIC)
@@ -1103,7 +1103,7 @@ model PaymentRequest {
 
   title       String
   description String?
-  amount      Float
+  amount      Decimal @db.Decimal(10, 2)
   category    TransactionCategory @default(OTHER)
   isGlobal    Boolean             @default(false)
   dueDate     DateTime?

@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
-import { getSession } from "@/lib/auth/session";
+import { getSession, canManageWebsite } from "@/lib/auth/session";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session) {
+    if (!session || !canManageWebsite(session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -29,9 +30,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getSession();
+    if (!session || !canManageWebsite(session)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const club = await getCurrentClub();
     if (!club) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Club not initialized" }, { status: 400 });
     }
 
     const data = await req.json();
@@ -51,6 +57,7 @@ export async function POST(req: Request) {
       }
     });
 
+    revalidatePublicRoutes();
     return NextResponse.json(sponsor);
   } catch (error: any) {
     console.error("Failed to create sponsor:", error);

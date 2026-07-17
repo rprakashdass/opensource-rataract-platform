@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
@@ -44,6 +44,7 @@ export function EditorialImage({
   rounded?: boolean;
 }) {
   const reduce = useReducedMotion();
+  const [error, setError] = useState(false);
   const url = src ? getGoogleDriveDirectLink(src) : null;
 
   return (
@@ -55,7 +56,7 @@ export function EditorialImage({
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.7, ease: [...THADAM_EASE] }}
       >
-        {url ? (
+        {url && !error ? (
           <motion.div
             className="absolute inset-0"
             initial={reduce ? {} : { scale: 1.08 }}
@@ -70,6 +71,7 @@ export function EditorialImage({
               sizes={sizes}
               priority={priority}
               className={cn("object-cover thadam-grade", imgClassName)}
+              onError={() => setError(true)}
             />
           </motion.div>
         ) : (

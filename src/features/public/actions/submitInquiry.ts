@@ -2,8 +2,26 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function submitInquiry(data: { clubId: string, name: string, email: string, phone: string, interestMessage: string }) {
+const globalRateLimit = globalThis as unknown as {
+  inquiryRateLimits?: Map<string, number>;
+};
+
+export async function submitInquiry(data: { clubId: string, name: string, email: string, phone: string, interestMessage: string, _honey?: string }) {
   try {
+    if (data._honey) {
+      return { success: true };
+    }
+
+    const limits = globalRateLimit.inquiryRateLimits ?? new Map<string, number>();
+    globalRateLimit.inquiryRateLimits = limits;
+    
+    const now = Date.now();
+    const lastSubmitted = limits.get(data.email) || 0;
+    if (now - lastSubmitted < 60 * 1000) {
+      return { error: "Please wait a minute before submitting another inquiry." };
+    }
+    limits.set(data.email, now);
+
     if (!data.name || !data.email) {
       return { error: "Name and Email are required." };
     }

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { eventSchema, EventFormData } from "../schemas/event.schema";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { dispatchNotification } from "@/features/notifications/service";
 import { getCurrentClub } from "@/lib/club";
 import { setupEventDriveFolder } from "@/features/storage/googleDrive";
@@ -117,9 +118,7 @@ export async function createEvent(data: EventFormData) {
     });
 
     revalidatePath("/admin");
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
-    revalidatePath("/events");
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true, event };
   } catch (error: any) {

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession, canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { getCurrentClub } from "@/lib/club";
 
 export async function saveWebsiteMetrics(metrics: any[]) {
@@ -34,8 +35,7 @@ export async function saveWebsiteMetrics(metrics: any[]) {
       });
     }
 
-    revalidatePath("/");
-    revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
     revalidateTag("website-settings", "max");
 
     return { success: true };

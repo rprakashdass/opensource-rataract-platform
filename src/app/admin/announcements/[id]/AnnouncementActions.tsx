@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { sendAnnouncement } from "@/features/communication/actions/sendAnnouncement";
 import { toast } from "sonner";
-import { Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2, RefreshCw } from "lucide-react";
 
 export default function AnnouncementActions({ id, status }: { id: string, status: string }) {
   const router = useRouter();
@@ -28,9 +28,21 @@ export default function AnnouncementActions({ id, status }: { id: string, status
 
   if (status === "PUBLISHED") {
     return (
-      <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg font-medium">
-        <CheckCircle2 className="h-5 w-5" />
-        Published & Sent
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg font-medium">
+          <CheckCircle2 className="h-5 w-5" />
+          Published &amp; Sent
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleSend}
+          disabled={loading}
+          className="gap-2 text-slate-600"
+          title="Resend emails to all recipients"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          {loading ? "Resending..." : "Resend"}
+        </Button>
       </div>
     );
   }

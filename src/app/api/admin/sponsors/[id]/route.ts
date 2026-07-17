@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { getSession, canManageWebsite } from "@/lib/auth/session";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function DELETE(
   req: Request,
@@ -8,7 +9,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getSession();
-    if (!session) {
+    if (!session || !canManageWebsite(session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -19,6 +20,7 @@ export async function DELETE(
       where: { id },
     });
 
+    revalidatePublicRoutes();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete sponsor:", error);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
+import { getOtpEmailHtml } from "@/lib/email-templates";
 
 // POST: Generate & Send OTP Code
 export async function POST(req: Request) {
@@ -33,19 +34,12 @@ export async function POST(req: Request) {
     });
 
     // Send email with premium styles
+    const club = await prisma.club.findFirst();
     const mailResult = await sendEmail({
       to: user.email,
       subject: "Security Verification Code - Change Password",
-      html: `
-        <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 500px; margin: 24px auto; padding: 32px; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);">
-          <h2 style="color: #0b132b; font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 8px; tracking-tight: -0.02em;">Verify Identity</h2>
-          <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">Use the code below to complete your password change. This code is only valid for 10 minutes.</p>
-          <div style="background-color: #faf9f6; padding: 20px; border-radius: 16px; text-align: center; border: 1px dashed #f7a800; margin-bottom: 24px;">
-            <span style="font-size: 36px; font-weight: 900; letter-spacing: 0.2em; color: #f7a800; padding-left: 0.2em;">${code}</span>
-          </div>
-          <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-bottom: 0; padding-top: 16px; border-t: 1px solid #f1f5f9;">If you did not request this, you can safely ignore this email.</p>
-        </div>
-      `,
+      text: `Your security verification code to change your password is: ${code}. This code is valid for 10 minutes.`,
+      html: getOtpEmailHtml(code, club),
     });
 
     if (!mailResult.success) {

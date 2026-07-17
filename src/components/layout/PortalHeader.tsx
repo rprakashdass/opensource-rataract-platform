@@ -41,7 +41,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
   const [readNotifIds, setReadNotifIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("read_notifications");
+    const stored = localStorage.getItem(`read_notifications_${user.email}`);
     if (stored) {
       try {
         setReadNotifIds(JSON.parse(stored));
@@ -56,14 +56,14 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
     e.stopPropagation();
     const newReadIds = [...readNotifIds, id];
     setReadNotifIds(newReadIds);
-    localStorage.setItem("read_notifications", JSON.stringify(newReadIds));
+    localStorage.setItem(`read_notifications_${user.email}`, JSON.stringify(newReadIds));
   };
 
   const markAllAsRead = () => {
     const allIds = notifications.map(n => n.id);
     const newReadIds = Array.from(new Set([...readNotifIds, ...allIds]));
     setReadNotifIds(newReadIds);
-    localStorage.setItem("read_notifications", JSON.stringify(newReadIds));
+    localStorage.setItem(`read_notifications_${user.email}`, JSON.stringify(newReadIds));
   };
 
   const unreadCount = notifications.filter(n => !readNotifIds.includes(n.id)).length;

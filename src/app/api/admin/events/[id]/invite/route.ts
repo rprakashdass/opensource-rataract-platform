@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
+import { getEventInviteEmailHtml } from "@/lib/email-templates";
 
 function adminOnly(session: any) {
   return session && ((session.roles?.includes('SUPER_ADMIN') || session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')));
@@ -28,6 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       include: { user: true }
     });
 
+    const club = await prisma.club.findFirst();
     const startDate = new Date(event.startDate);
 
     // Send emails
@@ -35,22 +37,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const targetEmail = member.email || member.user?.email;
       if (!targetEmail) return Promise.resolve();
 
-      const emailHtml = `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>You're invited: ${event.title}</h2>
-          <p>Hi ${member.name || "Member"},</p>
-          <p>Please find the calendar invite attached for our upcoming event!</p>
-          <p><strong>When:</strong> ${startDate.toLocaleString()}</p>
-          <p><strong>Where:</strong> ${event.location || "TBD"}</p>
-          <br/>
-          <p>See you there!<br/>Rotaract Club</p>
-        </div>
-      `;
+      const memberName = member.name || "Member";
+      const textBody = `Hi ${memberName},\n\nYou are cordially invited to attend our upcoming event: ${event.title}.\n\nDate & Time: ${startDate.toLocaleString()}\nLocation: ${event.location || "TBD"}\n\nSee you there!`;
 
       return sendEmail({
         to: targetEmail,
         subject: `Invite: ${event.title}`,
-        html: emailHtml
+        text: textBody,
+        html: getEventInviteEmailHtml(event, memberName, club)
       }).then(res => {
         if (!res.success) {
           console.error("Resend API failed to send to", targetEmail, ":", res.error);

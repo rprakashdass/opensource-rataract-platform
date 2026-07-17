@@ -36,6 +36,8 @@ export async function POST(req: Request) {
       emailSubject,
       emailBody,
       agendaContent,
+      minutesUrl,
+      minutesContent,
       visibility,
       specificRecipientIds
     } = data;
@@ -72,6 +74,8 @@ export async function POST(req: Request) {
         emailSubject,
         emailBody,
         agendaContent,
+        minutesUrl,
+        minutesContent,
         calendarEventId,
         visibility: visibility || "PUBLIC",
         specificRecipientIds: specificRecipientIds || [],

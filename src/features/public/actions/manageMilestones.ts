@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function saveMilestone(data: { id?: string, year: string, title: string, description: string, clubId: string }) {
   try {
@@ -30,10 +31,9 @@ export async function saveMilestone(data: { id?: string, year: string, title: st
       });
     }
 
-    revalidatePath("/about");
-    revalidatePath("/our-archive");
+    revalidatePublicRoutes();
     revalidatePath("/admin/website/milestones");
-    revalidateTag("club", "max"); revalidateTag("homepage", "max"); revalidateTag("milestones", "max");
+    revalidateTag("milestones", "max");
 
     return { success: true, data: milestone };
   } catch (error: any) {
@@ -48,10 +48,9 @@ export async function deleteMilestone(id: string) {
 
     await prisma.milestone.delete({ where: { id } });
 
-    revalidatePath("/about");
-    revalidatePath("/our-archive");
+    revalidatePublicRoutes();
     revalidatePath("/admin/website/milestones");
-    revalidateTag("club", "max"); revalidateTag("homepage", "max"); revalidateTag("milestones", "max");
+    revalidateTag("milestones", "max");
 
     return { success: true };
   } catch (error: any) {

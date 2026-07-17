@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { getCurrentClub } from "@/lib/club";
 
 export async function saveWebsiteSettings(data: any) {
@@ -23,13 +24,7 @@ export async function saveWebsiteSettings(data: any) {
       }
     });
 
-    revalidatePath("/");
-    revalidatePath("/about");
-    revalidatePath("/admin/website");
-    revalidateTag("website-settings", "max");
-    revalidateTag("layout", "max");
-    revalidateTag("club", "max");
-    revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true, data: settings };
   } catch (error: any) {

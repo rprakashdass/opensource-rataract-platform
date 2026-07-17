@@ -18,6 +18,8 @@ export async function sendAnnouncement(id: string) {
       return { error: "Announcement not found" };
     }
 
+    // Allow resend even if already published
+
     // Fetch recipients to send to based on Visibility rules
     let userEmails: string[] = [];
 
@@ -71,12 +73,14 @@ export async function sendAnnouncement(id: string) {
       });
     }
 
+    const emailsDispatched = recipientsCount > 0;
+
     await prisma.announcement.update({
       where: { id },
       data: {
         sentAt: new Date(),
         status: "PUBLISHED",
-        deliveryStatus: "SENT",
+        deliveryStatus: emailsDispatched ? "SENT" : "NO_RECIPIENTS",
         recipientsCount: recipientsCount
       }
     });

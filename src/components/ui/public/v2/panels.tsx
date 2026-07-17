@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
@@ -63,28 +63,35 @@ export function PartnerRail({
       <MaxWidthWrapper>
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint mb-8">{heading}</p>
         <div className="flex flex-wrap items-center gap-x-14 gap-y-8">
-          {sponsors.map((s) => {
-            const logo = s.logoUrl ? getGoogleDriveDirectLink(s.logoUrl) : null;
-            const mark = logo ? (
-              <span className="relative block h-9 w-28 grayscale opacity-60 transition-all duration-300 hover:grayscale-0 hover:opacity-100">
-                <Image src={logo} alt={s.name} fill sizes="112px" className="object-contain object-left" />
-              </span>
-            ) : (
-              <span className="font-display font-medium text-lg text-ink-faint transition-colors hover:text-ink">
-                {s.name}
-              </span>
-            );
-            return s.website ? (
-              <a key={s.id} href={s.website} target="_blank" rel="noopener noreferrer" title={s.name}>
-                {mark}
-              </a>
-            ) : (
-              <span key={s.id} title={s.name}>{mark}</span>
-            );
-          })}
+          {sponsors.map((s) => (
+            <PartnerLogo key={s.id} sponsor={s} />
+          ))}
         </div>
       </MaxWidthWrapper>
     </div>
+  );
+}
+
+function PartnerLogo({ sponsor: s }: { sponsor: { id: string; name: string; logoUrl?: string | null; website?: string | null } }) {
+  const [error, setError] = useState(false);
+  const logo = s.logoUrl ? getGoogleDriveDirectLink(s.logoUrl) : null;
+  
+  const mark = logo && !error ? (
+    <span className="relative block h-9 w-28 grayscale opacity-60 transition-all duration-300 hover:grayscale-0 hover:opacity-100">
+      <Image src={logo} alt={s.name} fill sizes="112px" className="object-contain object-left" onError={() => setError(true)} />
+    </span>
+  ) : (
+    <span className="font-display font-medium text-lg text-ink-faint transition-colors hover:text-ink">
+      {s.name}
+    </span>
+  );
+
+  return s.website ? (
+    <a href={s.website} target="_blank" rel="noopener noreferrer" title={s.name}>
+      {mark}
+    </a>
+  ) : (
+    <span title={s.name}>{mark}</span>
   );
 }
 

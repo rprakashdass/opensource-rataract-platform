@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { getSession, canManageWebsite } from "@/lib/auth/session";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session) {
+    if (!session || !canManageWebsite(session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,7 +31,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await getSession();
-    if (!session) {
+    if (!session || !canManageWebsite(session)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
       },
     });
 
+    revalidatePublicRoutes();
     return NextResponse.json(pkg);
   } catch (error) {
     console.error("Failed to create package:", error);

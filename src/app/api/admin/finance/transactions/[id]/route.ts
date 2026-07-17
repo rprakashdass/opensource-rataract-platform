@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
+import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
 
 function adminOnly(session: any) {
   return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
@@ -38,22 +39,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ? "Payment Request Approved" 
         : "Payment Request Rejected";
       
-      const emailHtml = `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Your Payment Request was ${status}</h2>
-          <p>Hi ${transaction.user.name || "Member"},</p>
-          <p>Your recent payment request for <strong>$${transaction.amount}</strong> (${transaction.description}) has been <strong>${status}</strong> by the finance team.</p>
-          <p>You can view the full details in your member portal.</p>
-          <br/>
-          <p>Best,<br/>Rotaract Club Finance Team</p>
-        </div>
-      `;
+      const club = await prisma.club.findFirst();
+      const plainText = `Hi ${transaction.user.name || "Member"},\n\nYour recent payment request for ₹${transaction.amount} (${transaction.description || "No description"}) has been ${status} by the finance team.\n\nYou can view the full details in your member portal.`;
 
       // Fire and forget email
       sendEmail({
         to: transaction.user.email,
         subject: emailSubject,
-        html: emailHtml
+        text: plainText,
+        html: getTransactionReceiptEmailHtml(transaction, club)
       }).catch(err => console.error("Failed to send transaction email:", err));
     }
 

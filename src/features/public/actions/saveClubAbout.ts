@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { getCurrentClub } from "@/lib/club";
 
 export async function saveClubAbout(data: {
@@ -37,10 +38,8 @@ export async function saveClubAbout(data: {
       }
     });
 
-    revalidatePath("/about");
+    revalidatePublicRoutes();
     revalidatePath("/admin/website/about");
-    revalidatePath("/");
-    revalidateTag("club", "max");
 
     return { success: true, club };
   } catch (error: any) {

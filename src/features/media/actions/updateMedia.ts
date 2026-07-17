@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function updateMedia(mediaId: string, data: {
   title?: string;
@@ -18,6 +19,7 @@ export async function updateMedia(mediaId: string, data: {
       data
     });
 
+    revalidatePublicRoutes();
     return { success: true, media };
   } catch (error: any) {
     console.error("Media update error:", error);

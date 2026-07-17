@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function deleteProject(id: string) {
   try {
@@ -24,9 +25,7 @@ export async function deleteProject(id: string) {
     });
 
     revalidatePath("/admin");
-    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
-    revalidatePath("/projects");
-    revalidateTag("projects", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true };
   } catch (error: any) {

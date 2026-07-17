@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageMembers } from "@/lib/auth/session";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 
 export async function createMember(data: any) {
@@ -123,7 +124,7 @@ export async function createMember(data: any) {
     });
 
     revalidatePath("/admin/members");
-    revalidateTag("team", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
     return { success: true, member: result };
   } catch (error: any) {
     console.error("Create member error:", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
@@ -30,6 +30,7 @@ export function StoryCard({
   large?: boolean;
   className?: string;
 }) {
+  const [error, setError] = useState(false);
   const url = imageUrl ? getGoogleDriveDirectLink(imageUrl) : null;
 
   return (
@@ -40,13 +41,14 @@ export function StoryCard({
           ratio === "4/5" ? "aspect-[4/5]" : "aspect-[3/2]"
         )}
       >
-        {url ? (
+        {url && !error ? (
           <Image
             src={url}
             alt={title}
             fill
             sizes={large ? "(max-width: 768px) 100vw, 60vw" : "(max-width: 768px) 100vw, 33vw"}
             className="object-cover thadam-grade transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            onError={() => setError(true)}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-6">

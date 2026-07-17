@@ -4,6 +4,7 @@ import { getSession , canManageClub } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { uploadFile } from "@/features/storage/googleDrive";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function uploadEventDriveMedia(eventId: string, formData: FormData) {
   try {
@@ -47,9 +48,8 @@ export async function uploadEventDriveMedia(eventId: string, formData: FormData)
     });
 
     revalidatePath(`/dashboard/events/${eventId}`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
     revalidatePath(`/admin/events/${eventId}`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
     
     return { success: true };
   } catch (error: any) {

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { getAttentionSummary } from "@/features/admin/queries/getAttentionSummary";
 import { getSession, canViewFinance } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 import { 
   Plus, 
   Calendar, 
@@ -26,6 +27,18 @@ export default async function AdminPage() {
   // Get current club info
   const club = await prisma.club.findFirst();
   const clubName = club?.name || "Rotaract Club of XYZ";
+
+  // Fresh install: redirect to get-started if club has no logo or email set
+  // (unless they permanently dismissed it)
+  if (club && !club.logoUrl && !club.email) {
+    const isDismissed = await prisma.setting.findUnique({
+      where: { key: "setup_dismissed" },
+    });
+    
+    if (isDismissed?.value !== "true") {
+      redirect("/admin/get-started");
+    }
+  }
 
   let membersCount = 0;
   let activeProjectsCount = 0;

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import { getSession, canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function createAlbum(data: { title: string; description: string }) {
   const session = await getSession();
@@ -27,6 +28,7 @@ export async function createAlbum(data: { title: string; description: string }) 
     });
 
     revalidatePath("/admin/gallery");
+    revalidatePublicRoutes();
     return { success: true, albumId: album.id };
   } catch (error) {
     console.error("Failed to create album:", error);
@@ -54,6 +56,7 @@ export async function deleteAlbum(albumId: string) {
     });
     
     revalidatePath("/admin/gallery");
+    revalidatePublicRoutes();
     return { success: true };
   } catch (error) {
     console.error("Failed to delete album:", error);

@@ -4,6 +4,7 @@ import { getSession , canManageClub } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { deleteFile } from "@/features/storage/googleDrive";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, eventId: string) {
   try {
@@ -16,11 +17,7 @@ export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, e
     });
 
     revalidatePath(`/admin/events/${eventId}`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
-    revalidatePath(`/events/${eventId}`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max"); // revalidate public page if slug is used, maybe hard to revalidate by slug here. Revalidate all events is safer but expensive.
-    revalidatePath(`/events`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
     
     return { success: true };
   } catch (error: any) {
@@ -40,8 +37,7 @@ export async function setEventMediaRole(mediaId: string, eventId: string, role: 
     });
 
     revalidatePath(`/admin/events/${eventId}`);
-    revalidatePath(`/events`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
 
     return { success: true };
   } catch (error: any) {
@@ -75,9 +71,7 @@ export async function deleteEventMedia(mediaId: string, eventId: string) {
     });
 
     revalidatePath(`/admin/events/${eventId}`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
-    revalidatePath(`/events`);
-    revalidateTag("events", "max"); revalidateTag("homepage", "max");
+    revalidatePublicRoutes();
     
     return { success: true };
   } catch (error: any) {
