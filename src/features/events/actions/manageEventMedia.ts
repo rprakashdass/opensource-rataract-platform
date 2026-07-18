@@ -2,7 +2,8 @@
 
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { deleteFile } from "@/features/storage/googleDrive";
+import { GoogleDriveProvider } from "@/features/storage/google-drive";
+import { decrypt } from "@/lib/crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { revalidatePublicRoutes } from "@/lib/revalidate";
 
@@ -57,12 +58,16 @@ export async function deleteEventMedia(mediaId: string, eventId: string) {
 
     if (!media) return { error: "Media not found" };
 
-    // Delete from Drive if driveFileId exists
     if (media.driveFileId) {
       try {
-        await deleteFile(media.driveFileId);
+        const club = await prisma.club.findFirst();
+        if (club?.googleDriveRefreshToken) {
+          const clearToken = decrypt(club.googleDriveRefreshToken);
+          const provider = new GoogleDriveProvider(clearToken);
+          await provider.deleteFile(media.driveFileId);
+        }
       } catch (err) {
-        console.warn("Failed to delete from Google Drive, proceeding to delete DB record anyway.", err);
+        console.error("Failed to delete file from Google Drive", err);
       }
     }
 

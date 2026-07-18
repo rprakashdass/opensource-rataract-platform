@@ -70,7 +70,7 @@ export default function JoinEditorForm({ settings, clubName }: { settings: any; 
         </div>
       </div>
 
-      <CmsPreviewFrame ref={previewRef} previewUrl="/join?preview=true" channel="join" payload={payload} />
+      <CmsPreviewFrame ref={previewRef} previewUrl="/api/draft/enable?path=/join" channel="join" payload={payload} />
     </div>
   );
 }

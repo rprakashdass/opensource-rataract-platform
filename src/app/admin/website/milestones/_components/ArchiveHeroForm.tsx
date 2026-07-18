@@ -56,7 +56,7 @@ export default function ArchiveHeroForm({ settings }: { settings: any }) {
         </div>
       </div>
 
-      <CmsPreviewFrame ref={previewRef} previewUrl="/our-archive?preview=true" channel="archive" payload={payload} />
+      <CmsPreviewFrame ref={previewRef} previewUrl="/api/draft/enable?path=/our-archive" channel="archive" payload={payload} />
     </div>
   );
 }

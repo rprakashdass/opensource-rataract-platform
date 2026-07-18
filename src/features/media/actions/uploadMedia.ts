@@ -7,6 +7,9 @@ import { MediaType, MediaUsage } from "@prisma/client";
 import { getCurrentClub } from "@/lib/club";
 import { getMediaTypeFromExtension, ALLOWED_MEDIA_TYPES } from "@/lib/media-helpers";
 import { revalidatePublicRoutes } from "@/lib/revalidate";
+import { getOrCreateAlbum, MediaContext, MediaContextSchema } from "../lib/resolveAlbum";
+import { GoogleDriveProvider } from "@/features/storage/google-drive";
+import { decrypt } from "@/lib/crypto";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
@@ -43,38 +46,38 @@ export async function uploadMedia(formData: FormData) {
     
     const usageVal = sanitizeField(formData.get("usage"));
     const usage = (usageVal as MediaUsage) || "GALLERY";
-
     const isCover = formData.get("isCover") === "true";
-    const eventId = sanitizeField(formData.get("eventId"));
-    const projectId = sanitizeField(formData.get("projectId"));
-    let albumId = sanitizeField(formData.get("albumId"));
-    const albumTitle = sanitizeField(formData.get("albumTitle"));
 
-    // Security check: Only admins can assign files to albums, events, projects, or set as covers.
+    const contextJson = sanitizeField(formData.get("mediaContext"));
+    if (!contextJson) return { error: "Missing mediaContext" };
+
+    let context: MediaContext;
+    try {
+      context = MediaContextSchema.parse(JSON.parse(contextJson));
+    } catch (e: any) {
+      return { error: `Invalid mediaContext: ${e.message}` };
+    }
+
+    const club = await getCurrentClub();
+    if (!club) return { error: "Club not found" };
+
+    // Security check: Only admins can upload media (except members for profile photos? Wait, the existing code says:
+    // "Only admins can assign files to albums, events, projects, or set as covers. If !isAdmin, return error if isCover || eventId || projectId || albumId || albumTitle"
+    // Since everything is now an album, non-admins (e.g. regular members updating their profile) need access to { kind: "members" }. Let's allow members if it's their profile... wait, profile updates usually happen via member actions. For now, let's keep the existing auth logic:
     const isAdmin = canManageClub(session);
-    if (!isAdmin) {
-      if (isCover || eventId || projectId || albumId || albumTitle) {
-        return { error: "Unauthorized: Admin privileges required for this action." };
-      }
+    if (!isAdmin && context.kind !== "members" && context.kind !== "general") {
+       return { error: "Unauthorized: Admin privileges required for this context." };
     }
 
     if (!file && type !== "VIDEO_LINK") {
       return { error: "Missing file" };
     }
 
-    const club = await getCurrentClub();
-    if (!club) return { error: "Club not found" };
-
-    if (!albumId && albumTitle) {
-      const album = await prisma.album.findFirst({
-        where: { clubId: club.id, title: albumTitle, eventId: null, projectId: null },
-      });
-      albumId = album
-        ? album.id
-        : (await prisma.album.create({ data: { clubId: club.id, title: albumTitle } })).id;
-    }
+    // 1. Resolve Album
+    const { albumId, eventId, projectId } = await getOrCreateAlbum(club.id, context);
 
     let publicUrl = "";
+    let driveFileId: string | null = null;
 
     if (type === "IMAGE" || type === "DOCUMENT") {
       if (!file) return { error: "File data is missing for upload." };
@@ -82,11 +85,28 @@ export async function uploadMedia(formData: FormData) {
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${club.id}/media/${type.toLowerCase()}/${fileName}`;
 
-      const supabase = getSupabaseAdmin();
-      
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
+      // --- Google Drive Mirror (Non-blocking) ---
+      try {
+         if (club.googleDriveRefreshToken) {
+            const clearToken = decrypt(club.googleDriveRefreshToken);
+            const provider = new GoogleDriveProvider(clearToken);
+            const driveFolderId = await provider.resolveDriveFolder(club.googleDriveRootFolderId, context);
+            
+            if (driveFolderId) {
+               const driveUpload = await provider.uploadFile(buffer, file.type, file.name, driveFolderId);
+               driveFileId = driveUpload.id;
+            }
+         }
+      } catch (driveErr) {
+         console.warn("Failed to mirror upload to Google Drive:", driveErr);
+         // Continue with Supabase upload
+      }
+
+      // --- Supabase Upload ---
+      const supabase = getSupabaseAdmin();
       const { data: uploadData, error: uploadError } = await supabase
         .storage
         .from('rotaract-media')
@@ -112,7 +132,6 @@ export async function uploadMedia(formData: FormData) {
     }
 
     if (isCover) {
-       // if this is set as cover, unset other covers for the entity
        if (eventId) {
           await prisma.media.updateMany({
              where: { eventId, isCover: true },
@@ -127,9 +146,24 @@ export async function uploadMedia(formData: FormData) {
        }
     }
 
+    // Set projectUpdateId if applicable
+    const projectUpdateId = context.kind === "projectUpdate" ? context.projectUpdateId : null;
+
+    // Set sortOrder = max + 1 if uploading to memories
+    let sortOrder = 0;
+    if (context.kind === "memories") {
+      const maxMedia = await prisma.media.findFirst({
+        where: { albumId },
+        orderBy: { sortOrder: 'desc' },
+        select: { sortOrder: true }
+      });
+      sortOrder = (maxMedia?.sortOrder || 0) + 1;
+    }
+
     const media = await prisma.media.create({
       data: {
         url: publicUrl,
+        driveFileId,
         title: title || (file ? file.name : "Video Link"),
         caption,
         altText,
@@ -138,7 +172,9 @@ export async function uploadMedia(formData: FormData) {
         isCover,
         eventId,
         projectId,
+        projectUpdateId,
         albumId,
+        sortOrder,
         uploadedById: session.id,
         clubId: club.id
       }

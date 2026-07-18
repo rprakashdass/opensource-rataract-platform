@@ -51,17 +51,17 @@ export function EditorialImage({
     <figure className={cn("w-full", className)}>
       <motion.div
         className={cn("relative overflow-hidden bg-wash", RATIO_CLASS[ratio], rounded && "rounded-xl")}
-        initial={reduce ? { opacity: 0 } : { clipPath: "inset(100% 0% 0% 0%)" }}
-        whileInView={reduce ? { opacity: 1 } : { clipPath: "inset(0% 0% 0% 0%)" }}
-        viewport={{ once: true, margin: "-80px" }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.01 }}
         transition={{ duration: 0.7, ease: [...THADAM_EASE] }}
       >
         {url && !error ? (
           <motion.div
             className="absolute inset-0"
-            initial={reduce ? {} : { scale: 1.08 }}
+            initial={reduce ? {} : { scale: 1.05 }}
             whileInView={reduce ? {} : { scale: 1 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.01 }}
             transition={{ duration: 0.9, ease: [...THADAM_EASE] }}
           >
             <Image

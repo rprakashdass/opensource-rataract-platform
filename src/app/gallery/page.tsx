@@ -11,6 +11,10 @@ import {
 } from "@/components/ui/public/v2";
 import { format } from "date-fns";
 
+import { draftMode } from "next/headers";
+
+export const revalidate = 300;
+
 interface GalleryCopy {
   galleryTitle?: string | null;
   gallerySubtitle?: string | null;
@@ -118,13 +122,10 @@ function Masonry({ photos, eagerCount = 0 }: { photos: GalleryPhoto[]; eagerCoun
   );
 }
 
-export default async function GalleryPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ preview?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const isPreview = resolvedParams?.preview === "true";
+export default async function GalleryPage() {
+  
+  const draft = await draftMode();
+  const isPreview = draft.isEnabled;
 
   const data: any = await getPublicGalleryPhotos();
 

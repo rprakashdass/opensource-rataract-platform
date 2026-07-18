@@ -7,29 +7,33 @@ const getCachedGalleryPhotos = unstable_cache(
         const club = await getCurrentClub();
         if (!club) return null;
 
-        const [photos, settings] = await Promise.all([
-            prisma.media.findMany({
-                where: { clubId: club.id, type: "IMAGE" },
-                orderBy: { createdAt: "desc" },
-                select: {
-                    id: true,
-                    url: true,
-                    title: true,
-                    createdAt: true,
-                    event: { select: { title: true } },
-                    project: { select: { title: true } },
-                },
-            }),
-            prisma.websiteSettings.findUnique({
-                where: { clubId: club.id },
-                select: {
-                    galleryTitle: true,
-                    gallerySubtitle: true,
-                    galleryCTA: true,
-                    galleryCTALink: true,
-                },
-            }),
-        ]);
+        const settings = await prisma.websiteSettings.findUnique({
+            where: { clubId: club.id },
+            select: {
+                galleryTitle: true,
+                gallerySubtitle: true,
+                galleryCTA: true,
+                galleryCTALink: true,
+                galleryAlbumId: true,
+            },
+        });
+
+        if (!settings?.galleryAlbumId) {
+            return { photos: [], settings };
+        }
+
+        const photos = await prisma.media.findMany({
+            where: { clubId: club.id, albumId: settings.galleryAlbumId, type: "IMAGE" },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+            select: {
+                id: true,
+                url: true,
+                title: true,
+                createdAt: true,
+                event: { select: { title: true } },
+                project: { select: { title: true } },
+            },
+        });
 
         return { photos, settings };
     },

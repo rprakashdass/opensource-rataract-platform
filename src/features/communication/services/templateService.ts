@@ -1,4 +1,4 @@
-import { EmailTemplateType, PrismaClient } from "@prisma/client";
+import { EmailTemplateType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULT_TEMPLATES: Record<EmailTemplateType, { subject: string; body: string }> = {
@@ -30,24 +30,40 @@ const DEFAULT_TEMPLATES: Record<EmailTemplateType, { subject: string; body: stri
 
 export async function getTemplate(clubId: string, type: EmailTemplateType) {
   const defaultTpl = DEFAULT_TEMPLATES[type];
-  
+
   if (!defaultTpl) {
     throw new Error(`No default template configured for type ${type}`);
   }
 
-  // Use upsert to handle concurrent requests and avoid unique constraint failures
-  const template = await prisma.emailTemplate.upsert({
-    where: { clubId_type: { clubId, type } },
-    update: {},
-    create: {
-      clubId,
-      type,
-      subjectTemplate: defaultTpl.subject,
-      bodyTemplate: defaultTpl.body
-    }
+  // Fast path: template already exists
+  const existing = await prisma.emailTemplate.findFirst({
+    where: { clubId, type }
   });
+  if (existing) return existing;
 
-  return template;
+  // Slow path: create the default template, handling concurrent inserts
+  try {
+    return await prisma.emailTemplate.create({
+      data: {
+        clubId,
+        type,
+        subjectTemplate: defaultTpl.subject,
+        bodyTemplate: defaultTpl.body
+      }
+    });
+  } catch (err: unknown) {
+    // P2002 = unique constraint violation — another request already created it
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code: string }).code === "P2002"
+    ) {
+      const record = await prisma.emailTemplate.findFirst({ where: { clubId, type } });
+      if (record) return record;
+    }
+    throw err;
+  }
 }
 
 export function renderTemplate(templateString: string, data: Record<string, string>) {

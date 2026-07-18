@@ -110,14 +110,19 @@ export default async function AnnouncementDetailsPage({ params }: { params: { id
             )}
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Email Content</h3>
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 text-sm font-medium text-slate-700">
-                  Subject: {announcement.emailSubject}
+              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Email Preview</h3>
+              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subject:</span>
+                  <span className="text-sm font-medium text-slate-700 truncate">{announcement.emailSubject}</span>
                 </div>
-                <div className="p-4 bg-white prose prose-sm max-w-none text-slate-600 whitespace-pre-wrap">
-                  {announcement.emailBody || "No email content provided."}
-                </div>
+                <iframe
+                  title="Email Preview"
+                  src={`/api/admin/announcements/${announcement.id}/preview`}
+                  className="w-full border-none"
+                  style={{ height: "600px", display: "block" }}
+                  sandbox="allow-same-origin"
+                />
               </div>
             </div>
           </div>

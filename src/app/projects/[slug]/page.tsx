@@ -1,4 +1,6 @@
+export const revalidate = 300;
 import { getPublicProject } from "@/features/public/queries/getPublicProject";
+import { getProjectUpdatesPage, getProjectUpdatesImpact } from "@/features/public/actions/getProjectUpdates";
 import { Metadata } from "next";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
@@ -13,6 +15,7 @@ import {
   EmptyState,
   QuietLink,
 } from "@/components/ui/public/v2";
+import ProjectUpdatesTimeline from "./_components/ProjectUpdatesTimeline";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -64,8 +67,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const gallery = projectAny.media || [];
   const moments = gallery.slice(1, 4);
 
-  // Calculate cumulative impact from child events
-  const totalVolunteerHours = projectAny.events?.reduce((acc: number, curr: any) => acc + (curr.volunteerHours || 0), 0) || 0;
+  // Fetch first page of updates server-side (ISR-cached)
+  const [updatesData, updatesImpact] = await Promise.all([
+    getProjectUpdatesPage(project.id, 1),
+    getProjectUpdatesImpact(project.id)
+  ]);
+
+  // Calculate cumulative impact from events + updates
+  const totalVolunteerHoursFromEvents = projectAny.events?.reduce((acc: number, curr: any) => acc + (curr.volunteerHours || 0), 0) || 0;
+  const totalVolunteerHours = totalVolunteerHoursFromEvents + (updatesImpact.volunteerHours || 0);
+  const totalBeneficiaries = updatesImpact.beneficiaries || 0;
 
   const members = projectAny.members || [];
   const events = projectAny.events || [];
@@ -160,26 +171,48 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </section>
 
       {/* Cumulative impact */}
-      {totalVolunteerHours > 0 && (
+      {(totalVolunteerHours > 0 || totalBeneficiaries > 0) && (
         <ImpactBand
           kicker="The marks this project left"
           condensed
           metrics={[
-            { value: totalVolunteerHours, label: "Volunteer hours" },
-            { value: events.length, label: "Action phases" },
+            ...(totalVolunteerHours > 0 ? [{ value: totalVolunteerHours, label: "Volunteer hours" }] : []),
+            ...(totalBeneficiaries > 0 ? [{ value: totalBeneficiaries, label: "Lives touched" }] : []),
+            ...(updatesData.totalCount > 0 ? [{ value: updatesData.totalCount, label: "Days of action" }] : []),
+            ...(events.length > 0 ? [{ value: events.length, label: "Action phases" }] : []),
           ]}
-          provenance="Tallied from this project's completed action phases."
+          provenance="Tallied from this project's updates and completed phases."
         />
       )}
 
-      {/* Action phases */}
-      {events.length > 0 && (
+      {/* Project Updates: The trail so far (Day-by-day chronicle) */}
+      {updatesData.totalCount > 0 && (
         <section className="py-20 md:py-28 bg-paper">
           <MaxWidthWrapper>
             <RevealBlock className="mb-10 md:mb-12">
               <Eyebrow className="mb-4">The trail so far</Eyebrow>
               <h2 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.1] text-[clamp(1.9rem,4.5vw,3rem)] text-balance">
-                Action phases
+                {updatesData.totalCount} days of action
+              </h2>
+            </RevealBlock>
+            <RevealBlock>
+              <ProjectUpdatesTimeline
+                projectId={project.id}
+                initialData={updatesData}
+              />
+            </RevealBlock>
+          </MaxWidthWrapper>
+        </section>
+      )}
+
+      {/* Action phases (Events linked to project) */}
+      {events.length > 0 && (
+        <section className="py-20 md:py-28 bg-wash">
+          <MaxWidthWrapper>
+            <RevealBlock className="mb-10 md:mb-12">
+              <Eyebrow className="mb-4">Action phases</Eyebrow>
+              <h2 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.1] text-[clamp(1.9rem,4.5vw,3rem)] text-balance">
+                Organized gatherings
               </h2>
             </RevealBlock>
             <RevealBlock>

@@ -25,6 +25,7 @@ export async function getPublicEvent(slug: string) {
               startTime: true,
               endTime: true,
               location: true,
+              meetingLink: true,
               type: true,
               status: true,
               capacity: true,

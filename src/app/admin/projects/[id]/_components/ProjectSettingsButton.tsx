@@ -33,6 +33,9 @@ interface ProjectSettingsButtonProps {
     visibility: string;
     publishStatus: string;
     impactMetrics: any;
+    seekingSponsorship?: boolean;
+    sponsorshipGoal?: number | null;
+    sponsorshipPitch?: string | null;
   };
 }
 
@@ -70,6 +73,9 @@ export default function ProjectSettingsButton({ project }: ProjectSettingsButton
       visibility: formData.get("visibility"),
       publishStatus: formData.get("publishStatus"),
       impactMetrics: rawMetrics || null,
+      seekingSponsorship: formData.get("seekingSponsorship") === "on",
+      sponsorshipGoal: formData.get("sponsorshipGoal") ? parseFloat(formData.get("sponsorshipGoal") as string) : null,
+      sponsorshipPitch: (formData.get("sponsorshipPitch") as string) || null,
     };
 
     try {
@@ -243,6 +249,24 @@ export default function ProjectSettingsButton({ project }: ProjectSettingsButton
                 defaultValue={project.impactMetrics ? JSON.stringify(project.impactMetrics) : ""} 
                 placeholder='e.g., {"studentsReached": 500}' 
               />
+            </div>
+
+            <div className="space-y-4 border-t border-slate-100 pt-4 mt-4">
+              <h4 className="font-semibold text-slate-900">Sponsorship</h4>
+              <div className="flex items-center gap-2">
+                <Input type="checkbox" id="seekingSponsorship" name="seekingSponsorship" defaultChecked={project.seekingSponsorship} className="w-4 h-4" />
+                <Label htmlFor="seekingSponsorship">Feature on Sponsor Us page</Label>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="sponsorshipGoal">Funding Goal (₹)</Label>
+                  <Input type="number" id="sponsorshipGoal" name="sponsorshipGoal" defaultValue={project.sponsorshipGoal || ""} placeholder="e.g. 50000" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="sponsorshipPitch">Sponsorship Pitch</Label>
+                  <Textarea id="sponsorshipPitch" name="sponsorshipPitch" defaultValue={project.sponsorshipPitch || ""} placeholder="Brief explanation of what the funds will be used for..." />
+                </div>
+              </div>
             </div>
 
             <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">

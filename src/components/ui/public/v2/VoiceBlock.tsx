@@ -39,21 +39,21 @@ export function VoiceBlock({
         {eyebrow && <Eyebrow onDark={onDark} className="mb-8">{eyebrow}</Eyebrow>}
         <blockquote
           className={cn(
-            "font-statement font-medium tracking-[-0.01em] leading-[1.3] text-[clamp(1.4rem,3vw,2.1rem)] text-balance",
+            "font-statement font-semibold tracking-[-0.01em] leading-[1.3] text-[clamp(1.4rem,3vw,2.1rem)] text-balance",
             onDark ? "text-parchment" : "text-ink"
           )}
         >
           &ldquo;{quote}&rdquo;
         </blockquote>
       </div>
-      <div className="lg:col-span-3 lg:col-start-10 flex lg:flex-col items-center lg:items-start gap-4 lg:justify-end">
+      <div className="lg:col-span-4 lg:col-start-9 flex lg:flex-col items-center lg:items-start gap-4 lg:border-l lg:border-hairline lg:pl-8">
         {photo && !photoError ? (
-          <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0">
-            <Image src={photo} alt={name} fill sizes="64px" className="object-cover thadam-grade" onError={() => setPhotoError(true)} />
+          <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0">
+            <Image src={photo} alt={name} fill sizes="96px" className="object-cover thadam-grade" onError={() => setPhotoError(true)} />
           </div>
         ) : (
-          <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 bg-wash flex items-center justify-center">
-             <span className="font-display font-medium italic text-ink-faint text-2xl">{name.charAt(0).toUpperCase()}</span>
+          <div className="relative w-24 h-24 rounded-full overflow-hidden shrink-0 bg-wash flex items-center justify-center">
+             <span className="font-display font-medium italic text-ink-faint text-3xl">{name.charAt(0).toUpperCase()}</span>
           </div>
         )}
         <div>

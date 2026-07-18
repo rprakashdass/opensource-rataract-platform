@@ -128,7 +128,7 @@ export default function InitiativeForm({ initiative, portfolios }: Props) {
 
       <div>
         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Attachments</label>
-        <AttachmentsField value={form.attachments} onChange={(attachments) => setForm({ ...form, attachments })} />
+        <AttachmentsField value={form.attachments} onChange={(attachments) => setForm({ ...form, attachments })} context={{ kind: "general" }} />
       </div>
 
       <div className="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-100">

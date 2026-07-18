@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
+import { unstable_cache } from "next/cache";
 import { getOrCreateWebsiteSettings } from "@/features/public/queries/getOrCreateWebsiteSettings";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import {
@@ -10,6 +11,8 @@ import {
   EmptyState,
 } from "@/components/ui/public/v2";
 import PartnerCTAButton from "./_components/PartnerCTAButton";
+
+export const revalidate = 300;
 
 // V1 copy kept as defaults — CMS sponsors* fields override when set.
 const DEFAULT_HEADLINE = "Fund the year everyone remembers.";
@@ -34,6 +37,30 @@ const WHY_PARTNER = [
   },
 ];
 
+const getCachedCauses = unstable_cache(
+  async (clubId: string) => {
+    const [projects, events] = await Promise.all([
+      prisma.project.findMany({
+        where: { clubId, seekingSponsorship: true },
+        select: { id: true, title: true, sponsorshipGoal: true, sponsorshipPitch: true, status: true },
+        orderBy: { createdAt: "desc" }
+      }),
+      prisma.event.findMany({
+        where: { clubId, seekingSponsorship: true },
+        select: { id: true, title: true, sponsorshipGoal: true, sponsorshipPitch: true, fundsRaised: true, status: true },
+        orderBy: { createdAt: "desc" }
+      })
+    ]);
+
+    const mappedProjects = projects.map(p => ({ ...p, causeType: "PROJECT" as const }));
+    const mappedEvents = events.map(e => ({ ...e, causeType: "EVENT" as const }));
+
+    return [...mappedProjects, ...mappedEvents].sort((a, b) => b.title.localeCompare(a.title));
+  },
+  ["fundable-causes"],
+  { tags: ["sponsorship-causes"], revalidate: 3600 }
+);
+
 export default async function PartnerPage() {
   const club = await getCurrentClub();
   if (!club) return null;
@@ -54,6 +81,8 @@ export default async function PartnerPage() {
   } catch {
     packages = [];
   }
+
+  const causes = await getCachedCauses(club.id);
 
   const contactEmail = club.email || "contact@rotaract.org";
   const headline = settings?.sponsorsTitle || DEFAULT_HEADLINE;
@@ -142,6 +171,70 @@ export default async function PartnerPage() {
           )}
         </MaxWidthWrapper>
       </section>
+
+      {/* ── Causes seeking funding ────────────────────────────── */}
+      {causes.length > 0 && (
+        <section className="py-20 md:py-28 bg-paper border-t border-hairline" aria-label="Causes seeking funding">
+          <MaxWidthWrapper>
+            <SectionHeader eyebrow="Fundable Causes" heading="Help us make it happen." support="Directly fund a specific project or event. 100% of your pledge goes to the cause." />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+              {causes.map((cause) => (
+                <RevealBlock key={`${cause.causeType}-${cause.id}`} className="bg-wash border border-hairline rounded-2xl p-6 flex flex-col justify-between group hover:border-brand/30 transition-colors">
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded bg-trail/10 text-trail">
+                        {cause.causeType}
+                      </span>
+                    </div>
+                    <h3 className="font-display font-medium text-xl text-ink tracking-[-0.01em] mb-2">
+                      {cause.title}
+                    </h3>
+                    {cause.sponsorshipPitch && (
+                      <p className="text-sm text-ink-soft leading-relaxed mb-6">{cause.sponsorshipPitch}</p>
+                    )}
+                    
+                    {cause.sponsorshipGoal && (
+                      <div className="mb-6">
+                        <div className="flex justify-between text-sm mb-1.5 font-medium">
+                          <span className="text-ink-soft">Goal</span>
+                          <span className="text-ink">₹{cause.sponsorshipGoal.toLocaleString("en-IN")}</span>
+                        </div>
+                        {cause.causeType === "EVENT" && cause.fundsRaised != null && (
+                          <>
+                            <div className="h-1.5 w-full bg-hairline rounded-full overflow-hidden mb-1.5">
+                              <div
+                                className="h-full bg-brand rounded-full transition-all"
+                                style={{ width: `${Math.min(100, (Number(cause.fundsRaised) / Number(cause.sponsorshipGoal)) * 100)}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-brand font-medium">₹{Number(cause.fundsRaised).toLocaleString("en-IN")} raised</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="pt-4 mt-auto border-t border-hairline">
+                    <PartnerCTAButton
+                      contactEmail={contactEmail}
+                      clubName={club.name}
+                      subject={`Sponsoring ${cause.causeType}: ${cause.title}`}
+                      causeType={cause.causeType}
+                      causeId={cause.id}
+                      causeName={cause.title}
+                      className="motion-button w-full rounded-xl bg-ink text-paper hover:bg-ink/90 text-sm font-semibold py-3 transition-colors text-center"
+                    >
+                      Pledge to {cause.causeType.toLowerCase()}
+                    </PartnerCTAButton>
+                  </div>
+                </RevealBlock>
+              ))}
+            </div>
+          </MaxWidthWrapper>
+        </section>
+      )}
 
       {/* ── Why partner ───────────────────────────────────────── */}
       <section className="py-20 md:py-28 bg-wash" aria-label="Why partner with us">

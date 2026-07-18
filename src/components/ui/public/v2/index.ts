@@ -7,6 +7,7 @@ export { PersonCard } from "./PersonCard";
 export { VoiceBlock } from "./VoiceBlock";
 export { ImpactBand, FootprintGlyph } from "./ImpactBand";
 export type { ImpactMetric } from "./ImpactBand";
+export { ThadamCreed } from "./ThadamCreed";
 export { ListRow, TimelineRow } from "./rows";
 export { InvitePanel, PartnerRail, EmptyState } from "./panels";
 export { FootprintTrail } from "./FootprintTrail";

@@ -28,18 +28,18 @@ export default function Header({ layoutData }: { layoutData?: any }) {
   const settings = layoutData?.settings;
 
   const appName = club?.shortName || club?.name || process.env.NEXT_PUBLIC_APP_NAME || "Rotaract Club";
-  const wordmark = appName.replace("Rotaract Club of ", "").replace("RAC ", "");
+  const wordmark = appName;
   const logoUrl = club?.logoUrl ? getGoogleDriveDirectLink(club.logoUrl) : null;
 
   const navLinks =
     layoutData?.navigationItems && layoutData.navigationItems.length > 0
       ? layoutData.navigationItems.map((item: any) => ({ label: item.label, href: item.url }))
       : NAV_LINKS.filter((link) => {
-          if (link.href === "/partner" && settings?.enablePartner === false) return false;
-          if (link.href === "/join" && settings?.enableJoin === false) return false;
-          if (link.href === "/our-archive" && settings?.enableArchive === false) return false;
-          return true;
-        });
+        if (link.href === "/partner" && settings?.enablePartner === false) return false;
+        if (link.href === "/join" && settings?.enableJoin === false) return false;
+        if (link.href === "/our-archive" && settings?.enableArchive === false) return false;
+        return true;
+      });
 
   React.useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
@@ -57,7 +57,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
         scrolled
           ? "bg-paper/85 backdrop-blur-md border-b border-hairline py-3"
           : onDarkHero
-            ? "bg-gradient-to-b from-ink/75 via-ink/35 to-transparent py-5 pb-12"
+            ? "bg-gradient-to-b from-black/60 via-black/20 to-transparent py-5 pb-12"
             : "bg-transparent py-5"
       )}
     >
@@ -66,7 +66,7 @@ export default function Header({ layoutData }: { layoutData?: any }) {
         <Link href="/" className="flex items-center gap-3 select-none shrink-0 group">
           {logoUrl && (
             <span className="relative w-9 h-9 rounded-full overflow-hidden bg-white/90">
-              <Image src={logoUrl} alt={`${appName} logo`} fill sizes="36px" className="object-contain p-0.5" />
+              <Image src={logoUrl} alt={`${appName} logo`} fill sizes="36px" priority className="object-contain p-0.5" />
             </span>
           )}
           <span

@@ -49,7 +49,8 @@ interface TeamClientProps {
 
 export default function TeamClient({ board, members, settings }: TeamClientProps) {
   const hasBoard = board.length > 0;
-  const hasMembers = members.length > 0;
+  const generalMembers = members.filter(m => !board.some(b => b.member.id === m.id));
+  const hasMembers = generalMembers.length > 0;
 
   return (
     <div className="bg-paper">
@@ -89,7 +90,7 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
           />
           {hasMembers ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
-              {members.map((member, idx) => {
+              {generalMembers.map((member, idx) => {
                 const activeBoard = member.boardMemberships?.find(
                   (b) => b.financialYear?.status === "ACTIVE" || !b.leftAt
                 );

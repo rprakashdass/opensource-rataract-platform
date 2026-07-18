@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { MediaUpload } from "@/components/ui/media-upload";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
@@ -21,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 
 interface Album {
   id: string;
@@ -40,13 +40,6 @@ export function GalleryUpload({ albums, defaultAlbumId }: GalleryUploadProps) {
   );
   const router = useRouter();
 
-  const handleUploadComplete = (mediaId: string) => {
-    if (mediaId) {
-      setOpen(false);
-      router.refresh();
-    }
-  };
-
   const albumId =
     selectedAlbumId === "__none__" ? null : selectedAlbumId;
 
@@ -61,7 +54,8 @@ export function GalleryUpload({ albums, defaultAlbumId }: GalleryUploadProps) {
         <DialogHeader>
           <DialogTitle>Upload to Gallery</DialogTitle>
           <DialogDescription>
-            Choose an album to organise this photo, or leave it as uncategorised.
+            Choose an album to organise these photos, or leave them as uncategorised. You can select
+            multiple at once.
           </DialogDescription>
         </DialogHeader>
 
@@ -88,11 +82,9 @@ export function GalleryUpload({ albums, defaultAlbumId }: GalleryUploadProps) {
             </div>
           )}
 
-          <MediaUpload
-            onChange={handleUploadComplete}
-            type="IMAGE"
-            usage="GALLERY"
-            albumId={albumId}
+          <MultiImageUpload
+            context={{ kind: "general", albumId }}
+            onBatchComplete={() => router.refresh()}
           />
         </div>
       </DialogContent>

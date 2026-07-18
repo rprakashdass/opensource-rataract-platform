@@ -148,7 +148,7 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
 
             {/* Event Memories (Drive Upload) */}
             {["REGISTERED", "ATTENDED", "COMPLETED"].includes(state) && (
-                <EventMemories eventId={event.id} driveFolderId={event.driveFolderId} />
+                <EventMemories eventId={event.id} eventTitle={event.title} driveFolderId={event.driveFolderId} />
             )}
 
         </div>

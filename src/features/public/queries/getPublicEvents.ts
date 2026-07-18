@@ -2,13 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import { unstable_cache } from "next/cache";
 
-const getCachedPublicEvents = unstable_cache(
+const fetchPublicEventsData = unstable_cache(
     async () => {
         const club = await getCurrentClub();
         if (!club) return null;
 
         const now = new Date();
-        const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
         const upcomingEvents = await prisma.event.findMany({
             where: {
@@ -18,7 +18,7 @@ const getCachedPublicEvents = unstable_cache(
                 visibility: "PUBLIC",
                 OR: [
                     { endTime: { gte: now } },
-                    { endTime: null, startTime: { gte: fourHoursAgo } }
+                    { endTime: null, startTime: { gte: twentyFourHoursAgo } }
                 ]
             },
             orderBy: { startDate: "asc" },
@@ -26,7 +26,7 @@ const getCachedPublicEvents = unstable_cache(
                 id: true,
                 title: true,
                 slug: true,
-                description: true,
+                // description is excluded to reduce egress on list views
                 startDate: true,
                 startTime: true,
                 location: true,
@@ -34,7 +34,7 @@ const getCachedPublicEvents = unstable_cache(
                 capacity: true,
                 registeredCount: true,
                 bannerMediaId: true,
-                media: { orderBy: { createdAt: "desc" }, take: 5, select: { id: true } }
+                media: { orderBy: { createdAt: "desc" }, take: 1, select: { id: true, url: true } }
             },
         });
         
@@ -52,7 +52,7 @@ const getCachedPublicEvents = unstable_cache(
                     {
                         status: { in: ["UPCOMING", "ONGOING"] },
                         endTime: null,
-                        startTime: { lt: fourHoursAgo }
+                        startTime: { lt: twentyFourHoursAgo }
                     }
                 ]
             },
@@ -61,7 +61,7 @@ const getCachedPublicEvents = unstable_cache(
                 id: true,
                 title: true,
                 slug: true,
-                description: true,
+                // description is excluded to reduce egress on list views
                 startDate: true,
                 startTime: true,
                 location: true,
@@ -70,7 +70,7 @@ const getCachedPublicEvents = unstable_cache(
                 registeredCount: true,
                 volunteerHours: true,
                 bannerMediaId: true,
-                media: { orderBy: { createdAt: "desc" }, take: 5, select: { id: true } }
+                media: { orderBy: { createdAt: "desc" }, take: 1, select: { id: true, url: true } }
             },
             take: 20
         });
@@ -86,50 +86,31 @@ const getCachedPublicEvents = unstable_cache(
             },
         });
 
+        const formattedUpcoming = upcomingEvents.map(e => ({
+            ...e,
+            media: e.media.map(m => ({ id: m.id, url: m.url || "" }))
+        }));
+
+        const formattedCompleted = completedEvents.map(e => ({
+            ...e,
+            media: e.media.map(m => ({ id: m.id, url: m.url || "" }))
+        }));
+
         return {
-            upcomingEvents,
-            completedEvents,
+            upcomingEvents: formattedUpcoming,
+            completedEvents: formattedCompleted,
             settings,
         };
     },
-    ["public-events-list"],
-    { tags: ["events", "website-settings"], revalidate: 3600 }
+    ["public-events-data"],
+    { tags: ["events", "settings"], revalidate: 300 }
 );
 
 export async function getPublicEvents() {
     try {
-        const base = await getCachedPublicEvents();
-        if (!base) return { error: "Club not initialized" };
-
-        const allMediaIds = [
-            ...base.upcomingEvents.flatMap(e => e.media.map(m => m.id)),
-            ...base.completedEvents.flatMap(e => e.media.map(m => m.id))
-        ];
-
-        const mediaData = allMediaIds.length > 0
-            ? await prisma.media.findMany({
-                where: { id: { in: allMediaIds } },
-                select: { id: true, url: true }
-              })
-            : [];
-
-        const urlMap = new Map(mediaData.map(m => [m.id, m.url]));
-
-        const upcomingEvents = base.upcomingEvents.map(e => ({
-            ...e,
-            media: e.media.map(m => ({ id: m.id, url: urlMap.get(m.id) || "" }))
-        }));
-
-        const completedEvents = base.completedEvents.map(e => ({
-            ...e,
-            media: e.media.map(m => ({ id: m.id, url: urlMap.get(m.id) || "" }))
-        }));
-
-        return {
-            upcomingEvents,
-            completedEvents,
-            settings: base.settings,
-        };
+        const data = await fetchPublicEventsData();
+        if (!data) return { error: "Club not initialized" };
+        return data;
     } catch (error: any) {
         console.error("Failed to fetch public events:", error);
         return { error: "Failed to load events" };

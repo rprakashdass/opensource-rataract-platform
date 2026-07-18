@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/portal";
 import { Button } from "@/components/ui/button";
 import { AlbumUploadButton } from "./AlbumUploadButton";
 import { DeleteAlbumButton } from "./DeleteAlbumButton";
+import { RenameAlbumButton } from "./RenameAlbumButton";
 import { MediaThumbnail } from "../../_components/MediaThumbnail";
 
 interface AlbumDetailPageProps {
@@ -19,6 +20,11 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
   const { id } = await params;
   const club = await getCurrentClub();
   if (!club) return <div>No club found</div>;
+
+  const allAlbums = await prisma.album.findMany({
+    where: { clubId: club.id },
+    select: { id: true, title: true }
+  });
 
   const album = await prisma.album.findFirst({
     where: { id, clubId: club.id },
@@ -48,6 +54,12 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
         className="mb-0"
         actions={
           <>
+            <RenameAlbumButton
+              albumId={album.id}
+              albumTitle={album.title}
+              albumDescription={album.description}
+              isLinkedToEventOrProject={!!(album.event || album.project)}
+            />
             <DeleteAlbumButton albumId={album.id} albumTitle={album.title} />
             <AlbumUploadButton albumId={album.id} albumTitle={album.title} />
           </>
@@ -118,6 +130,7 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
                 isCover={m.isCover}
                 isFeatured={m.isFeatured}
                 priority={idx < 10}
+                availableAlbums={allAlbums.filter(a => a.id !== album.id)}
               />
             ))}
           </div>

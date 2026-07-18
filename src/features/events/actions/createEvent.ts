@@ -7,8 +7,6 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { dispatchNotification } from "@/features/notifications/service";
 import { getCurrentClub } from "@/lib/club";
-import { setupEventDriveFolder } from "@/features/storage/googleDrive";
-
 export async function createEvent(data: EventFormData) {
   try {
     const session = await getSession();
@@ -28,7 +26,12 @@ export async function createEvent(data: EventFormData) {
       slug = `${baseSlug}-${++suffix}`;
     }
 
+    // Guard: SCHEDULED requires a publishAt date
     const { team, bannerMediaId, posterMediaId, sendEmailNotification, sendEmailToBoard, attachCalendarInvite, ...eventData } = parsed;
+    if (eventData.publishStatus === "SCHEDULED" && !eventData.publishAt) {
+      return { error: "A schedule date & time is required when scheduling an event." };
+    }
+
 
     const event = await prisma.event.create({
       data: {
@@ -37,7 +40,7 @@ export async function createEvent(data: EventFormData) {
           ? "DRAFT" 
           : (() => {
               const start = new Date(eventData.startTime);
-              const end = eventData.endTime ? new Date(eventData.endTime) : new Date(start.getTime() + 4 * 60 * 60 * 1000);
+              const end = eventData.endTime ? new Date(eventData.endTime) : new Date(start.getTime() + 24 * 60 * 60 * 1000);
               return end < new Date() ? "COMPLETED" : "UPCOMING";
             })(),
         slug,
@@ -58,6 +61,35 @@ export async function createEvent(data: EventFormData) {
         } : undefined
       }
     });
+
+    if (club.googleDriveRefreshToken) {
+      try {
+        const { decrypt } = await import("@/lib/crypto");
+        const { GoogleDriveProvider } = await import("@/features/storage/google-drive");
+        
+        const clearToken = decrypt(club.googleDriveRefreshToken);
+        const provider = new GoogleDriveProvider(clearToken);
+        
+        const rootFolderId = club.googleDriveRootFolderId || await provider.setupRootFolder();
+        const eventsFolderId = await provider.findFolder("Events", rootFolderId) || await provider.createFolder("Events", rootFolderId);
+        
+        const eventFolderName = event.title.replace(/[/\\?%*:|"<>]/g, '-');
+        let eventFolderId = await provider.findFolder(eventFolderName, eventsFolderId);
+        if (!eventFolderId) {
+          eventFolderId = await provider.createFolder(eventFolderName, eventsFolderId);
+          await provider.createFolder("Photos", eventFolderId);
+          await provider.createFolder("Posters", eventFolderId);
+          await provider.createFolder("Documents", eventFolderId);
+        }
+        
+        await prisma.event.update({
+          where: { id: event.id },
+          data: { driveFolderId: eventFolderId }
+        });
+      } catch (err) {
+        console.error("Failed to provision Google Drive folder for event:", err);
+      }
+    }
 
     const linkedMediaIds = [bannerMediaId, posterMediaId].filter(Boolean) as string[];
     if (linkedMediaIds.length > 0) {
@@ -91,20 +123,6 @@ export async function createEvent(data: EventFormData) {
                 attachCalendarFlag: attachCalendarInvite
             });
         }
-    }
-
-    // Create Drive Folder if env is configured
-    try {
-      const year = new Date(event.startDate).getFullYear();
-      const driveFolderId = await setupEventDriveFolder(club.name, event.title, year.toString());
-      if (driveFolderId) {
-        await prisma.event.update({
-          where: { id: event.id },
-          data: { driveFolderId }
-        });
-      }
-    } catch (err) {
-      console.warn("Failed to create Google Drive folder for event:", err);
     }
 
     // Log the audit

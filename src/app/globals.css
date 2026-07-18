@@ -116,11 +116,18 @@
   border-color: var(--color-border);
 }
 
+/* Clip on <html> prevents horizontal scrollbar without turning body into a
+   scroll container. Putting this on body instead creates a new stacking context
+   on iOS/mobile Safari that blocks upward scroll propagation on pages with
+   sticky/fixed sections. On <html> it is safe and doesn't block touch scrolling. */
+html {
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
-  overflow-x: hidden;
 }
 
 /* CSS grain texture overlay on bg-chapter sections & hero */

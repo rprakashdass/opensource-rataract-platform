@@ -278,7 +278,7 @@ export default function PortfolioList({ initialPortfolios }: { initialPortfolios
 
       <CmsPreviewFrame
         ref={previewRef}
-        previewUrl="/about?preview=true"
+        previewUrl="/api/draft/enable?path=/about"
         channel="about"
         scrollTo="about-portfolios"
         payload={{ portfolios }}

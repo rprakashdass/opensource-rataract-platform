@@ -37,9 +37,19 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
     joinedAt: new Date().toISOString().split("T")[0]
   });
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     setLoading(true);
 
     try {
@@ -78,6 +88,8 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
                   value={formData.avatar}
                   onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
                   accept="image/*"
+                  context={{ kind: "members" }}
+                  onStatusChange={handleStatusChange}
                 />
               </div>
               <div className="space-y-1.5">
@@ -230,9 +242,9 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
             <Link href="/admin/members">
               <Button type="button" variant="ghost" disabled={loading}>Cancel</Button>
             </Link>
-            <Button type="submit" disabled={loading} className="bg-brand hover:bg-brand-deep text-white gap-2 px-8">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save Member
+            <Button type="submit" disabled={loading || activeUploads > 0} className="bg-brand hover:bg-brand-deep text-white gap-2 px-8">
+              {activeUploads > 0 ? <Loader2 className="w-4 h-4 animate-spin" /> : loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {activeUploads > 0 ? "Uploading..." : "Save Member"}
             </Button>
           </div>
         </div>

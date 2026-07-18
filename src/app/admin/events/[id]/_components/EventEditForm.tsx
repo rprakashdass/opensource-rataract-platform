@@ -1,51 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Calendar } from "lucide-react";
-import { MediaUpload } from "@/components/ui/media-upload";
+import { FileUpload } from "@/components/ui/file-upload";
 import { Label } from "@/components/ui/label";
-
-interface Initiative {
-  id: string;
-  title: string;
-}
+import { Calendar, MapPin, AlignLeft, Video } from "lucide-react";
+import { istInputToISOString, isoToISTInputValue } from "@/lib/istDatetime";
 
 export default function EventEditForm({ eventId, initialData, onSuccess }: { eventId: string; initialData: any; onSuccess?: () => void }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [activeUploads, setActiveUploads] = useState(0);
 
   const [title, setTitle] = useState(initialData.title || "");
   const [slug, setSlug] = useState(initialData.slug || "");
   const [description, setDescription] = useState(initialData.description || "");
   const [location, setLocation] = useState(initialData.location || "");
-  const [startDate, setStartDate] = useState(initialData.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : "");
-  const [endDate, setEndDate] = useState(initialData.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : "");
+  const [meetingLink, setMeetingLink] = useState(initialData.meetingLink || "");
+  const [locationType, setLocationType] = useState<"physical" | "online">(
+    initialData.meetingLink ? "online" : "physical"
+  );
+  const [startDate, setStartDate] = useState(isoToISTInputValue(initialData.startDate));
+  const [endDate, setEndDate] = useState(isoToISTInputValue(initialData.endDate));
   const [bannerMediaId, setBannerMediaId] = useState(initialData.bannerMediaId || "");
   const [posterMediaId, setPosterMediaId] = useState(initialData.posterMediaId || "");
-  const [status, setStatus] = useState(initialData.status || "upcoming");
+  const [status, setStatus] = useState(initialData.status || "UPCOMING");
   const [publishStatus, setPublishStatus] = useState(initialData.publishStatus || "DRAFT");
   const [projectId, setProjectId] = useState(initialData.projectId || "");
   const [visibility, setVisibility] = useState(initialData.visibility || "PUBLIC");
   const [registrationEnabled, setRegistrationEnabled] = useState(initialData.registrationEnabled || false);
   const [isFeatured, setIsFeatured] = useState(initialData.isFeatured || false);
+  const [seekingSponsorship, setSeekingSponsorship] = useState(initialData.seekingSponsorship || false);
+  const [sponsorshipGoal, setSponsorshipGoal] = useState(initialData.sponsorshipGoal || "");
+  const [sponsorshipPitch, setSponsorshipPitch] = useState(initialData.sponsorshipPitch || "");
 
-
-
-  const handleEventTitleChange = (val: string) => {
-    setTitle(val);
-    setSlug(
-      val
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^\w\-]+/g, "")
-    );
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
   };
 
-  const submitEvent = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     if (!title || !slug || !startDate) return setError("Required fields missing");
     setError("");
     setSubmitting(true);
@@ -56,9 +57,10 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
         title,
         slug,
         description: description || null,
-        location: location || null,
-        startDate: new Date(startDate).toISOString(),
-        endDate: endDate ? new Date(endDate).toISOString() : null,
+        location: locationType === "physical" ? (location || null) : null,
+        meetingLink: locationType === "online" ? (meetingLink || null) : null,
+        startDate: istInputToISOString(startDate),
+        endDate: endDate ? istInputToISOString(endDate) : null,
         bannerMediaId: bannerMediaId || null,
         posterMediaId: posterMediaId || null,
         status,
@@ -67,6 +69,9 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
         registrationEnabled,
         isFeatured,
         publishStatus,
+        seekingSponsorship,
+        sponsorshipGoal: sponsorshipGoal ? parseFloat(sponsorshipGoal) : null,
+        sponsorshipPitch: sponsorshipPitch || null,
         id: eventId,
       };
 
@@ -98,54 +103,99 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
       
       <div className="flex items-center gap-2 mb-6 text-brand font-semibold border-b pb-2">
         <Calendar className="h-5 w-5" />
-        <span>Edit Event Details</span>
+        <h2>Edit Details</h2>
       </div>
 
-      <form onSubmit={submitEvent} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Event Title *</label>
-          <input value={title} onChange={(e) => handleEventTitleChange(e.target.value)} required className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Tree Planting Day" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Slug *</label>
-          <input value={slug} onChange={(e) => setSlug(e.target.value)} required className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="tree-planting-day" />
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+            <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Slug URL</label>
+            <input required type="text" value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none" />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1"><AlignLeft className="h-4 w-4 text-slate-400"/> Description</label>
+          <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none resize-none" placeholder="Add event description..." />
+        </div>
+
+        <div>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-2">
+            <MapPin className="h-4 w-4 text-slate-400"/> Location
+          </label>
+          {/* Location type toggle */}
+          <div className="flex rounded-lg border border-slate-300 overflow-hidden mb-2 w-fit text-sm">
+            <button
+              type="button"
+              onClick={() => setLocationType("physical")}
+              className={`px-4 py-1.5 font-medium transition-colors ${
+                locationType === "physical"
+                  ? "bg-brand text-white"
+                  : "bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              Physical
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocationType("online")}
+              className={`px-4 py-1.5 font-medium transition-colors flex items-center gap-1.5 ${
+                locationType === "online"
+                  ? "bg-brand text-white"
+                  : "bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <Video className="h-3.5 w-3.5" /> Online
+            </button>
+          </div>
+          {locationType === "physical" ? (
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+              placeholder="Venue name or address..."
+            />
+          ) : (
+            <div className="space-y-1.5">
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  className="flex-1 rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none"
+                  placeholder="https://meet.google.com/..."
+                />
+                <a
+                  href="https://meet.google.com/new"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Opens a new Google Meet room — copy the link and paste it here"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium whitespace-nowrap transition-colors"
+                >
+                  <Video className="h-3.5 w-3.5" />
+                  New Meet
+                </a>
+              </div>
+              <p className="text-xs text-slate-400">Click "New Meet" → Google creates a room → copy the link → paste above.</p>
+            </div>
+          )}
+
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Start Date/Time *</label>
-            <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} required className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Start Time</label>
+            <input required type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">End Date/Time</label>
-            <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+            <label className="block text-sm font-medium text-slate-700 mb-1">End Time <span className="text-slate-400 font-normal">(Optional)</span></label>
+            <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white" />
           </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
-          <input value={location} onChange={(e) => setLocation(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="City Park / Zoom Link" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
-            <option value="DRAFT">Draft</option>
-            <option value="UPCOMING">Upcoming</option>
-            <option value="ONGOING">Ongoing</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Publish Status</label>
-          <select value={publishStatus} onChange={(e) => setPublishStatus(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
-            <option value="DRAFT">Draft (Hidden)</option>
-            <option value="PUBLISHED">Published (Visible)</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Describe the event..." />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
@@ -176,18 +226,54 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
           <div>
             <Label className="block text-sm font-medium text-slate-700 mb-1">Banner Image</Label>
             <p className="text-xs text-slate-500 mb-2">Wide hero image on the event page and cards.</p>
-            <MediaUpload value={bannerMediaId} onChange={setBannerMediaId} type="IMAGE" usage="BANNER" accept="image/*" />
+            <FileUpload 
+              value={bannerMediaId} 
+              onChange={(val) => setBannerMediaId(val)} 
+              type="IMAGE" 
+              usage="BANNER" 
+              accept="image/*" 
+              context={{ kind: "event", eventId, title }} 
+              returnType="id"
+              onStatusChange={handleStatusChange}
+            />
           </div>
           <div>
             <Label className="block text-sm font-medium text-slate-700 mb-1">Poster Image</Label>
             <p className="text-xs text-slate-500 mb-2">Portrait flyer shown in the sidebar.</p>
-            <MediaUpload value={posterMediaId} onChange={setPosterMediaId} type="IMAGE" usage="POSTER" accept="image/*" />
+            <FileUpload 
+              value={posterMediaId} 
+              onChange={(val) => setPosterMediaId(val)} 
+              type="IMAGE" 
+              usage="POSTER" 
+              accept="image/*" 
+              context={{ kind: "event", eventId, title }} 
+              returnType="id"
+              onStatusChange={handleStatusChange}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4 border-t pt-4">
+          <h4 className="font-semibold text-slate-900">Sponsorship</h4>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="seekingSponsorship" checked={seekingSponsorship} onChange={(e) => setSeekingSponsorship(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-brand" />
+            <label htmlFor="seekingSponsorship" className="text-sm font-medium text-slate-700 cursor-pointer">Feature on Sponsor Us page</label>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="block text-sm font-medium text-slate-700 mb-1">Funding Goal (₹)</Label>
+              <input type="number" value={sponsorshipGoal} onChange={(e) => setSponsorshipGoal(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none" placeholder="e.g. 50000" />
+            </div>
+            <div>
+              <Label className="block text-sm font-medium text-slate-700 mb-1">Sponsorship Pitch</Label>
+              <textarea rows={3} value={sponsorshipPitch} onChange={(e) => setSponsorshipPitch(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none resize-none" placeholder="Brief explanation of what the funds will be used for..." />
+            </div>
           </div>
         </div>
         
         <div className="pt-4 flex justify-end">
-          <button type="submit" disabled={submitting} className="rounded-lg bg-brand px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep transition">
-            {submitting ? "Saving..." : "Save Event Details"}
+          <button type="submit" disabled={submitting || activeUploads > 0} className="rounded-lg bg-brand px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep transition disabled:opacity-50">
+            {activeUploads > 0 ? "Uploading..." : submitting ? "Saving..." : "Save Event Details"}
           </button>
         </div>
       </form>

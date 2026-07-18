@@ -75,6 +75,13 @@ model Club {
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
 
+  /// Google Drive Integration
+  googleDriveEmail         String?
+  googleDriveRefreshToken  String?  @db.Text
+  googleDriveRootFolderId  String?
+  googleDriveConnectedAt   DateTime?
+  googleDriveConnectedById String?
+
   // Relations
   members                 Member[]
   boardMembers            BoardMember[]
@@ -84,6 +91,7 @@ model Club {
   albums                  Album[]
   media                   Media[]
   inquiries               MembershipInquiry[]
+  partnerInquiries        PartnerInquiry[]
   sponsors                Sponsor[]
   sponsorshipPackages     SponsorshipPackage[]
   transactions            Transaction[]
@@ -103,6 +111,7 @@ model Club {
   initiatives             Initiative[]
   navigationItems         NavigationItem[]
   websiteMetrics          WebsiteMetric[]
+  projectUpdates          ProjectUpdate[]
 }
 
 // ============================================================================
@@ -134,6 +143,7 @@ model WebsiteSettings {
   heroScrollAuto    Boolean  @default(true)
   heroScrollInterval Int     @default(5) // Auto scroll time in seconds
   
+
   // Finance Settings
   upiId             String?
 
@@ -153,7 +163,7 @@ model WebsiteSettings {
   gallerySubtitle   String?
   galleryCTA        String?
   galleryCTALink    String?
-  galleryLayout     String?  @default("MASONRY") // MASONRY, GRID, CAROUSEL
+  galleryLayout     String?  @default("masonry") // masonry, grid, filmstrip
   galleryShowLatest Boolean  @default(true)
   galleryShowFeatured Boolean @default(false)
   galleryAlbumId    String?
@@ -681,6 +691,7 @@ model Member {
   paymentRequests      PaymentRequestAssignee[]
   portfolioAssignments MemberPortfolioAssignment[]
   initiatives          Initiative[]
+  projectUpdates       ProjectUpdateParticipant[]
 }
 
 model BoardMember {
@@ -737,6 +748,43 @@ model EventMember {
 // EVENTS
 // ============================================================================
 
+model ProjectUpdate {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clubId      String
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  date        DateTime
+  title       String
+  body        String?  @db.Text
+  isFeatured  Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  
+  beneficiaries  Int?
+  volunteerHours Float?
+  impactNote     String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  media        Media[]
+  participants ProjectUpdateParticipant[]
+
+  @@index([projectId, date])
+  @@index([clubId, isFeatured])
+}
+
+model ProjectUpdateParticipant {
+  id              String         @id @default(cuid())
+  projectUpdateId String
+  projectUpdate   ProjectUpdate  @relation(fields: [projectUpdateId], references: [id], onDelete: Cascade)
+  memberId        String
+  member          Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([projectUpdateId, memberId])
+  @@index([memberId])
+}
+
 model Project {
   id     String @id @default(cuid())
   clubId String
@@ -750,6 +798,7 @@ model Project {
   driveFolderId String?
   startDate     DateTime
   endDate       DateTime?
+  frequency     String?
   isFeatured    Boolean         @default(false)
   impactSummary String?         @db.Text
   visibility    Visibility      @default(PUBLIC)
@@ -758,12 +807,17 @@ model Project {
   publishedAt   DateTime?
   impactMetrics Json?
 
+  seekingSponsorship Boolean @default(false)
+  sponsorshipGoal    Float?
+  sponsorshipPitch   String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   initiativeId String?     @unique
   initiative   Initiative? @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
 
+  updates      ProjectUpdate[]
   events       Event[]
   members      ProjectMember[]
   albums       Album[]
@@ -772,6 +826,8 @@ model Project {
   budget       Budget?
 
   @@unique([clubId, slug])
+  @@index([clubId, status])
+  @@index([slug])
 }
 
 model Event {
@@ -812,6 +868,10 @@ model Event {
   fundsRaised    Decimal? @db.Decimal(10, 2)
   impactMetrics  Json?
 
+  seekingSponsorship Boolean @default(false)
+  sponsorshipGoal    Float?
+  sponsorshipPitch   String? @db.Text
+
   visibility    Visibility    @default(PUBLIC)
   publishStatus PublishStatus @default(DRAFT)
   publishAt     DateTime?
@@ -845,6 +905,8 @@ model Event {
   budget             Budget?
 
   @@unique([clubId, slug])
+  @@index([clubId, status, startDate])
+  @@index([slug])
 }
 
 model Registration {
@@ -861,6 +923,34 @@ model Registration {
   createdAt DateTime @default(now())
 
   @@unique([eventId, memberId])
+}
+
+enum CauseType {
+  PROJECT
+  EVENT
+}
+
+model PartnerInquiry {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name         String
+  email        String
+  phone        String?
+  company      String?
+  subject      String?
+  message      String @db.Text
+
+  causeType    CauseType?
+  causeId      String?
+
+  status       InquiryStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clubId, createdAt])
 }
 
 model MembershipInquiry {
@@ -960,6 +1050,9 @@ model Media {
   event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  projectUpdateId String?
+  projectUpdate   ProjectUpdate? @relation(fields: [projectUpdateId], references: [id], onDelete: SetNull)
 
   albumId String?
   album   Album?  @relation(fields: [albumId], references: [id], onDelete: Cascade)
@@ -978,11 +1071,16 @@ model Media {
   isCover      Boolean @default(false)
   isFeatured   Boolean @default(false)
 
+  // Memories / Homepage curation
+  showOnHomepage Boolean @default(false)
+  sortOrder      Int     @default(0)
+
   uploadedById String?
   uploadedBy   User?   @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([clubId, albumId])
 }
 
 // ============================================================================
@@ -1252,6 +1350,7 @@ model Announcement {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([clubId, status, visibility])
 }
 
 model Sponsor {

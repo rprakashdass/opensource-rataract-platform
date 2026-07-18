@@ -25,11 +25,12 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
     let isValid = false;
 
     if (newStatus === "CANCELLED") {
-      // Can cancel draft, upcoming, or ongoing events
-      isValid = ["DRAFT", "UPCOMING", "ONGOING"].includes(currentStatus);
+      // Can cancel draft, planning, upcoming, or ongoing events
+      isValid = ["DRAFT", "PLANNING", "UPCOMING", "ONGOING"].includes(currentStatus);
     } else {
       switch (currentStatus) {
         case "DRAFT":
+        case "PLANNING":
           isValid = newStatus === "UPCOMING";
           break;
         case "UPCOMING":
@@ -37,6 +38,9 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
           break;
         case "ONGOING":
           isValid = newStatus === "COMPLETED";
+          break;
+        case "COMPLETED":
+          isValid = newStatus === "ONGOING";
           break;
         default:
           isValid = false;

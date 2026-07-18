@@ -76,7 +76,7 @@ export default function EventsEditorForm({ settings }: { settings: any }) {
         </div>
       </div>
 
-      <CmsPreviewFrame ref={previewRef} previewUrl="/events?preview=true" channel="events" payload={payload} />
+      <CmsPreviewFrame ref={previewRef} previewUrl="/api/draft/enable?path=/events" channel="events" payload={payload} />
     </div>
   );
 }

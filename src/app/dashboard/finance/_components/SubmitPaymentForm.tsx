@@ -12,6 +12,15 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
   const router = useRouter();
   const searchParams = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   const [amount, setAmount] = useState(searchParams.get("amount") || "");
   const [description, setDescription] = useState(searchParams.get("desc") || "");
@@ -21,6 +30,7 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     if (!receiptUrl) {
       toast.error("Please upload a receipt image before submitting.");
       return;
@@ -151,11 +161,13 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
           value={receiptUrl}
           onChange={setReceiptUrl}
           accept="image/*,application/pdf"
+          context={{ kind: "finance" }}
+          onStatusChange={handleStatusChange}
         />
       </div>
 
-        <button type="submit" disabled={submitting} className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep transition disabled:opacity-50 mt-4">
-          {submitting ? "Submitting..." : "Submit Proof"}
+        <button type="submit" disabled={submitting || activeUploads > 0} className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep transition disabled:opacity-50 mt-4">
+          {activeUploads > 0 ? "Uploading..." : submitting ? "Submitting..." : "Submit Proof"}
         </button>
       </form>
     </div>

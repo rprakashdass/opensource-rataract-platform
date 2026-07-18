@@ -4,13 +4,12 @@ import { notFound } from "next/navigation";
 import { getPublicMilestones } from "@/features/public/queries/getPublicMilestones";
 import AboutClient from "./AboutClient";
 
-export default async function AboutPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ preview?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const isPreview = resolvedParams?.preview === "true";
+export const revalidate = 300;
+
+import { draftMode } from "next/headers";
+export default async function AboutPage() {
+  const draft = await draftMode();
+  const isPreview = draft.isEnabled;
 
   const club = await getCurrentClub();
   if (!club) notFound();

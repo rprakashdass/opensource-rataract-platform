@@ -4,17 +4,25 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageWebsite } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
-export async function updateInquiryStatus(id: string, status: "PENDING" | "CONTACTED" | "CONVERTED" | "REJECTED" | "REVIEWING") {
+export async function updateInquiryStatus(id: string, status: "PENDING" | "CONTACTED" | "CONVERTED" | "REJECTED" | "REVIEWING", type: "MEMBERSHIP" | "PARTNER" = "MEMBERSHIP") {
   try {
     const session = await getSession();
     if (!session || !canManageWebsite(session)) { return { error: "Unauthorized" }; }
 
-    const inquiry = await prisma.membershipInquiry.update({
-      where: { id },
-      data: { status }
-    });
+    let inquiry;
+    if (type === "PARTNER") {
+      inquiry = await prisma.partnerInquiry.update({
+        where: { id },
+        data: { status }
+      });
+    } else {
+      inquiry = await prisma.membershipInquiry.update({
+        where: { id },
+        data: { status }
+      });
+    }
 
-    if (status === "CONVERTED") {
+    if (status === "CONVERTED" && type === "MEMBERSHIP") {
       // Create user and member records if approved
       // In a real app we'd email them a magic link or temporary password.
       const existingUser = await prisma.user.findUnique({ where: { email: inquiry.email } });
@@ -39,7 +47,7 @@ export async function updateInquiryStatus(id: string, status: "PENDING" | "CONTA
             userId: user.id,
             name: inquiry.name,
             email: inquiry.email,
-            phone: inquiry.phone,
+            phone: (inquiry as any).phone || null,
             isActive: true,
           }
         });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { eventSchema } from "../schemas/event.schema";
 import { createEvent } from "../actions/createEvent";
 import { getActiveProjects } from "@/features/projects/actions/getActiveProjects";
+import { istInputToISOString } from "@/lib/istDatetime";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MediaUpload } from "@/components/ui/media-upload";
+import { FileUpload } from "@/components/ui/file-upload";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -32,6 +33,15 @@ export default function EventForm() {
   const [sendToAll, setSendToAll] = useState(true);
   const [sendToBoard, setSendToBoard] = useState(false);
   const [submitAction, setSubmitAction] = useState<string>("DRAFT");
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   useEffect(() => {
     getActiveProjects().then((res) => {
@@ -59,17 +69,26 @@ export default function EventForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (activeUploads > 0) return;
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+
+    // Guard: must set a schedule date when using the Schedule button
+    if (submitAction === "SCHEDULED" && !formData.get("publishAt")) {
+      toast.error("Please set a Schedule Date & Time before scheduling the event.");
+      setLoading(false);
+      return;
+    }
+
     const data = {
       title: formData.get("title"),
       slug: formData.get("slug") || undefined,
       description: formData.get("description"),
       type: formData.get("type"),
       status: formData.get("status"),
-      startTime: formData.get("startTime") ? new Date(formData.get("startTime") as string).toISOString() : "",
-      endTime: formData.get("endTime") ? new Date(formData.get("endTime") as string).toISOString() : "",
+      startTime: formData.get("startTime") ? istInputToISOString(formData.get("startTime") as string) : "",
+      endTime: formData.get("endTime") ? istInputToISOString(formData.get("endTime") as string) : "",
       location: formData.get("location") || null,
       meetingLink: formData.get("meetingLink") || null,
       bannerMediaId: formData.get("bannerMediaId") || undefined,
@@ -80,7 +99,7 @@ export default function EventForm() {
       isFeatured: formData.get("isFeatured") === "on",
       visibility: formData.get("visibility") || "PUBLIC",
       publishStatus: submitAction,
-      publishAt: formData.get("publishAt") ? new Date(formData.get("publishAt") as string).toISOString() : null,
+      publishAt: formData.get("publishAt") ? istInputToISOString(formData.get("publishAt") as string) : null,
       publishedAt: (submitAction === "PUBLISHED") ? new Date().toISOString() : null,
       sendEmailNotification: formData.get("sendEmailNotification") === "on",
       sendEmailToBoard: formData.get("sendEmailToBoard") === "on",
@@ -97,7 +116,7 @@ export default function EventForm() {
         toast.error(getCleanErrorMessage(res.error));
       } else {
         toast.success("Event created successfully!");
-        router.push("/admin");
+        router.push("/admin/events?created=true");
         router.refresh();
       }
     } catch (err: any) {
@@ -231,24 +250,30 @@ export default function EventForm() {
             <div className="space-y-2">
               <Label htmlFor="bannerImage">Banner Image</Label>
               <p className="text-xs text-gray-500">Wide hero image shown at the top of the event page and on cards.</p>
-              <MediaUpload
+              <FileUpload
                 value={bannerMediaId}
                 onChange={setBannerMediaId}
                 type="IMAGE"
                 usage="BANNER"
                 accept="image/*"
+                context={{ kind: "general" }}
+                returnType="id"
+                onStatusChange={handleStatusChange}
               />
               <input type="hidden" name="bannerMediaId" value={bannerMediaId} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="posterImage">Poster Image</Label>
               <p className="text-xs text-gray-500">Portrait flyer shown in the event sidebar, e.g. for sharing.</p>
-              <MediaUpload
+              <FileUpload
                 value={posterMediaId}
                 onChange={setPosterMediaId}
                 type="IMAGE"
                 usage="POSTER"
                 accept="image/*"
+                context={{ kind: "general" }}
+                returnType="id"
+                onStatusChange={handleStatusChange}
               />
               <input type="hidden" name="posterMediaId" value={posterMediaId} />
             </div>
@@ -384,9 +409,15 @@ export default function EventForm() {
         <CardFooter className="bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
           <div className="flex flex-col sm:flex-row gap-3 w-full justify-end">
             <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">Cancel</Button>
-            <Button type="submit" onClick={() => setSubmitAction("DRAFT")} variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
-            <Button type="submit" onClick={() => setSubmitAction("SCHEDULED")} variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
-            <Button type="submit" onClick={() => setSubmitAction("PUBLISHED")} disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
+            <Button type="submit" onClick={() => setSubmitAction("DRAFT")} variant="secondary" disabled={loading || activeUploads > 0} className="w-full sm:w-auto disabled:opacity-50">
+               {activeUploads > 0 ? "Uploading..." : "Save Draft"}
+            </Button>
+            <Button type="submit" onClick={() => setSubmitAction("SCHEDULED")} variant="outline" disabled={loading || activeUploads > 0} className="border-purple-600 text-purple-600 w-full sm:w-auto disabled:opacity-50">
+               {activeUploads > 0 ? "Uploading..." : "Schedule"}
+            </Button>
+            <Button type="submit" onClick={() => setSubmitAction("PUBLISHED")} disabled={loading || activeUploads > 0} className="w-full sm:w-auto disabled:opacity-50">
+               {activeUploads > 0 ? "Uploading..." : "Publish Now"}
+            </Button>
           </div>
         </CardFooter>
       </form>

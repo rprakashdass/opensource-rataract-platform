@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import { getCurrentClub } from "@/lib/club";
+import { getPublicAnnouncements } from "@/features/public/queries/getPublicAnnouncements";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { format } from "date-fns";
 import { Paperclip, Calendar as CalendarIcon, MapPin } from "lucide-react";
@@ -9,27 +8,10 @@ import {
   EmptyState,
 } from "@/components/ui/public/v2";
 
-export default async function PublicAnnouncementsPage() {
-  const club = await getCurrentClub();
-  if (!club) {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-6 bg-paper">
-        <p className="text-center text-ink-faint font-medium">Loading...</p>
-      </main>
-    );
-  }
+export const revalidate = 300;
 
-  const announcements = await prisma.announcement.findMany({
-    where: {
-      clubId: club.id,
-      status: "PUBLISHED",
-      visibility: "PUBLIC",
-      type: {
-        notIn: ["BOARD_MEETING", "CLUB_MEETING"]
-      }
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export default async function PublicAnnouncementsPage() {
+  const announcements = await getPublicAnnouncements();
 
   return (
     <main className="min-h-screen bg-paper pb-24">
@@ -107,11 +89,6 @@ export default async function PublicAnnouncementsPage() {
                           </div>
                         )}
 
-                        {announcement.agendaContent && (
-                          <div className="pt-4 border-t border-hairline text-[15px] text-ink-soft leading-relaxed max-w-none [&_h1]:font-display [&_h1]:font-medium [&_h1]:text-ink [&_h2]:font-display [&_h2]:font-medium [&_h2]:text-ink [&_h3]:font-display [&_h3]:font-medium [&_h3]:text-ink [&_a]:text-trail [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-3">
-                            <div dangerouslySetInnerHTML={{ __html: announcement.agendaContent }} />
-                          </div>
-                        )}
 
                         {(announcement.agendaUrl || (announcement.attachments && announcement.attachments.length > 0)) && (
                           <div className="pt-4 border-t border-hairline flex flex-wrap gap-x-8 gap-y-3">

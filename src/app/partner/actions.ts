@@ -13,6 +13,8 @@ interface InquiryData {
   subject: string;
   contactEmail: string;
   clubName: string;
+  causeType?: "PROJECT" | "EVENT";
+  causeId?: string;
   _honey?: string;
 }
 
@@ -39,70 +41,68 @@ export async function submitPartnerInquiry(data: InquiryData) {
     return { error: "Please fill in all required fields." };
   }
 
-  const emailSubject = `Partnership Inquiry — ${data.name} (${data.company || "No Company"})`;
-  
-  const emailHtml = `
-    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-      <h2 style="color: #0B132B; margin-bottom: 24px;">New Partnership / Sponsorship Inquiry</h2>
-      
-      <p style="font-size: 14px; color: #4a5568; line-height: 1.6;">
-        You have received a new inquiry from the public website for <strong>${data.clubName}</strong>.
-      </p>
-      
-      <table style="width: 100%; border-collapse: collapse; margin: 24px 0;">
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold; color: #4a5568; width: 120px;">Name:</td>
-          <td style="padding: 8px 0; color: #1a202c;">${data.name}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold; color: #4a5568;">Email:</td>
-          <td style="padding: 8px 0; color: #1a202c;"><a href="mailto:${data.email}">${data.email}</a></td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold; color: #4a5568;">Phone:</td>
-          <td style="padding: 8px 0; color: #1a202c;">${data.phone || "Not provided"}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold; color: #4a5568;">Company:</td>
-          <td style="padding: 8px 0; color: #1a202c;">${data.company || "Not provided"}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; font-weight: bold; color: #4a5568;">Topic/Pledge:</td>
-          <td style="padding: 8px 0; color: #1a202c; font-weight: bold; color: #F7A800;">${data.subject}</td>
-        </tr>
-      </table>
-      
-      <div style="background-color: #f7fafc; padding: 16px; border-radius: 8px; border: 1px solid #edf2f7; margin-top: 16px;">
-        <span style="font-size: 10px; font-weight: bold; color: #718096; text-transform: uppercase;">Message:</span>
-        <p style="font-size: 14px; color: #2d3748; line-height: 1.6; margin-top: 8px; white-space: pre-wrap;">${data.message}</p>
-      </div>
-      
-      <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 32px 0;" />
-      
-      <p style="font-size: 11px; color: #a0aec0; text-align: center;">
-        This email was sent automatically from the Rotaract Platform website system.
-      </p>
-    </div>
-  `;
-
   try {
     const club = await prisma.club.findFirst();
-    const plainText = `New Partnership Inquiry for ${data.clubName}:\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || "None"}\nCompany: ${data.company || "None"}\nTopic/Pledge: ${data.subject}\nMessage: ${data.message}`;
+    if (!club) return { error: "Club not found." };
 
-    const res = await sendEmail({
-      to: data.contactEmail,
-      subject: emailSubject,
-      text: plainText,
-      html: getPartnerReplyEmailHtml(data, club),
-      from: `"Partnership System" <${process.env.GMAIL_USER}>`
+    let validatedCauseType = data.causeType;
+    let validatedCauseId = data.causeId;
+
+    // Validate cause server-side
+    if (validatedCauseType && validatedCauseId) {
+      if (validatedCauseType === "PROJECT") {
+        const p = await prisma.project.findFirst({ where: { id: validatedCauseId, clubId: club.id, seekingSponsorship: true }});
+        if (!p) {
+          validatedCauseType = undefined;
+          validatedCauseId = undefined;
+        }
+      } else if (validatedCauseType === "EVENT") {
+        const e = await prisma.event.findFirst({ where: { id: validatedCauseId, clubId: club.id, seekingSponsorship: true }});
+        if (!e) {
+          validatedCauseType = undefined;
+          validatedCauseId = undefined;
+        }
+      } else {
+        validatedCauseType = undefined;
+        validatedCauseId = undefined;
+      }
+    }
+
+    const inquiry = await prisma.partnerInquiry.create({
+      data: {
+        clubId: club.id,
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        company: data.company || null,
+        subject: data.subject || null,
+        message: data.message,
+        causeType: validatedCauseType,
+        causeId: validatedCauseId,
+        status: "PENDING"
+      }
     });
 
-    if (res.success) {
-      return { success: true };
-    } else {
-      return { error: "Failed to send email. Please try copying the email address instead." };
+    const emailSubject = `Partnership Inquiry — ${data.name} (${data.company || "No Company"})`;
+    
+    // Try sending email, but don't fail if it fails
+    try {
+      const plainText = `New Partnership Inquiry for ${data.clubName}:\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || "None"}\nCompany: ${data.company || "None"}\nTopic/Pledge: ${data.subject}\nMessage: ${data.message}`;
+
+      await sendEmail({
+        to: data.contactEmail,
+        subject: emailSubject,
+        text: plainText,
+        html: getPartnerReplyEmailHtml(data, club),
+        from: `"Partnership System" <${process.env.GMAIL_USER}>`
+      });
+    } catch (emailErr) {
+      console.warn("Failed to send partner inquiry email:", emailErr);
     }
+
+    return { success: true };
   } catch (error: any) {
+    console.error("Partner inquiry creation failed:", error);
     return { error: error.message || "An unexpected error occurred." };
   }
 }

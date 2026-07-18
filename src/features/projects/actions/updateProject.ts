@@ -48,6 +48,8 @@ export async function updateProject(id: string, data: ProjectFormData) {
 
     revalidatePath("/admin");
     revalidatePath(`/admin/projects/${id}`);
+    revalidatePath("/partner");
+    revalidateTag("sponsorship-causes", "max");
     revalidatePublicRoutes();
 
     return { success: true, project };

@@ -13,7 +13,7 @@ export default function InquiryActions({ inquiry }: { inquiry: any }) {
     if (status === "CONVERTED" && !confirm("This will automatically create a Member account for them. Are you sure?")) return;
     
     setLoading(true);
-    const res = await updateInquiryStatus(inquiry.id, status);
+    const res = await updateInquiryStatus(inquiry.id, status, inquiry.type);
     setLoading(false);
 
     if (res.error) {

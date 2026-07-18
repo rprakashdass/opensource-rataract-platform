@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { publishContent, PublishActionInput } from "../actions/publishContent";
 import { PublishStatus } from "@prisma/client";
 import { toast } from "sonner";
+import { istInputToISOString } from "@/lib/istDatetime";
 
 interface PublishContentModalProps {
   isOpen: boolean;
@@ -68,7 +69,7 @@ export function PublishContentModal({
       entityType,
       entityId,
       publishStatus: exposePublicly ? publishStatus : "DRAFT",
-      publishAt: schedulePublish && publishAt ? new Date(publishAt) : null,
+      publishAt: schedulePublish && publishAt ? new Date(istInputToISOString(publishAt)) : null,
       generateAnnouncement,
       
       notifyMembers,

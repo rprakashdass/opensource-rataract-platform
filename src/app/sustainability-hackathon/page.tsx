@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { Terminal, Shield, Cpu, Code2, Globe, Calendar, Clock, Trophy, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
+
 
 const TRACKS = [
   {

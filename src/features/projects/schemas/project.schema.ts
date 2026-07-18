@@ -23,6 +23,9 @@ export const projectSchema = z.object({
   impactSummary: z.string().optional(),
   visibility: z.enum(["PUBLIC", "INTERNAL", "MEMBERS_ONLY", "BOARD_ONLY"]).default("PUBLIC"),
   impactMetrics: z.string().optional().nullable(),
+  seekingSponsorship: z.boolean().default(false),
+  sponsorshipGoal: z.number().nullable().optional(),
+  sponsorshipPitch: z.string().nullable().optional(),
   team: z.array(
     z.object({
       memberId: z.string(),

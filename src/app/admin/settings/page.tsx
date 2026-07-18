@@ -35,6 +35,15 @@ export default function SettingsAdmin() {
   useLoadingToast(loading, "Loading configurations...");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   useEffect(() => {
     const fetchClub = async () => {
@@ -76,8 +85,8 @@ export default function SettingsAdmin() {
     fetchClub();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async () => {
+    if (activeUploads > 0) return;
     setSaving(true);
     setMessage("");
     const toastId = toast.loading("Saving settings...");
@@ -195,7 +204,7 @@ export default function SettingsAdmin() {
           </div>
 
           {/* Form Content */}
-          <form onSubmit={handleSubmit} className="md:col-span-3 bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-sm space-y-6">
+          <div className="md:col-span-3 bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-sm space-y-6">
             
             {activeTab === "info" && (
               <div className="space-y-6 animate-in fade-in duration-300">
@@ -289,11 +298,11 @@ export default function SettingsAdmin() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Club Logo</label>
-                    <FileUpload value={logoUrl} onChange={setLogoUrl} accept="image/*" />
+                    <FileUpload value={logoUrl} onChange={setLogoUrl} accept="image/*" context={{ kind: "website" }} onStatusChange={handleStatusChange} />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Club Banner</label>
-                    <FileUpload value={bannerUrl} onChange={setBannerUrl} accept="image/*" />
+                    <FileUpload value={bannerUrl} onChange={setBannerUrl} accept="image/*" context={{ kind: "website" }} onStatusChange={handleStatusChange} />
                   </div>
                 </div>
                 <div>
@@ -446,7 +455,7 @@ export default function SettingsAdmin() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Payment QR Code</label>
-                    <FileUpload value={paymentQr} onChange={setPaymentQr} accept="image/*" />
+                    <FileUpload value={paymentQr} onChange={setPaymentQr} accept="image/*" context={{ kind: "finance" }} onStatusChange={handleStatusChange} />
                   </div>
                 </div>
               </div>
@@ -454,15 +463,15 @@ export default function SettingsAdmin() {
 
             <div className="pt-6 border-t border-slate-200 flex justify-end">
               <button
-                type="submit"
-                disabled={saving}
-                className="bg-brand hover:bg-brand-deep text-white font-bold py-3 px-6 rounded-xl text-xs uppercase tracking-widest transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                onClick={handleSave} 
+                disabled={saving || activeUploads > 0} 
+                className="flex items-center gap-2 bg-brand hover:bg-brand-deep text-white px-6 py-2.5 rounded-xl font-medium transition disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                {saving ? "Saving..." : "Save Settings"}
+                {activeUploads > 0 ? "Uploading..." : saving ? "Saving..." : "Save Settings"}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </div>

@@ -45,6 +45,20 @@ export default async function AdminGalleryPage() {
         }
       />
 
+      {/* Curate Homepage Memories Banner */}
+      <section>
+        <Link href="/admin/gallery/memories" className="block group">
+          <div className="bg-brand/5 border border-brand/20 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-brand/10 transition-colors">
+            <div>
+              <h2 className="text-lg font-bold text-brand group-hover:text-brand-dark transition-colors">Curate Homepage Memories →</h2>
+              <p className="text-sm text-brand/80 mt-1">
+                Select and reorder images for the public memories page and homepage gallery section.
+              </p>
+            </div>
+          </div>
+        </Link>
+      </section>
+
       <section>
         <h2 className="text-base font-semibold text-slate-900 mb-4">Albums</h2>
         {albums.length === 0 ? (
@@ -92,6 +106,7 @@ export default async function AdminGalleryPage() {
                 type={m.type}
                 isCover={m.isCover}
                 priority={idx === 0}
+                availableAlbums={albums.map(a => ({ id: a.id, title: a.title }))}
               />
             ))}
           </div>

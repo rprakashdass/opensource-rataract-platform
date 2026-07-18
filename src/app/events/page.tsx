@@ -1,3 +1,4 @@
+export const revalidate = 300;
 import { getPublicEvents } from "@/features/public/queries/getPublicEvents";
 import { getCurrentClub } from "@/lib/club";
 import { getOrCreateWebsiteSettings } from "@/features/public/queries/getOrCreateWebsiteSettings";
@@ -6,6 +7,7 @@ import React, { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { CmsText } from "@/components/cms/CmsText";
+import { draftMode } from "next/headers";
 import {
   RevealBlock,
   Eyebrow,
@@ -50,13 +52,9 @@ function EventsGridSkeleton() {
   );
 }
 
-export default async function EventsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ preview?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const isPreview = resolvedParams?.preview === "true";
+export default async function EventsPage() {
+  const draft = await draftMode();
+  const isPreview = draft.isEnabled;
 
   const club = await getCurrentClub();
   const settings = club ? await getOrCreateWebsiteSettings(club.id) : null;
@@ -66,7 +64,7 @@ export default async function EventsPage({
   };
 
   return (
-    <main className="min-h-screen bg-paper flex flex-col overflow-x-hidden">
+    <main className="min-h-screen bg-paper flex flex-col overflow-x-clip">
       <PageIntro
         eyebrow={<CmsText channel="events" initial={heroCopy} field="eventsEyebrow" fallback="Events" isPreview={isPreview} />}
         title={<>Come once. You&rsquo;ll come back.</>}
@@ -97,7 +95,7 @@ function formatTime(startTime?: string | Date | null) {
 async function EventsGrid({ isPreview }: { isPreview: boolean }) {
   const data = await getPublicEvents();
 
-  if (data.error) {
+  if ("error" in data && data.error) {
     return (
       <section className="py-24 bg-paper">
         <MaxWidthWrapper>
@@ -110,9 +108,10 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
     );
   }
 
-  const upcomingEvents = data.upcomingEvents || [];
-  const completedEvents = data.completedEvents || [];
-  const copy: EventsCopy = data.settings || {};
+  const eventsData = data as any;
+  const upcomingEvents: any[] = eventsData.upcomingEvents || [];
+  const completedEvents: any[] = eventsData.completedEvents || [];
+  const copy: EventsCopy = eventsData.settings || {};
 
   const [nextEvent, ...laterEvents] = upcomingEvents;
 

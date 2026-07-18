@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { getCurrentClub } from "@/lib/club";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { revalidatePublicRoutes } from "@/lib/revalidate";
@@ -11,14 +12,15 @@ export async function deleteMedia(mediaId: string) {
     const session = await getSession();
     if (!session || !canManageClub(session)) return { error: "Unauthorized" };
 
+    const club = await getCurrentClub();
+    if (!club) return { error: "Club not found" };
+
     const media = await prisma.media.findUnique({
       where: { id: mediaId },
       include: { club: true }
     });
 
-    if (!media) return { error: "Media not found" };
-
-    // Ideally, check user's permission to delete in the club
+    if (!media || media.clubId !== club.id) return { error: "Media not found" };
 
     if (media.type === "IMAGE" || media.type === "DOCUMENT") {
       // Extract file path from URL

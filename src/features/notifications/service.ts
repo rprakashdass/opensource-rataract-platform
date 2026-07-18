@@ -141,10 +141,15 @@ export async function dispatchNotification(opts: DispatchOptions) {
       body = ann.emailBody || `<p>${ann.description}</p>`;
       
       if (attachCalendarFlag && ann.startDate) {
+        // Only treat location as physical if it looks like an actual address
+        // (not a placeholder like "G-Meet" or a URL)
+        const physicalLocation = ann.location && !ann.location.toLowerCase().includes('meet') && !ann.location.startsWith('http')
+          ? ann.location
+          : undefined;
         const icsString = generateIcs({
           title: ann.title,
           description: ann.description,
-          location: ann.location,
+          location: physicalLocation,
           meetingLink: ann.meetingLink,
           startDate: ann.startDate,
           endDate: new Date(ann.startDate.getTime() + 60 * 60 * 1000)
@@ -228,8 +233,16 @@ if (sendEmailFlag || attachCalendarFlag) {
               link: ann.meetingLink || undefined
             });
             text = templ.emailBody;
-            if (ann.emailBody) {
-              text += `\n\nAdditional Notes:\n${ann.emailBody}`;
+            // ann.emailBody is the full compiled body (template + details +
+            // notes) — appending it wholesale would duplicate everything.
+            // Only the admin's own notes (after the marker) are additional.
+            const notesOnly = ann.emailBody?.includes("<!-- NOTES_START -->")
+              ? ann.emailBody.split("<!-- NOTES_START -->")[1]?.trim()
+              : ann.emailBody?.includes("<!-- CUSTOM_EMAIL -->")
+                ? null
+                : ann.emailBody?.trim();
+            if (notesOnly && !templ.emailBody.includes(notesOnly)) {
+              text += `\n\nAdditional Notes:\n${notesOnly}`;
             }
           } else if (eventId && event) {
             html = getEventInviteEmailHtml(event, name, club, googleCalUrl);
@@ -308,13 +321,19 @@ function generateIcs(event: any) {
   
   const start = new Date(event.startDate);
   const end = (event.endTime || event.endDate) ? new Date(event.endTime || event.endDate) : new Date(start.getTime() + 60 * 60 * 1000);
+
+  // For Meet links: use the URL as location so Gmail/Google Calendar
+  // renders a "Join with Google Meet" button instead of "Directions".
+  const isMeetLink = event.meetingLink && /meet\.google\.com/i.test(event.meetingLink);
+  const effectiveLocation = event.location || (isMeetLink ? event.meetingLink : '') || '';
   
   const icsEvent: ics.EventAttributes = {
     start: [start.getFullYear(), start.getMonth() + 1, start.getDate(), start.getHours(), start.getMinutes()],
     end: [end.getFullYear(), end.getMonth() + 1, end.getDate(), end.getHours(), end.getMinutes()],
     title: event.title,
     description: event.description || '',
-    location: event.location || event.meetingLink || '',
+    location: effectiveLocation,
+    url: event.meetingLink || undefined,
     status: 'CONFIRMED',
     busyStatus: 'BUSY',
     organizer: event.club ? {

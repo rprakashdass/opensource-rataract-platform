@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader, TableWrap } from "@/components/portal";
 import ProjectSettingsButton from "./_components/ProjectSettingsButton";
 import ProjectPublishButton from "./_components/ProjectPublishButton";
+import ProjectUpdatesClient from "./_components/ProjectUpdatesClient";
 import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
 
 export default async function ProjectManagementPage(props: { params: Promise<{ id: string }> }) {
@@ -15,6 +16,10 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
     where: { id: params.id },
     include: {
       club: true,
+      updates: {
+        orderBy: { date: 'desc' },
+        include: { media: true, participants: true }
+      },
       events: {
         orderBy: { startTime: 'asc' },
         include: { _count: { select: { registrations: true } } }
@@ -180,6 +185,13 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
             </table>
           </TableWrap>
         )}
+      </div>
+
+      <div className="pt-8">
+        <ProjectUpdatesClient 
+          projectId={project.id} 
+          initialUpdates={project.updates} 
+        />
       </div>
     </div>
   );

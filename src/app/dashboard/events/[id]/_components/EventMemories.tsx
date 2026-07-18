@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, ExternalLink, Loader2, Upload } from "lucide-react";
-import { uploadEventDriveMedia } from "@/features/events/actions/uploadEventDriveMedia";
+import { uploadMedia } from "@/features/media/actions/uploadMedia";
 import { toast } from "sonner";
 
-export default function EventMemories({ eventId, driveFolderId }: { eventId: string; driveFolderId?: string | null }) {
+export default function EventMemories({ eventId, eventTitle, driveFolderId }: { eventId: string; eventTitle: string; driveFolderId?: string | null }) {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,9 +19,11 @@ export default function EventMemories({ eventId, driveFolderId }: { eventId: str
         const file = e.target.files[i];
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("context", JSON.stringify({ kind: "event", eventId, title: eventTitle }));
+        formData.append("usage", "GALLERY");
         
-        const res = await uploadEventDriveMedia(eventId, formData);
-        if (res.error) {
+        const res = await uploadMedia(formData);
+        if (!res.success) {
           toast.error(`Failed to upload ${file.name}: ${res.error}`);
         } else {
           toast.success(`Uploaded ${file.name}`);

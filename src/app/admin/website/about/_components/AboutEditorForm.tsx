@@ -20,6 +20,15 @@ export default function AboutEditorForm({ settings, club }: Props) {
   const [loading, setLoading] = useState(false);
   const previewRef = useRef<CmsPreviewFrameHandle>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   const [clubForm, setClubForm] = useState({
     aboutTitle: club?.aboutTitle || "",
@@ -55,6 +64,7 @@ export default function AboutEditorForm({ settings, club }: Props) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     setLoading(true);
 
     const [clubRes, settingsRes] = await Promise.all([
@@ -115,7 +125,7 @@ export default function AboutEditorForm({ settings, club }: Props) {
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Hero Photo</label>
-              <FileUpload value={settingsForm.aboutPhoto} onChange={url => handleSettingsChange("aboutPhoto", url)} accept="image/*" albumTitle="About Page" />
+              <FileUpload value={settingsForm.aboutPhoto} onChange={url => handleSettingsChange("aboutPhoto", url)} accept="image/*" context={{ kind: "website" }} onStatusChange={handleStatusChange} />
             </div>
           </div>
         </div>
@@ -197,15 +207,15 @@ export default function AboutEditorForm({ settings, club }: Props) {
 
       </div>
       <div className="pt-4 mt-2 border-t border-slate-100 flex justify-end shrink-0">
-        <Button type="submit" disabled={loading} className="rounded-xl px-8">
-          {loading ? "Saving..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
+        <Button type="submit" disabled={loading || activeUploads > 0} className="rounded-xl px-8">
+          {activeUploads > 0 ? "Uploading..." : loading ? "Saving..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
         </Button>
       </div>
       </form>
 
       <CmsPreviewFrame
         ref={previewRef}
-        previewUrl="/about?preview=true"
+        previewUrl="/api/draft/enable?path=/about"
         channel="about"
         payload={previewPayload}
         scrollTo={activeSection}

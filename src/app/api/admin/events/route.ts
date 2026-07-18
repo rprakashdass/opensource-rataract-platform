@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 export async function PUT(req: Request) {
   try {
@@ -10,7 +11,7 @@ export async function PUT(req: Request) {
     }
 
     const data = await req.json();
-    const { id, title, slug, description, location, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured, bannerMediaId, posterMediaId, publishStatus } = data;
+    const { id, title, slug, description, location, meetingLink, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured, bannerMediaId, posterMediaId, publishStatus, seekingSponsorship, sponsorshipGoal, sponsorshipPitch } = data;
 
     if (!id) {
       return NextResponse.json({ error: "Missing event ID" }, { status: 400 });
@@ -22,7 +23,8 @@ export async function PUT(req: Request) {
         title,
         slug,
         description,
-        location,
+        location: location || null,
+        meetingLink: meetingLink || null,
         startTime: startDate ? new Date(startDate) : undefined,
         startDate: startDate ? new Date(startDate) : undefined,
         endTime: endDate ? new Date(endDate) : null,
@@ -30,7 +32,8 @@ export async function PUT(req: Request) {
           if (status === "CANCELLED" || status === "ONGOING" || status === "COMPLETED") return status;
           if (!startDate) return status;
           const start = new Date(startDate);
-          const end = endDate ? new Date(endDate) : new Date(start.getTime() + 4 * 60 * 60 * 1000);
+          // Changed 4 hours to 24 hours (24 * 60 * 60 * 1000) for events
+          const end = endDate ? new Date(endDate) : new Date(start.getTime() + 24 * 60 * 60 * 1000);
           return end < new Date() ? "COMPLETED" : "UPCOMING";
         })(),
         projectId: initiativeId,
@@ -41,6 +44,9 @@ export async function PUT(req: Request) {
         posterMediaId: posterMediaId || null,
         publishStatus,
         publishedAt: publishStatus === "PUBLISHED" ? new Date() : null,
+        seekingSponsorship: seekingSponsorship || false,
+        sponsorshipGoal: sponsorshipGoal || null,
+        sponsorshipPitch: sponsorshipPitch || null,
       },
     });
 
@@ -51,6 +57,11 @@ export async function PUT(req: Request) {
         data: { eventId: event.id }
       });
     }
+
+    revalidateTag("events", "max");
+    revalidateTag("homepage", "max");
+    revalidateTag("sponsorship-causes", "max");
+    revalidatePath("/partner");
 
     return NextResponse.json({ success: true, event });
   } catch (error: any) {

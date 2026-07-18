@@ -4,10 +4,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnnouncementType } from "@prisma/client";
 import { toast } from "sonner";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import dynamic from "next/dynamic";
 import { DocumentUpload } from "@/components/ui/document-upload";
 import { generateTemplate } from "@/features/communication/actions/generateTemplate";
 import { Button } from "@/components/ui/button";
+import { istInputToISOString, isoToISTInputValue } from "@/lib/istDatetime";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/ui/rich-text-editor").then((mod) => mod.RichTextEditor),
+  { ssr: false, loading: () => <div className="h-[200px] bg-slate-50 animate-pulse rounded-lg border border-slate-200" /> }
+);
 
 interface AnnouncementFormProps {
   initialData?: any;
@@ -29,7 +35,8 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
   const [visibility, setVisibility] = useState<string>(initialData?.visibility || "INTERNAL");
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
-  const [startDate, setStartDate] = useState(initialData?.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : "");
+  const [startDate, setStartDate] = useState(initialData?.startDate ? isoToISTInputValue(initialData.startDate) : "");
+  const [durationMins, setDurationMins] = useState<number>(60); // default 1 hour
   const [location, setLocation] = useState(initialData?.location || "");
   const [meetingLink, setMeetingLink] = useState(initialData?.meetingLink || "");
 
@@ -81,7 +88,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
       const template = await generateTemplate({
         type: type as AnnouncementType,
         title: title || undefined,
-        date: startDate || undefined,
+        date: startDate ? istInputToISOString(startDate) : undefined,
         location: location || undefined,
         link: meetingLink || undefined
       });
@@ -102,7 +109,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
         const template = await generateTemplate({
           type: type as AnnouncementType,
           title: title || undefined,
-          date: startDate || undefined,
+          date: startDate ? istInputToISOString(startDate) : undefined,
           location: location || undefined,
           link: meetingLink || undefined
         });
@@ -129,7 +136,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
         const template = await generateTemplate({
           type: type as AnnouncementType,
           title: title || undefined,
-          date: startDate || undefined,
+          date: startDate ? istInputToISOString(startDate) : undefined,
           location: location || undefined,
           link: meetingLink || undefined
         });
@@ -146,7 +153,10 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
     const data = {
       title,
       description,
-      startDate: startDate || undefined,
+      startDate: startDate ? istInputToISOString(startDate) : undefined,
+      endDate: startDate
+        ? new Date(new Date(istInputToISOString(startDate)).getTime() + durationMins * 60 * 1000).toISOString()
+        : undefined,
       location,
       meetingLink,
       type: dbType,
@@ -215,7 +225,8 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
     }
 
     const formattedDate = startDate
-      ? new Date(startDate).toLocaleString("en-US", {
+      ? new Date(istInputToISOString(startDate)).toLocaleString("en-US", {
+          timeZone: "Asia/Kolkata",
           weekday: "long",
           year: "numeric",
           month: "long",
@@ -246,9 +257,11 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
         <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
           ${detailsRows.map(r => `
             <tr>
-              <td valign="top" style="padding: 6px 12px 6px 0; font-size: 13px; font-weight: bold; color: #D41367; width: 110px;">${r.label}:</td>
-              <td valign="top" style="padding: 6px 0; font-size: 13px; color: #1F2937; font-weight: 600;">
-                ${r.isLink ? `<a href="${r.val}" target="_blank" style="color: #D41367; font-weight: bold; text-decoration: underline;">Join Link</a>` : r.val}
+              <td style="padding: 6px 0;">
+                <span style="display: block; font-size: 10px; font-weight: bold; color: #D41367; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">${r.label}</span>
+                <span style="display: block; font-size: 14px; color: #1F2937; font-weight: 600; line-height: 1.4;">
+                  ${r.isLink ? `<a href="${r.val}" target="_blank" style="color: #D41367; font-weight: bold; text-decoration: underline;">Join Link</a>` : r.val}
+                </span>
               </td>
             </tr>
           `).join("")}
@@ -296,7 +309,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
     </tr>
     <tr>
       <td align="center" style="padding: 24px; border-bottom: 1px solid #F3F4F6;">
-        <div style="height: 48px; width: 48px; border-radius: 50%; background-color: ${primaryColor}10; color: ${primaryColor}; font-size: 20px; font-weight: bold; line-height: 48px; text-align: center; margin: 0 auto 12px auto;">RC</div>
+        <div style="font-size: 16px; font-weight: 900; letter-spacing: 0.18em; color: ${primaryColor}; text-transform: uppercase; margin: 0 auto 12px auto;">Rotaract</div>
         <h2 style="margin: 0; color: ${primaryColor}; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${headerTitle}</h2>
         <p style="margin: 2px 0 0 0; font-size: 11px; color: #6B7280;">${clubName}</p>
       </td>
@@ -437,6 +450,20 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
                 />
               </div>
               <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Duration</label>
+                <select
+                  value={durationMins}
+                  onChange={(e) => setDurationMins(Number(e.target.value))}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white"
+                >
+                  <option value={30}>30 minutes</option>
+                  <option value={60}>1 hour</option>
+                  <option value={90}>1.5 hours</option>
+                  <option value={120}>2 hours</option>
+                  <option value={180}>3 hours</option>
+                </select>
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Location (Venue)</label>
                 <input
                   type="text"
@@ -448,14 +475,30 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
               </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-medium text-slate-700">Meeting Link (Optional)</label>
-                <input
-                  type="url"
-                  value={meetingLink}
-                  onChange={(e) => setMeetingLink(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
-                  placeholder="https://zoom.us/..."
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={meetingLink}
+                    onChange={(e) => setMeetingLink(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
+                    placeholder="https://meet.google.com/..."
+                  />
+                  <a
+                    href="https://meet.google.com/new"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Opens a new Google Meet room — copy the link and paste it here"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium whitespace-nowrap transition-colors"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.277A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14v-4zM3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                    </svg>
+                    New Meet
+                  </a>
+                </div>
+                <p className="text-xs text-slate-400">Click "New Meet" to open Google Meet → copy the link → paste it above.</p>
               </div>
+
             </>
           )}
 

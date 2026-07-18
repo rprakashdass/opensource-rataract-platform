@@ -25,9 +25,19 @@ export default function EditMemberForm({ member }: { member: any }) {
     avatar: member.avatar || "",
     joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
   });
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     setLoading(true);
 
     try {
@@ -65,6 +75,8 @@ export default function EditMemberForm({ member }: { member: any }) {
                   value={formData.avatar}
                   onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
                   accept="image/*"
+                  context={{ kind: "members" }}
+                  onStatusChange={handleStatusChange}
                 />
               </div>
               <div className="space-y-1.5">
@@ -188,9 +200,9 @@ export default function EditMemberForm({ member }: { member: any }) {
             <Link href={`/admin/members/${member.id}`}>
               <Button type="button" variant="ghost" disabled={loading}>Cancel</Button>
             </Link>
-            <Button type="submit" disabled={loading} className="bg-brand hover:bg-brand-deep text-white gap-2 px-8">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save Changes
+            <Button type="submit" disabled={loading || activeUploads > 0} className="bg-brand hover:bg-brand-deep text-white gap-2 px-8">
+              {activeUploads > 0 ? <Loader2 className="w-4 h-4 animate-spin" /> : loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {activeUploads > 0 ? "Uploading..." : "Save Changes"}
             </Button>
           </div>
         </div>

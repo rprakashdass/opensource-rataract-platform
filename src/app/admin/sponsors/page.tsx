@@ -6,6 +6,8 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Landmark, Award } from "lucide-react";
 import { PageHeader } from "@/components/portal";
+import { getFundableCauses } from "@/features/sponsors/actions/getFundableCauses";
+import Link from "next/link";
 
 export default function AdminSponsorsPage() {
   const [activeTab, setActiveTab] = useState<"sponsors" | "packages">("sponsors");
@@ -19,6 +21,15 @@ export default function AdminSponsorsPage() {
   const [sponsorWebsite, setSponsorWebsite] = useState("");
   const [sponsorDesc, setSponsorDesc] = useState("");
   const [sponsorYear, setSponsorYear] = useState("");
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   // Packages states
   const [packages, setPackages] = useState<any[]>([]);
@@ -29,10 +40,24 @@ export default function AdminSponsorsPage() {
   const [pkgImpactText, setPkgImpactText] = useState("");
   const [pkgDesc, setPkgDesc] = useState("");
 
+  const [causes, setCauses] = useState<any[]>([]);
+
   useEffect(() => {
     fetchSponsors();
     fetchPackages();
+    fetchCauses();
   }, []);
+
+  const fetchCauses = async () => {
+    try {
+      const res = await getFundableCauses();
+      if (res.success && res.causes) {
+        setCauses(res.causes);
+      }
+    } catch (err) {
+      console.error("Failed to load causes:", err);
+    }
+  };
 
   const fetchSponsors = async () => {
     try {
@@ -60,6 +85,7 @@ export default function AdminSponsorsPage() {
 
   const handleAddSponsor = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     if (!sponsorName.trim()) return;
     setIsSubmittingSponsor(true);
 
@@ -168,6 +194,51 @@ export default function AdminSponsorsPage() {
         description="Manage public patron organizations and scrollable campaign impact packages."
       />
 
+      {causes.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Causes Seeking Funding</h2>
+              <p className="text-sm text-slate-500">Active projects and events currently flagged to attract sponsors.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {causes.map((cause) => (
+              <div key={`${cause.causeType}-${cause.id}`} className="border border-slate-100 rounded-lg p-4 bg-slate-50 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-brand/10 text-brand">
+                      {cause.causeType}
+                    </span>
+                    <h3 className="font-semibold text-slate-900 truncate">{cause.title}</h3>
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Goal:</span>
+                      <span className="font-medium text-slate-900">{cause.sponsorshipGoal ? `₹${cause.sponsorshipGoal.toLocaleString()}` : "Not specified"}</span>
+                    </div>
+                    {cause.causeType === "EVENT" && cause.fundsRaised !== undefined && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Raised:</span>
+                        <span className="font-medium text-emerald-600">{cause.fundsRaised ? `₹${cause.fundsRaised.toLocaleString()}` : "₹0"}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-200 flex justify-end">
+                  <Link 
+                    href={cause.causeType === "PROJECT" ? `/admin/projects/${cause.id}` : `/admin/events/${cause.id}`}
+                    className="text-xs font-semibold text-brand hover:text-brand-deep"
+                  >
+                    Manage settings &rarr;
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Tabs Menu */}
       <div className="flex flex-wrap border-b border-slate-200/80">
         <button
@@ -245,13 +316,13 @@ export default function AdminSponsorsPage() {
                 
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Sponsor Logo</label>
-                  <FileUpload value={sponsorLogo} onChange={setSponsorLogo} accept="image/*" />
+                  <FileUpload value={sponsorLogo} onChange={setSponsorLogo} accept="image/*" context={{ kind: "sponsors" }} onStatusChange={handleStatusChange} />
                 </div>
               </div>
               
               <div className="flex justify-end pt-2 border-t">
-                <Button type="submit" disabled={isSubmittingSponsor}>
-                  {isSubmittingSponsor ? "Saving..." : "Save Sponsor"}
+                <Button type="submit" disabled={isSubmittingSponsor || activeUploads > 0}>
+                  {activeUploads > 0 ? "Uploading..." : isSubmittingSponsor ? "Saving..." : "Save Sponsor"}
                 </Button>
               </div>
             </form>

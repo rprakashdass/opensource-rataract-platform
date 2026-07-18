@@ -17,6 +17,15 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
     avatar: member.avatar || "",
     showOnWebsite: member.showOnWebsite || false,
   });
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -24,6 +33,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeUploads > 0) return;
     setLoading(true);
     try {
       const res = await fetch("/api/member/profile", {
@@ -50,6 +60,8 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
           value={formData.avatar}
           onChange={(url) => setFormData(prev => ({ ...prev, avatar: url }))}
           accept="image/*"
+          context={{ kind: "members" }}
+          onStatusChange={handleStatusChange}
         />
       </div>
 
@@ -160,10 +172,10 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || activeUploads > 0}
           className="rounded-md bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50 transition motion-button"
         >
-          {loading ? "Saving..." : "Save Changes"}
+          {activeUploads > 0 ? "Uploading..." : loading ? "Saving..." : "Save Changes"}
         </button>
       </div>
     </form>

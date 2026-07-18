@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useOptimistic, startTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Clock, FileText, CheckCircle2, Ban, Loader2, AlertTriangle, AlertCircle } from "lucide-react";
@@ -22,8 +21,17 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
   const [isVoiding, setIsVoiding] = useState(false);
   const [voidReason, setVoidReason] = useState("");
 
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(
+    transaction.status,
+    (state, newStatus: string) => newStatus
+  );
+
   const handleStatusUpdate = async (newStatus: "APPROVED" | "REJECTED") => {
     setLoading(true);
+    startTransition(() => {
+      setOptimisticStatus(newStatus);
+    });
+    
     try {
       const res = await updateTransactionStatus(transaction.id, newStatus);
       if (res.error) throw new Error(res.error);
@@ -31,6 +39,10 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to update status");
+      // Fallback to actual state
+      startTransition(() => {
+        setOptimisticStatus(transaction.status);
+      });
     } finally {
       setLoading(false);
     }
@@ -42,6 +54,9 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
       return;
     }
     setLoading(true);
+    startTransition(() => {
+      setOptimisticStatus("VOIDED");
+    });
     try {
       const res = await voidTransaction(transaction.id, voidReason);
       if (res.error) throw new Error(res.error);
@@ -50,6 +65,9 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to void transaction");
+      startTransition(() => {
+        setOptimisticStatus(transaction.status);
+      });
     } finally {
       setLoading(false);
     }
@@ -68,12 +86,12 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
         actions={
           <>
             <span className={`px-3 py-1 rounded-full text-sm font-bold border ${
-              transaction.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-              transaction.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-              transaction.status === 'VOIDED' ? 'bg-slate-100 text-slate-600 border-slate-300' :
+              optimisticStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+              optimisticStatus === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+              optimisticStatus === 'VOIDED' ? 'bg-slate-100 text-slate-600 border-slate-300' :
               'bg-amber-50 text-amber-700 border-amber-200'
             }`}>
-              {transaction.status.replace("_", " ")}
+              {optimisticStatus.replace("_", " ")}
             </span>
             <span className={`px-3 py-1 rounded-full text-sm font-bold border ${
               transaction.type === 'INCOME' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
@@ -84,7 +102,7 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
         }
       />
 
-      {transaction.status === "VOIDED" && (
+      {optimisticStatus === "VOIDED" && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Voided Transaction</AlertTitle>
@@ -196,7 +214,7 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
               <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {transaction.status === "PENDING_APPROVAL" && (
+              {optimisticStatus === "PENDING_APPROVAL" && (
                 <>
                   <Button 
                     onClick={() => handleStatusUpdate("APPROVED")} 
@@ -217,7 +235,7 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
                 </>
               )}
 
-              {transaction.status === "APPROVED" && !isVoiding && (
+              {optimisticStatus === "APPROVED" && !isVoiding && (
                 <Button 
                   onClick={() => setIsVoiding(true)}
                   variant="outline"

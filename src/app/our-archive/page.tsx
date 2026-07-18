@@ -3,19 +3,18 @@ import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { PageIntro, EmptyState } from "@/components/ui/public/v2";
 import { CmsText } from "@/components/cms/CmsText";
 import ArchiveTimeline from "./_components/ArchiveTimeline";
+import { draftMode } from "next/headers";
+
+export const revalidate = 300;
 
 interface ArchiveCopy {
   archiveTitle?: string | null;
   archiveSubtitle?: string | null;
 }
 
-export default async function OurArchivePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ preview?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const isPreview = resolvedParams?.preview === "true";
+export default async function OurArchivePage() {
+  const draft = await draftMode();
+  const isPreview = draft.isEnabled;
 
   const data: any = await getPublicMilestones();
 

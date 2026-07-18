@@ -10,6 +10,9 @@ interface PartnerCTAButtonProps {
   clubName: string;
   subject: string;
   className?: string;
+  causeType?: "PROJECT" | "EVENT";
+  causeId?: string;
+  causeName?: string;
   children: React.ReactNode;
 }
 
@@ -23,6 +26,9 @@ export default function PartnerCTAButton({
   clubName,
   subject,
   className,
+  causeType,
+  causeId,
+  causeName,
   children
 }: PartnerCTAButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +69,9 @@ export default function PartnerCTAButton({
         ...formData,
         subject,
         contactEmail,
-        clubName
+        clubName,
+        causeType,
+        causeId
       });
 
       if (res.error) {
@@ -122,8 +130,10 @@ export default function PartnerCTAButton({
                     Your note is on its way.
                   </h3>
                   <p className="text-sm text-ink-soft leading-relaxed">
-                    Thank you for reaching out. Our relations team has been notified and we will
-                    follow up with our sponsorship deck within 24 hours.
+                    {causeName 
+                      ? `Thanks for your interest in supporting ${causeName}. Our relations team has been notified and we will follow up with our sponsorship deck within 24 hours.`
+                      : "Thank you for reaching out. Our relations team has been notified and we will follow up with our sponsorship deck within 24 hours."
+                    }
                   </p>
                 </div>
                 <button

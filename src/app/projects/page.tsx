@@ -1,3 +1,4 @@
+export const revalidate = 300;
 import { getPublicProjects } from "@/features/public/queries/getPublicProjects";
 import { getCurrentClub } from "@/lib/club";
 import { getOrCreateWebsiteSettings } from "@/features/public/queries/getOrCreateWebsiteSettings";
@@ -5,6 +6,7 @@ import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import React, { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CmsText } from "@/components/cms/CmsText";
+import { draftMode } from "next/headers";
 import {
   RevealBlock,
   Eyebrow,
@@ -53,13 +55,9 @@ function ProjectsGridSkeleton() {
   );
 }
 
-export default async function ProjectsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ preview?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const isPreview = resolvedParams?.preview === "true";
+export default async function ProjectsPage() {
+  const draft = await draftMode();
+  const isPreview = draft.isEnabled;
 
   const club = await getCurrentClub();
   const settings = club ? await getOrCreateWebsiteSettings(club.id) : null;
@@ -91,7 +89,7 @@ export default async function ProjectsPage({
 async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
   const data = await getPublicProjects();
 
-  if (data.error) {
+  if ("error" in data && data.error) {
     return (
       <section className="py-24 bg-paper">
         <MaxWidthWrapper>
@@ -104,9 +102,10 @@ async function ProjectsGrid({ isPreview }: { isPreview: boolean }) {
     );
   }
 
-  const activeProjects = data.activeProjects || [];
-  const completedProjects = data.completedProjects || [];
-  const copy: ProjectsCopy = data.settings || {};
+  const projectsData = data as any;
+  const activeProjects: any[] = projectsData.activeProjects || [];
+  const completedProjects: any[] = projectsData.completedProjects || [];
+  const copy: ProjectsCopy = projectsData.settings || {};
 
   const flagship = activeProjects[0];
   const restActive = activeProjects.slice(1);

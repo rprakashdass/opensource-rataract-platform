@@ -25,10 +25,19 @@ export default function HomepageEditorForm({
   const [loading, setLoading] = useState(false);
   const previewRef = useRef<CmsPreviewFrameHandle>(null);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   // States
   const [localSettings, setLocalSettings] = useState<any>({
-    primaryColor: settings.primaryColor || "#F7A800",
+    primaryColor: settings.primaryColor || "#D41367",
     secondaryColor: settings.secondaryColor || "#003DA5",
     accentColor: settings.accentColor || "#FAF9F6",
     darkColor: settings.darkColor || "#0B132B",
@@ -53,30 +62,6 @@ export default function HomepageEditorForm({
     sponsorsCTA: settings.sponsorsCTA || "",
     sponsorsCTALink: settings.sponsorsCTALink || "",
     sponsorsImageUrl: settings.sponsorsImageUrl || "",
-    galleryTitle: settings.galleryTitle || "",
-    gallerySubtitle: settings.gallerySubtitle || "",
-    galleryCTA: settings.galleryCTA || "",
-    galleryCTALink: settings.galleryCTALink || "",
-    eventsTitle: settings.eventsTitle || "",
-    eventsRegisterCTA: settings.eventsRegisterCTA || "",
-    eventsEmptyTitle: settings.eventsEmptyTitle || "",
-    projectsEmptyTitle: settings.projectsEmptyTitle || "",
-    projectsEmptyDesc: settings.projectsEmptyDesc || "",
-    footerDescription: settings.footerDescription || "",
-    footerSocials: (settings.footerSocials as any) || { twitter: "", instagram: "", facebook: "", linkedin: "" },
-    footerQuickLinks: (settings.footerQuickLinks as any[]) || [],
-    aboutEyebrow: settings.aboutEyebrow || "",
-    noticeboardEyebrow: settings.noticeboardEyebrow || "",
-    noticeboardTitle: settings.noticeboardTitle || "",
-    teamEyebrow: settings.teamEyebrow || "",
-    teamTitle: settings.teamTitle || "",
-    teamSubtitle: settings.teamSubtitle || "",
-    teamLeadershipTitle: settings.teamLeadershipTitle || "",
-    teamMembersTitle: settings.teamMembersTitle || "",
-    teamJoinCTA: settings.teamJoinCTA || "",
-    teamJoinCTALink: settings.teamJoinCTALink || "",
-    seoTitle: settings.seoTitle || "",
-    seoDescription: settings.seoDescription || "",
   });
 
   const [sections, setSections] = useState<HomepageSectionConfig[]>(() =>
@@ -462,13 +447,14 @@ export default function HomepageEditorForm({
                           </button>
                           <FileUpload
                             value={image}
-                            onChange={url => {
-                              const updated = [...localSettings.heroImages];
-                              updated[idx] = url;
-                              handleSettingChange("heroImages", updated.filter(Boolean));
+                            onChange={(url) => {
+                              const newImages = [...localSettings.heroImages];
+                              newImages[idx] = url;
+                              handleSettingChange("heroImages", newImages);
                             }}
                             accept="image/*"
-                            albumTitle="Homepage"
+                            context={{ kind: "website" }}
+                            onStatusChange={handleStatusChange}
                           />
                         </div>
                       ))}
@@ -487,7 +473,7 @@ export default function HomepageEditorForm({
               </div>
 
               {/* PRESIDENT'S MESSAGE COPY */}
-              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("president")}>
+              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("president-message")}>
                 <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">President's Message</h4>
                 
                 <div className="p-3.5 bg-amber-50 border border-amber-200/60 rounded-xl text-xs text-amber-800 space-y-1">
@@ -495,14 +481,6 @@ export default function HomepageEditorForm({
                   <p>The President's Name and Photo are automatically pulled from the active President assigned in <span className="font-semibold">Board Management</span>, avoiding redundant schema configurations.</p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Eyebrow Label</label>
-                  <Input
-                    value={localSettings.aboutEyebrow}
-                    onChange={e => handleSettingChange("aboutEyebrow", e.target.value)}
-                    placeholder="e.g. A Word From Our President"
-                  />
-                </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">President message body</label>
                   <Textarea
@@ -524,9 +502,10 @@ export default function HomepageEditorForm({
                   <label className="block text-xs font-bold text-slate-500 mb-1">Signature Image</label>
                   <FileUpload
                     value={localSettings.presSignature}
-                    onChange={url => handleSettingChange("presSignature", url)}
+                    onChange={(url) => handleSettingChange("presSignature", url)}
                     accept="image/*"
-                    albumTitle="Homepage"
+                    context={{ kind: "website" }}
+                    onStatusChange={handleStatusChange}
                   />
                 </div>
               </div>
@@ -581,216 +560,10 @@ export default function HomepageEditorForm({
                   <label className="block text-xs font-bold text-slate-500 mb-1">Photo</label>
                   <FileUpload
                     value={localSettings.sponsorsImageUrl}
-                    onChange={url => handleSettingChange("sponsorsImageUrl", url)}
+                    onChange={(url) => handleSettingChange("sponsorsImageUrl", url)}
                     accept="image/*"
-                    albumTitle="Homepage"
-                  />
-                </div>
-              </div>
-
-              {/* STATIC PAGES TEXT OVERRIDES */}
-              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4">
-                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Public Pages Texts</h4>
-                <p className="text-xs text-slate-400 -mt-2">
-                  About page story, mission, and vision text now live in the dedicated{" "}
-                  <a href="/admin/website/about" className="text-brand hover:underline font-semibold">About Page Editor</a>.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Eyebrow</label>
-                    <Input
-                      value={localSettings.teamEyebrow}
-                      onChange={e => handleSettingChange("teamEyebrow", e.target.value)}
-                      placeholder="e.g. Our People"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Title</label>
-                    <Input
-                      value={localSettings.teamTitle}
-                      onChange={e => handleSettingChange("teamTitle", e.target.value)}
-                      placeholder="e.g. Meet the Team"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Subtitle</label>
-                  <Textarea
-                    value={localSettings.teamSubtitle}
-                    onChange={e => handleSettingChange("teamSubtitle", e.target.value)}
-                    placeholder="We are a community of young leaders..."
-                    rows={2}
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Board Section Title</label>
-                    <Input
-                      value={localSettings.teamLeadershipTitle}
-                      onChange={e => handleSettingChange("teamLeadershipTitle", e.target.value)}
-                      placeholder="e.g. Our Board"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Members Section Title</label>
-                    <Input
-                      value={localSettings.teamMembersTitle}
-                      onChange={e => handleSettingChange("teamMembersTitle", e.target.value)}
-                      placeholder="e.g. Our Members"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Join Button Text</label>
-                    <Input
-                      value={localSettings.teamJoinCTA}
-                      onChange={e => handleSettingChange("teamJoinCTA", e.target.value)}
-                      placeholder="e.g. Become a Member"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Team Page Join Button Link</label>
-                    <Input
-                      value={localSettings.teamJoinCTALink}
-                      onChange={e => handleSettingChange("teamJoinCTALink", e.target.value)}
-                      placeholder="e.g. /join"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* HOMEPAGE NOTICE BOARD LABELS */}
-              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("events_news")}>
-                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Homepage Notice Board</h4>
-                <p className="text-xs text-slate-400 -mt-2">Labels for the announcements column inside the "Events & Notice Board" homepage section.</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Eyebrow Label</label>
-                    <Input
-                      value={localSettings.noticeboardEyebrow}
-                      onChange={e => handleSettingChange("noticeboardEyebrow", e.target.value)}
-                      placeholder="e.g. Stay Updated"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Column Title</label>
-                    <Input
-                      value={localSettings.noticeboardTitle}
-                      onChange={e => handleSettingChange("noticeboardTitle", e.target.value)}
-                      placeholder="e.g. Notice Board"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* FOOTER PITCH */}
-              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4" onFocus={() => setActiveSection("footer")}>
-                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">Footer Setup</h4>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Footer Biography / Mission Pitch</label>
-                  <Textarea
-                    value={localSettings.footerDescription}
-                    onChange={e => handleSettingChange("footerDescription", e.target.value)}
-                    placeholder="RAC Coimbatore Nexus empowers students and young professionals..."
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Twitter / X URL</label>
-                    <Input
-                      value={localSettings.footerSocials?.twitter || ""}
-                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, twitter: e.target.value })}
-                      placeholder="https://x.com/..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Instagram URL</label>
-                    <Input
-                      value={localSettings.footerSocials?.instagram || ""}
-                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, instagram: e.target.value })}
-                      placeholder="https://instagram.com/..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Facebook URL</label>
-                    <Input
-                      value={localSettings.footerSocials?.facebook || ""}
-                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, facebook: e.target.value })}
-                      placeholder="https://facebook.com/..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">LinkedIn URL</label>
-                    <Input
-                      value={localSettings.footerSocials?.linkedin || ""}
-                      onChange={e => handleSettingChange("footerSocials", { ...localSettings.footerSocials, linkedin: e.target.value })}
-                      placeholder="https://linkedin.com/..."
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Footer Quick Links</label>
-                  {(localSettings.footerQuickLinks || []).map((link: { label: string; url: string }, idx: number) => (
-                    <div key={idx} className="grid grid-cols-[1fr_1fr_auto] gap-2">
-                      <Input
-                        value={link.label}
-                        onChange={e => {
-                          const updated = [...localSettings.footerQuickLinks];
-                          updated[idx] = { ...updated[idx], label: e.target.value };
-                          handleSettingChange("footerQuickLinks", updated);
-                        }}
-                        placeholder="Label"
-                      />
-                      <Input
-                        value={link.url}
-                        onChange={e => {
-                          const updated = [...localSettings.footerQuickLinks];
-                          updated[idx] = { ...updated[idx], url: e.target.value };
-                          handleSettingChange("footerQuickLinks", updated);
-                        }}
-                        placeholder="/some-path"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleSettingChange("footerQuickLinks", localSettings.footerQuickLinks.filter((_: any, i: number) => i !== idx))}
-                      >
-                        <Trash2 className="w-4 h-4 text-rose-500" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSettingChange("footerQuickLinks", [...(localSettings.footerQuickLinks || []), { label: "", url: "" }])}
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Link
-                  </Button>
-                </div>
-              </div>
-
-              {/* SEO */}
-              <div className="bg-slate-50/50 p-5 border border-slate-100 rounded-2xl space-y-4">
-                <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide border-b border-slate-200 pb-2">SEO</h4>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Site Title (browser tab / search results)</label>
-                  <Input
-                    value={localSettings.seoTitle}
-                    onChange={e => handleSettingChange("seoTitle", e.target.value)}
-                    placeholder="Defaults to app name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Site Description (search results)</label>
-                  <Textarea
-                    value={localSettings.seoDescription}
-                    onChange={e => handleSettingChange("seoDescription", e.target.value)}
-                    placeholder="A short description shown in search engine results"
-                    rows={2}
+                    context={{ kind: "website" }}
+                    onStatusChange={handleStatusChange}
                   />
                 </div>
               </div>
@@ -870,15 +643,15 @@ export default function HomepageEditorForm({
           >
             Visit Live Site <ExternalLink className="w-3.5 h-3.5" />
           </a>
-          <Button onClick={handleSave} disabled={loading} className="rounded-xl px-6 bg-brand hover:bg-brand-deep text-white">
-            {loading ? "Saving Changes..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
+          <Button onClick={handleSave} disabled={loading || activeUploads > 0} className="rounded-xl px-8 hidden md:flex h-11">
+            {activeUploads > 0 ? "Uploading..." : loading ? "Saving Changes..." : "Save Changes"} <Save className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </div>
 
       <CmsPreviewFrame
         ref={previewRef}
-        previewUrl="/?preview=true"
+        previewUrl="/api/draft/enable?path=/"
         channel="homepage"
         payload={{ settings: settingsPayload, metrics: localMetrics }}
         scrollTo={activeSection}

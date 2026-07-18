@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from './button';
-import { UploadCloud, FileText, FileImage, File as FileIcon, X, CheckCircle2, Loader2, Eye } from 'lucide-react';
+import { UploadCloud, FileText, FileImage, File as FileIcon, X, CheckCircle2, Loader2, Eye, Pencil } from 'lucide-react';
 import { uploadDocument } from '@/features/documents/actions/uploadDocument';
 import { DocumentType } from '@prisma/client';
 
@@ -14,6 +14,8 @@ interface DocumentUploadProps {
   linkedEntityType?: string;
   linkedEntityId?: string;
   label?: string;
+  title?: string;
+  onTitleChange?: (title: string) => void;
 }
 
 function getFileIcon(fileName: string) {
@@ -46,6 +48,8 @@ export function DocumentUpload({
   linkedEntityType,
   linkedEntityId,
   label,
+  title: titleProp,
+  onTitleChange,
 }: DocumentUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -113,68 +117,25 @@ export function DocumentUpload({
 
   // ─── Uploaded state ───────────────────────────────────────────────────────
   if (value && !isUploading) {
-    const fileName = getFileLabel(value);
-    const ext = fileName.split('.').pop()?.toLowerCase();
+    const rawFileName = getFileLabel(value);
+    const ext = rawFileName.split('.').pop()?.toLowerCase();
     const isPdf = ext === 'pdf';
 
-    return (
-      <div className="rounded-xl border border-green-200 bg-green-50 overflow-hidden">
-        {/* Header row */}
-        <div className="flex items-center gap-3 p-3">
-          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-green-100 flex items-center justify-center shadow-sm">
-            {getFileIcon(fileName)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-800 truncate">{fileName}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                <CheckCircle2 className="h-3 w-3" /> Uploaded
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {isPdf && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-slate-500 hover:text-slate-700"
-                onClick={() => window.open(value, '_blank')}
-                title="Preview PDF"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-red-500"
-              onClick={clearFile}
-              title="Remove file"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        {/* Change file strip */}
-        <div
-          className="px-3 py-2 bg-white border-t border-green-100 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-colors"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <UploadCloud className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-xs text-slate-500">Click to replace file</span>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept={accept}
-          />
-        </div>
-      </div>
-    );
+    return <UploadedFile
+      value={value}
+      rawFileName={rawFileName}
+      isPdf={isPdf}
+      titleProp={titleProp}
+      onTitleChange={onTitleChange}
+      onClear={clearFile}
+      onReplace={() => fileInputRef.current?.click()}
+      fileInputRef={fileInputRef}
+      accept={accept}
+      onFileChange={handleFileChange}
+    />;
   }
+
+
 
   // ─── Uploading state ──────────────────────────────────────────────────────
   if (isUploading && file) {
@@ -237,6 +198,142 @@ export function DocumentUpload({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
+          className="hidden"
+          accept={accept}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Uploaded file sub-component (with inline title editing) ─────────────────
+function UploadedFile({
+  value,
+  rawFileName,
+  isPdf,
+  titleProp,
+  onTitleChange,
+  onClear,
+  onReplace,
+  fileInputRef,
+  accept,
+  onFileChange,
+}: {
+  value: string;
+  rawFileName: string;
+  isPdf: boolean;
+  titleProp?: string;
+  onTitleChange?: (t: string) => void;
+  onClear: () => void;
+  onReplace: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  accept?: string;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const displayName = titleProp || rawFileName;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(displayName);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startEdit = () => {
+    setDraft(displayName);
+    setEditing(true);
+    setTimeout(() => { inputRef.current?.select(); }, 0);
+  };
+
+  const confirm = () => {
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== displayName) {
+      onTitleChange?.(trimmed);
+    }
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setDraft(displayName);
+    setEditing(false);
+  };
+
+  return (
+    <div className="rounded-xl border border-green-200 bg-green-50 overflow-hidden">
+      {/* Header row */}
+      <div className="flex items-center gap-3 p-3">
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-green-100 flex items-center justify-center shadow-sm">
+          {getFileIcon(rawFileName)}
+        </div>
+        <div className="flex-1 min-w-0">
+          {editing ? (
+            <input
+              ref={inputRef}
+              autoFocus
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={confirm}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); confirm(); }
+                if (e.key === 'Escape') cancel();
+              }}
+              className="w-full text-sm font-semibold text-slate-800 bg-white border border-brand rounded px-2 py-0.5 outline-none focus:ring-1 focus:ring-brand"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={startEdit}
+              title="Click to rename"
+              className="group flex items-center gap-1.5 max-w-full text-left"
+            >
+              <span className="text-sm font-semibold text-slate-800 truncate group-hover:text-brand transition-colors">
+                {displayName}
+              </span>
+              <Pencil className="h-3 w-3 text-slate-400 group-hover:text-brand flex-shrink-0 transition-colors" />
+            </button>
+          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+              <CheckCircle2 className="h-3 w-3" /> Uploaded
+            </span>
+            {!editing && (
+              <span className="text-[10px] text-slate-400">click name to rename</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          {isPdf && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-500 hover:text-slate-700"
+              onClick={() => window.open(value, '_blank')}
+              title="Preview PDF"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-slate-400 hover:text-red-500"
+            onClick={onClear}
+            title="Remove file"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      {/* Change file strip */}
+      <div
+        className="px-3 py-2 bg-white border-t border-green-100 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition-colors"
+        onClick={onReplace}
+      >
+        <UploadCloud className="h-3.5 w-3.5 text-slate-400" />
+        <span className="text-xs text-slate-500">Click to replace file</span>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={onFileChange}
           className="hidden"
           accept={accept}
         />

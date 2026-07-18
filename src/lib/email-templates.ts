@@ -30,9 +30,19 @@ export function renderHtmlLayout({
   const clubAddress = club?.address || "";
   const currentYear = new Date().getFullYear();
 
-  const logoHeader = logoUrl
-    ? `<img src="${logoUrl}" alt="${clubName} Logo" style="height: 60px; max-height: 60px; width: auto; display: block; margin: 0 auto 16px auto;" />`
-    : `<div style="height: 60px; width: 60px; border-radius: 50%; background-color: ${primaryColor}10; color: ${primaryColor}; font-size: 24px; font-weight: bold; line-height: 60px; text-align: center; margin: 0 auto 16px auto;">${clubName.slice(0, 2).toUpperCase()}</div>`;
+  // Email clients can't resolve relative image paths — make the logo URL absolute.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const absoluteLogoUrl = logoUrl
+    ? logoUrl.startsWith("http")
+      ? logoUrl
+      : `${appUrl}${logoUrl.startsWith("/") ? "" : "/"}${logoUrl}`
+    : null;
+
+  // Fallback is a full wordmark, not a cryptic two-letter circle ("RO"),
+  // which reads as a broken element when the logo is missing.
+  const logoHeader = absoluteLogoUrl
+    ? `<img src="${absoluteLogoUrl}" alt="${clubName}" style="height: 60px; max-height: 60px; width: auto; display: block; margin: 0 auto 16px auto;" />`
+    : `<div style="font-size: 20px; font-weight: 900; letter-spacing: 0.18em; color: ${primaryColor}; text-transform: uppercase; margin: 0 auto 16px auto;">Rotaract</div>`;
 
   return `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -132,10 +142,15 @@ function renderDetailRow(label: string, value: string | null | undefined, isLink
     ? `<a href="${value}" style="color: #D41367; font-weight: bold; text-decoration: underline;">Join / View Link</a>`
     : value;
 
+  // Label stacked ABOVE value (not side-by-side columns): a fixed label
+  // column squeezes the value into one-word-per-line wrapping on narrow
+  // phone screens, and email clients can't be trusted with media queries.
   return `
     <tr>
-      <td valign="top" style="padding: 10px 16px 10px 0; font-size: 14px; font-weight: bold; color: #D41367; width: 110px;">${label}:</td>
-      <td valign="top" style="padding: 10px 0; font-size: 14px; color: #1F2937; font-weight: 600;">${displayVal}</td>
+      <td style="padding: 8px 0;">
+        <span style="display: block; font-size: 11px; font-weight: bold; color: #D41367; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">${label}</span>
+        <span style="display: block; font-size: 15px; color: #1F2937; font-weight: 600; line-height: 1.4;">${displayVal}</span>
+      </td>
     </tr>
   `;
 }
@@ -227,6 +242,31 @@ export function getAnnouncementHtml(ann: any, club: any, additionalHtml: string 
     `;
   }
 
+  // Google Calendar "Add to Calendar" link — always shown when there's a date.
+  // This is the guaranteed way to let recipients save the event, regardless of
+  // how their email client handles the .ics attachment.
+  let googleCalBlock = "";
+  if (ann.startDate) {
+    const gStart = new Date(ann.startDate);
+    const gEnd = ann.endDate ? new Date(ann.endDate) : new Date(gStart.getTime() + 60 * 60 * 1000);
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const calLocation = ann.meetingLink || ann.location || "";
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+      + `&text=${encodeURIComponent(ann.title)}`
+      + `&dates=${fmt(gStart)}/${fmt(gEnd)}`
+      + `&details=${encodeURIComponent(ann.description || ann.title)}`
+      + (calLocation ? `&location=${encodeURIComponent(calLocation)}` : "");
+
+    googleCalBlock = `
+      <div style="text-align: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid #F3F4F6;">
+        <a href="${gcalUrl}" target="_blank" rel="noopener noreferrer"
+           style="display: inline-flex; align-items: center; gap: 6px; color: #4285F4; font-size: 13px; font-weight: 700; text-decoration: none;">
+          📅 Add to Google Calendar
+        </a>
+      </div>
+    `;
+  }
+
   const cta = ann.meetingLink ? { label: "Join Meeting", url: ann.meetingLink } : undefined;
 
   return renderHtmlLayout({
@@ -237,6 +277,7 @@ export function getAnnouncementHtml(ann: any, club: any, additionalHtml: string 
       ${detailsBlock}
       ${notesHtml}
       ${attachmentsInfo}
+      ${googleCalBlock}
     `,
     cta,
   });

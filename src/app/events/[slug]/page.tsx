@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/public/v2";
 import type { ImpactMetric } from "@/components/ui/public/v2";
 
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const data = await getPublicEvent(resolvedParams.slug);
@@ -227,10 +229,26 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                     </div>
                     <div className="py-5 border-b border-hairline">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint mb-1.5">Where</p>
-                      <p className="font-display font-medium text-lg text-ink leading-snug">
-                        {event.location || "Venue to be announced"}
-                      </p>
+                      {eventAny.meetingLink ? (
+                        <div className="space-y-2">
+                          <p className="font-display font-medium text-lg text-ink leading-snug">Online</p>
+                          <a
+                            href={eventAny.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline"
+                          >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 10l4.553-2.277A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14v-4zM3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+                            Join Meeting
+                          </a>
+                        </div>
+                      ) : (
+                        <p className="font-display font-medium text-lg text-ink leading-snug">
+                          {event.location || "Venue to be announced"}
+                        </p>
+                      )}
                     </div>
+
                   </div>
                 </RevealBlock>
 

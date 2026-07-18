@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import { getOrCreateWebsiteSettings } from "@/features/public/queries/getOrCreateWebsiteSettings";
 import JoinClientWrapper from "./_components/JoinClientWrapper";
 
-export default async function JoinPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ preview?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const isPreview = resolvedParams?.preview === "true";
+import { draftMode } from "next/headers";
+
+export const revalidate = 300;
+
+export default async function JoinPage() {
+  
+  const draft = await draftMode();
+  const isPreview = draft.isEnabled;
 
   const club = await getCurrentClub();
   if (!club) notFound();

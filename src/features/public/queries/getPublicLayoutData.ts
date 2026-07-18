@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
-const getCachedLayoutText = unstable_cache(
+const fetchPublicLayoutData = unstable_cache(
   async () => {
     const club = await getCurrentClub();
     if (!club) return null;
@@ -45,6 +46,7 @@ const getCachedLayoutText = unstable_cache(
         primaryColor: club.primaryColor,
         missionStatement: club.missionStatement,
         meetingVenue: club.meetingVenue,
+        logoUrl: club.logoUrl, // Moved inside cache
       },
       settings: websiteSettings,
       navigationItems: navigationItems.map((item: any) => ({
@@ -55,31 +57,16 @@ const getCachedLayoutText = unstable_cache(
       })),
     };
   },
-  ["public-layout-text-data"],
-  { tags: ["layout", "website-settings"], revalidate: 3600 }
+  ["public-layout-data"],
+  { tags: ["settings", "layout"], revalidate: 3600 }
 );
 
-export async function getPublicLayoutData() {
+// React cache() dedupes the request across components (like generateMetadata and Layout)
+export const getPublicLayoutData = cache(async () => {
   try {
-    const base = await getCachedLayoutText();
-    if (!base) return null;
-
-    // Fetch the logoUrl uncached to prevent exceeding Next.js Cache 2MB payload limits
-    const logoData = await prisma.club.findUnique({
-      where: { id: base.club.id },
-      select: { logoUrl: true }
-    });
-
-    return {
-      club: {
-        ...base.club,
-        logoUrl: logoData?.logoUrl || null,
-      },
-      settings: base.settings,
-      navigationItems: base.navigationItems,
-    };
+    return await fetchPublicLayoutData();
   } catch (error) {
     console.error("Failed to get layout data", error);
     return null;
   }
-}
+});

@@ -181,7 +181,7 @@ export default function MilestoneList({ initialMilestones, clubId }: { initialMi
 
       <CmsPreviewFrame
         ref={previewRef}
-        previewUrl="/about?preview=true"
+        previewUrl="/api/draft/enable?path=/about"
         channel="about"
         scrollTo="about-milestones"
         payload={{ milestones }}

@@ -16,8 +16,8 @@ import {
   QuietLink,
   EditorialImage,
   StoryCard,
-  VoiceBlock,
   ImpactBand,
+  ThadamCreed,
   ListRow,
   InvitePanel,
   EmptyState,
@@ -48,6 +48,7 @@ export default function HomeClientWrapper({
   featuredProjects,
   upcomingEvents,
   latestUpdates,
+  featuredUpdates,
   isPreview,
   fallbackImpact,
 }: {
@@ -56,6 +57,7 @@ export default function HomeClientWrapper({
   featuredProjects: any[];
   upcomingEvents: any[];
   latestUpdates: any[];
+  featuredUpdates: any[];
   isPreview: boolean;
   fallbackImpact: { members: number; projects: number; hours: number; events: number };
 }) {
@@ -75,7 +77,7 @@ export default function HomeClientWrapper({
   const rawHeroImages = (settings?.heroImages as string[]) || [];
   const heroImages = rawHeroImages.filter(Boolean);
   const isAutoScroll = settings?.heroScrollAuto !== false;
-  const intervalSeconds = settings?.heroScrollInterval || 5;
+  const intervalSeconds = settings?.heroScrollInterval || 10;
 
   React.useEffect(() => {
     if (heroImages.length <= 1 || !isAutoScroll) return;
@@ -95,7 +97,7 @@ export default function HomeClientWrapper({
   const tenure = club.tenureYear || "2026–27";
 
   return (
-    <main className="min-h-screen bg-paper font-body text-ink flex flex-col overflow-x-hidden">
+    <main className="min-h-screen bg-paper font-body text-ink flex flex-col overflow-x-clip">
       {isPreview && (
         <style
           dangerouslySetInnerHTML={{
@@ -115,11 +117,11 @@ export default function HomeClientWrapper({
           switch (sec.id) {
             /* ── ACT 1 · AWARENESS — full-bleed hero, real members ── */
             case "hero": {
-              const heroHeadline = settings?.heroHeadline || "We're the ones who show up.";
+              const heroHeadline = settings?.heroHeadline || "We don't wait for the world to fix itself.";
               const heroSubtitle =
                 settings?.heroSubtitle ||
                 club.missionStatement ||
-                "Students and young professionals serving the city we call home.";
+                "A collective of professionals building the future of our community, one project at a time.";
               const heroCTA = settings?.heroCTA || "Join us";
               const heroCTALink = settings?.heroCTALink || "/join";
               const heroSecCTA = settings?.heroSecondaryCTA || "See our work";
@@ -129,7 +131,7 @@ export default function HomeClientWrapper({
               const lines = balanceLines(heroHeadline);
 
               return (
-                <section key="hero" className="relative min-h-[92vh] flex items-end bg-chapter" data-thadam-dark aria-label="Homepage hero">
+                <section key="hero" className="relative min-h-[85vh] md:min-h-[90vh] flex flex-col justify-end bg-chapter" data-thadam-dark aria-label="Homepage hero">
                   {heroImages.length > 0 && (
                     <div className="absolute inset-0 z-0 w-full h-full overflow-hidden">
                       {heroImages.map((imgUrl, idx) => {
@@ -139,9 +141,8 @@ export default function HomeClientWrapper({
                         return (
                           <div
                             key={imgUrl}
-                            className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-                              isActive ? "opacity-100" : "opacity-0"
-                            }`}
+                            className={`absolute inset-0 w-full h-full transition-opacity duration-[3000ms] ease-in-out ${isActive ? "opacity-100" : "opacity-0"
+                              }`}
                           >
                             <Image
                               src={directLink}
@@ -154,26 +155,17 @@ export default function HomeClientWrapper({
                           </div>
                         );
                       })}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[rgba(26,10,18,0.72)] via-[rgba(26,10,18,0.18)] to-[rgba(26,10,18,0.22)]" />
+                      <div className="absolute inset-0 bg-ink/70" />
                     </div>
                   )}
-                  {heroImages.length > 1 && (
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                      {heroImages.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentSlide(idx)}
-                          className={`h-1.5 rounded-full transition-all duration-300 ${
-                            idx === activeSlideIndex ? "w-6 bg-parchment" : "w-1.5 bg-parchment/40 hover:bg-parchment/70"
-                          }`}
-                          aria-label={`Go to slide ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <MaxWidthWrapper className="relative z-10 pb-16 md:pb-24 pt-44 w-full">
+                  <MaxWidthWrapper className="relative z-10 pt-32 md:pt-40 pb-16 md:pb-24 w-full">
                     <div className="max-w-4xl">
                       <h1 className="font-display font-medium text-parchment tracking-[-0.02em] leading-[1.02] text-[clamp(2.6rem,7vw,5.5rem)]">
+                        {club.themeName && (
+                          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-gold mb-6">
+                            Theme 2026: {club.themeName}
+                          </span>
+                        )}
                         <RevealLines lines={lines} />
                       </h1>
                       {heroSubtitle && (
@@ -189,10 +181,45 @@ export default function HomeClientWrapper({
                           </QuietLink>
                         )}
                       </RevealBlock>
-                      <RevealBlock delay={0.65} className="mt-12">
-                        <p className="text-[13px] font-medium text-parchment/50">
-                          Rotary Year {tenure} · Rotaract Club
-                        </p>
+                    </div>
+                  </MaxWidthWrapper>
+                </section>
+              );
+            }
+
+            /* ── ACT 1b · BELIEF — why we exist ── */
+            case "belief": {
+              const belief =
+                club.visionStatement ||
+                club.aboutSubtitle ||
+                "Leadership you practice. Friends you serve beside. A city that knows your club's name.";
+              const VALUES = [
+                { label: "We serve", line: "Community before self." },
+                { label: "We lead", line: "Leadership through action, not title." },
+                { label: "We grow", line: "Together, through service and learning." },
+              ];
+
+              return (
+                <section key="belief" className="py-20 md:py-28 bg-paper">
+                  <MaxWidthWrapper>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-12 items-start text-center lg:text-left">
+                      <div className="lg:col-span-7">
+                        <Statement eyebrow={`Why we exist`} className="max-w-none mx-auto lg:mx-0">
+                          {belief}
+                        </Statement>
+                      </div>
+                      <RevealBlock delay={0.15} className="lg:col-span-4 lg:col-start-9">
+                        <span aria-hidden="true" className="hidden lg:block text-xs mb-6 invisible select-none">
+                          &nbsp;
+                        </span>
+                        {VALUES.map((v, i) => (
+                          <div key={v.label} className={i > 0 ? "mt-5 pt-5 border-t border-hairline" : ""}>
+                            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-ink">
+                              {v.label}
+                            </span>
+                            <p className="mt-1.5 text-[14px] text-ink-soft leading-snug">{v.line}</p>
+                          </div>
+                        ))}
                       </RevealBlock>
                     </div>
                   </MaxWidthWrapper>
@@ -200,7 +227,7 @@ export default function HomeClientWrapper({
               );
             }
 
-            /* ── ACT 2 · BELIEF — why we exist, then the president's voice ── */
+            /* ── ACT 6 · THE LETTER (Manuscript Edition) ── */
             case "president": {
               const presName = president?.name || settings?.presName || "The President";
               const presPhoto = president?.avatar || settings?.presPhoto;
@@ -209,31 +236,77 @@ export default function HomeClientWrapper({
                 president?.websiteQuote ||
                 club.presidentMessage ||
                 "This year we walk further together — more hands, more service, more marks left on the city we love.";
-              const belief =
-                club.visionStatement ||
-                club.aboutSubtitle ||
-                "Leadership you practice. Friends you serve beside. A city that knows your club's name.";
 
               return (
-                <section key="president" className="py-24 md:py-36 bg-paper">
-                  <MaxWidthWrapper>
-                    <Statement eyebrow={settings?.aboutEyebrow || `Why we exist`}>{belief}</Statement>
-                    <RevealBlock delay={0.1} className="mt-10 flex flex-wrap gap-x-10 gap-y-2 text-ink-faint font-medium text-[15px]">
-                      <span>We serve</span>
-                      <span>We lead</span>
-                      <span>We grow</span>
+                <section key="president" id="president-message" className="scroll-mt-24 py-24 md:py-36 bg-paper border-t border-hairline/40">
+                  <MaxWidthWrapper className="max-w-[640px] mx-auto">
+                    <RevealBlock>
+                      {/* Dateline Header */}
+                      <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint border-b border-hairline/60 pb-4 mb-10">
+                        <span>Coimbatore</span>
+                        <span>Rotary Year {tenure}</span>
+                      </div>
+
+                      {/* Salutation */}
+                      <p className="font-statement text-lg md:text-xl font-medium text-ink/70 mb-6 italic">
+                        To our members, partners, and community—
+                      </p>
+
+                      {/* Letter Body (Natural Prose, no quotation marks) */}
+                      <div className="font-statement text-xl md:text-[22px] leading-[1.75] text-ink/90 font-normal space-y-6">
+                        <p>{presMessage}</p>
+                      </div>
+
+                      {/* Sign-off & Stamp */}
+                      <div className="mt-14 pt-8 border-t border-hairline/40 flex items-center justify-between pr-4 md:pr-6">
+                        {/* Left: Sign-off, Signature & Name */}
+                        <div>
+                          <p className="text-sm font-medium text-ink-soft mb-3 italic">In service,</p>
+                          
+                          {settings?.presSignature ? (
+                            <div className="relative w-36 h-12 mb-3">
+                              <Image
+                                src={getGoogleDriveDirectLink(settings.presSignature)}
+                                alt={`${presName} signature`}
+                                fill
+                                sizes="144px"
+                                className="object-contain object-left"
+                              />
+                            </div>
+                          ) : null}
+
+                          <p className="font-semibold text-base text-ink tracking-tight">{presName}</p>
+                          <p className="text-xs text-ink-faint mt-0.5 font-medium">
+                            {settings?.presQuote || "President"}, Rotaract Club of Coimbatore Nexus
+                          </p>
+                        </div>
+
+                        {/* Right: Author Stamp (Wax seal / press stamp portrait) */}
+                        {presPhoto && (
+                          <div className="w-16 h-16 md:w-[72px] md:h-[72px] relative rounded-full overflow-hidden ring-1 ring-border/60 bg-wash shrink-0">
+                            <Image
+                              src={getGoogleDriveDirectLink(presPhoto)}
+                              alt={presName}
+                              fill
+                              sizes="72px"
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </RevealBlock>
-                    <TrailRule className="my-16 md:my-20 max-w-3xl" />
-                    <VoiceBlock
-                      eyebrow={`From the President · ${tenure}`}
-                      quote={presMessage}
-                      name={presName}
-                      role={settings?.presQuote || club.name}
-                      photoUrl={presPhoto}
-                      signatureUrl={settings?.presSignature}
-                    />
                   </MaxWidthWrapper>
                 </section>
+              );
+            }
+
+            /* ── ACT 2b · ETHOS — the year's theme, decomposed on scroll ── */
+            case "thadam": {
+              return (
+                <ThadamCreed
+                  key="thadam"
+                  eyebrow={settings?.thadamEyebrow || `The theme for ${tenure}`}
+                />
               );
             }
 
@@ -242,12 +315,18 @@ export default function HomeClientWrapper({
               const customMetrics: ImpactMetric[] =
                 metrics && metrics.length > 0
                   ? metrics
-                      .map((m: any) => ({
-                        value: Number(String(m.value).replace(/[^\d.]/g, "")) || 0,
+                    .map((m: any) => {
+                      // Stored field is `number` (WebsiteMetric.number); the
+                      // editor and query both use it. Tolerate `value` too in
+                      // case any older preview payload sends it.
+                      const raw = String(m.number ?? m.value ?? "");
+                      return {
+                        value: Number(raw.replace(/[^\d.]/g, "")) || 0,
                         label: m.label,
-                        suffix: /\+\s*$/.test(String(m.value)) ? "+" : undefined,
-                      }))
-                      .filter((m: ImpactMetric) => m.value > 0)
+                        suffix: /\+\s*$/.test(raw) ? "+" : undefined,
+                      };
+                    })
+                    .filter((m: ImpactMetric) => m.value > 0)
                   : [];
 
               const fallbackMetrics: ImpactMetric[] = [
@@ -324,34 +403,121 @@ export default function HomeClientWrapper({
             /* ── ACT 4b · BELONGING — life in the club, editorial strip ── */
             case "gallery": {
               if (photos.length === 0) return null;
-              const strip = photos.slice(0, 5);
-              const spans = ["lg:col-span-5", "lg:col-span-7", "lg:col-span-4", "lg:col-span-4", "lg:col-span-4"];
-              const ratios: ("4/5" | "3/2" | "square")[] = ["4/5", "3/2", "square", "square", "square"];
+
+              const layout = settings?.galleryLayout || "masonry";
+
+              let content;
+              if (layout === "masonry") {
+                const strip = photos.slice(0, 5);
+                const spans = ["lg:col-span-5", "lg:col-span-7", "lg:col-span-4", "lg:col-span-4", "lg:col-span-4"];
+                const ratios: ("4/5" | "3/2" | "square")[] = ["4/5", "3/2", "square", "square", "square"];
+                content = (
+                  <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 md:gap-6 items-start">
+                    {strip.map((photo: any, i: number) => (
+                      <EditorialImage
+                        key={photo.id}
+                        src={photo.url}
+                        alt={photo.altText || photo.title || "Club moment"}
+                        ratio={ratios[i] || "square"}
+                        caption={photo.title}
+                        className={`col-span-1 ${spans[i] || "lg:col-span-4"}`}
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    ))}
+                  </div>
+                );
+              } else if (layout === "grid") {
+                content = (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                    {photos.map((photo: any) => (
+                      <EditorialImage
+                        key={photo.id}
+                        src={photo.url}
+                        alt={photo.altText || photo.title || "Club moment"}
+                        ratio="square"
+                        caption={photo.title}
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    ))}
+                  </div>
+                );
+              } else {
+                // Filmstrip layout
+                content = (
+                  <div
+                    className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 pb-6 -mx-6 px-6 md:mx-0 md:px-0"
+                    style={{ touchAction: 'pan-x pan-y' }}
+                    tabIndex={0}
+                    aria-label="Gallery image filmstrip"
+                  >
+                    {photos.map((photo: any) => (
+                      <div key={photo.id} className="snap-center shrink-0 w-[80vw] sm:w-[50vw] md:w-[33vw]">
+                        <EditorialImage
+                          src={photo.url}
+                          alt={photo.altText || photo.title || "Club moment"}
+                          ratio="3/2"
+                          caption={photo.title}
+                          sizes="(max-width: 768px) 80vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
 
               return (
-                <section key="gallery" className="py-24 md:py-36 bg-wash">
-                  <MaxWidthWrapper>
-                    <SectionHeader
-                      eyebrow={settings?.galleryTitle || "Life in the club"}
-                      heading={settings?.gallerySubtitle || "The moments between the projects."}
-                      linkText={settings?.galleryCTA || "Browse the archive"}
-                      linkHref={settings?.galleryCTALink || "/gallery"}
-                    />
-                    <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 md:gap-6 items-start">
-                      {strip.map((photo: any, i: number) => (
-                        <EditorialImage
-                          key={photo.id}
-                          src={photo.url}
-                          alt={photo.title || "Club moment"}
-                          ratio={ratios[i] || "square"}
-                          caption={photo.title}
-                          className={`col-span-1 ${spans[i] || "lg:col-span-4"}`}
-                          sizes="(max-width: 768px) 50vw, 33vw"
+                <>
+                  <section key="gallery" className="py-24 md:py-36 bg-wash">
+                    <MaxWidthWrapper>
+                      <SectionHeader
+                        eyebrow={settings?.galleryTitle || "Life in the club"}
+                        heading={settings?.gallerySubtitle || "The moments between the projects."}
+                        linkText={settings?.galleryCTA || "Browse the archive"}
+                        linkHref={settings?.galleryCTALink || "/gallery"}
+                      />
+                      {content}
+                    </MaxWidthWrapper>
+                  </section>
+
+                  {/* Featured project-updates trail — only rendered when there are any */}
+                  {featuredUpdates && featuredUpdates.length > 0 && (
+                    <section id="trail" className="py-24 md:py-36 bg-paper">
+                      <MaxWidthWrapper>
+                        <SectionHeader
+                          eyebrow="From the field"
+                          heading={settings?.updatesTitle || "Days in the making."}
+                          linkText="Follow the trail"
+                          linkHref="/projects"
                         />
-                      ))}
-                    </div>
-                  </MaxWidthWrapper>
-                </section>
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-14">
+                          <StoryCard
+                            className="lg:col-span-7"
+                            href={`/projects/${featuredUpdates[0].project?.slug}`}
+                            imageUrl={featuredUpdates[0].media?.[0]?.url}
+                            eyebrow={featuredUpdates[0].project?.category?.replace(/_/g, " ")}
+                            title={featuredUpdates[0].title}
+                            outcome={featuredUpdates[0].impactNote || featuredUpdates[0].project?.title}
+                            ratio="3/2"
+                            large
+                          />
+                          <div className="lg:col-span-5 flex flex-col gap-12">
+                            {featuredUpdates.slice(1, 3).map((upd: any) => (
+                              <StoryCard
+                                key={upd.id}
+                                href={`/projects/${upd.project?.slug}`}
+                                imageUrl={upd.media?.[0]?.url}
+                                eyebrow={upd.project?.category?.replace(/_/g, " ")}
+                                title={upd.title}
+                                outcome={upd.impactNote || upd.project?.title}
+                                ratio="4/5"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </MaxWidthWrapper>
+                    </section>
+                  )}
+                </>
               );
             }
 

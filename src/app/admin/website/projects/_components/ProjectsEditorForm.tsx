@@ -70,7 +70,7 @@ export default function ProjectsEditorForm({ settings }: { settings: any }) {
         </div>
       </div>
 
-      <CmsPreviewFrame ref={previewRef} previewUrl="/projects?preview=true" channel="projects" payload={payload} />
+      <CmsPreviewFrame ref={previewRef} previewUrl="/api/draft/enable?path=/projects" channel="projects" payload={payload} />
     </div>
   );
 }

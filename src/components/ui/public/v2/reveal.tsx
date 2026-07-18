@@ -22,7 +22,7 @@ export function RevealBlock({
       className={className}
       initial={{ opacity: 0, y: reduce ? 0 : 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
+      viewport={{ once: true, amount: 0.01 }}
       transition={{ duration: 0.6, delay, ease: [...THADAM_EASE] }}
     >
       {children}

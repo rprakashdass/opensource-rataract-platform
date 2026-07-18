@@ -4,8 +4,10 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Image as ImageIcon, Trash2, Loader2, Video, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Image as ImageIcon, Trash2, Loader2, Video, FileText, MoreVertical, FolderInput, Pencil, Check } from "lucide-react";
 import { deleteMedia } from "@/features/media/actions/deleteMedia";
+import { updateMediaTitle } from "@/features/media/actions/updateMediaTitle";
 import { toast } from "sonner";
 
 interface MediaThumbnailProps {
@@ -17,12 +19,57 @@ interface MediaThumbnailProps {
   isCover?: boolean;
   isFeatured?: boolean;
   priority?: boolean;
+  availableAlbums?: { id: string; title: string }[];
 }
-
-export function MediaThumbnail({ id, url, title, caption, type, isCover, isFeatured, priority }: MediaThumbnailProps) {
+export function MediaThumbnail({
+  id,
+  url,
+  title,
+  caption,
+  type,
+  isCover,
+  isFeatured,
+  priority,
+  availableAlbums,
+}: MediaThumbnailProps) {
   const [isPending, startTransition] = useTransition();
   const [hidden, setHidden] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(title || "");
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
   const router = useRouter();
+
+  const handleTitleSave = async () => {
+    const trimmed = titleValue.trim();
+    setIsEditingTitle(false);
+    if (trimmed === (title || "")) return;
+    setIsSavingTitle(true);
+    const res = await updateMediaTitle(id, trimmed);
+    setIsSavingTitle(false);
+    if (res.error) {
+      toast.error(res.error);
+      setTitleValue(title || "");
+    } else {
+      toast.success("Title updated");
+      router.refresh();
+    }
+  };
+
+  const handleMove = (targetAlbumId: string | null) => {
+    startTransition(async () => {
+      try {
+        const { moveMediaToAlbum } = await import("../actions");
+        const res = await moveMediaToAlbum(id, targetAlbumId);
+        if (res.error) toast.error(res.error);
+        else {
+          toast.success("Media moved successfully");
+          router.refresh();
+        }
+      } catch (err: any) {
+        toast.error("Failed to move media");
+      }
+    });
+  };
 
   const handleDelete = () => {
     if (!confirm("Delete this media item? This cannot be undone.")) return;
@@ -91,9 +138,65 @@ export function MediaThumbnail({ id, url, title, caption, type, isCover, isFeatu
         >
           {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
         </button>
+        
+        {availableAlbums && availableAlbums.length > 0 && (
+          <div className="absolute top-2 right-12 z-20 sm:opacity-0 group-hover:opacity-100 transition-all duration-200">
+             <div className="bg-white/95 rounded-full shadow-md flex items-center h-8 px-2 group/menu relative cursor-pointer hover:bg-white text-slate-600 hover:text-brand">
+                <FolderInput className="w-4 h-4" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} />
+                
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-1 hidden group-hover/menu:block z-30">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase px-2 py-1.5">Move to Album</div>
+                  <div 
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMove(null); }}
+                    className="px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer truncate"
+                  >
+                    Uncategorized
+                  </div>
+                  {availableAlbums.map(a => (
+                    <div 
+                      key={a.id}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMove(a.id); }}
+                      className="px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer truncate"
+                    >
+                      {a.title}
+                    </div>
+                  ))}
+                </div>
+             </div>
+          </div>
+        )}
       </div>
-      {title && (
-        <p className="text-xs text-slate-600 mt-1 truncate px-0.5 font-medium">{title}</p>
+      {isEditingTitle ? (
+        <div className="flex items-center gap-1 mt-1 px-0.5">
+          <Input
+            autoFocus
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onBlur={handleTitleSave}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+              if (e.key === "Escape") {
+                setTitleValue(title || "");
+                setIsEditingTitle(false);
+              }
+            }}
+            className="h-6 text-xs px-1.5"
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsEditingTitle(true)}
+          disabled={isSavingTitle}
+          className="group/title flex items-center gap-1 mt-1 px-0.5 w-full text-left"
+        >
+          <span className="text-xs text-slate-600 truncate font-medium">
+            {isSavingTitle ? "Saving…" : title || "Untitled"}
+          </span>
+          {!isSavingTitle && (
+            <Pencil className="w-3 h-3 text-slate-300 group-hover/title:text-slate-500 shrink-0" />
+          )}
+        </button>
       )}
     </div>
   );

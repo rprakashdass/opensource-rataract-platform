@@ -38,6 +38,24 @@ function getCalendarId() {
   return calendarId;
 }
 
+function buildConferenceData(meetingLink: string | null | undefined) {
+  if (!meetingLink) return undefined;
+  const isMeet = /meet\.google\.com/i.test(meetingLink);
+  if (!isMeet) return undefined;
+  return {
+    conferenceSolution: {
+      key: { type: "hangoutsMeet" },
+    },
+    entryPoints: [
+      {
+        entryPointType: "video",
+        uri: meetingLink,
+        label: "Google Meet",
+      },
+    ],
+  };
+}
+
 export async function createCalendarEvent(data: CalendarEventData): Promise<string> {
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_CALENDAR_ID) {
     console.log(`[Calendar Stub] Creating calendar event for: ${data.title}`);
@@ -47,10 +65,15 @@ export async function createCalendarEvent(data: CalendarEventData): Promise<stri
   const calendar = getCalendarClient();
   const calendarId = getCalendarId();
 
-  const event = {
+  // Prefer physical location; fall back to meeting link so Google Calendar
+  // can detect the Meet URL and show a proper "Join" button.
+  const effectiveLocation = data.location || data.meetingLink || undefined;
+  const conferenceData = buildConferenceData(data.meetingLink);
+
+  const event: any = {
     summary: data.title,
     description: data.description || undefined,
-    location: data.location || undefined,
+    location: effectiveLocation,
     start: {
       dateTime: data.startDate.toISOString(),
     },
@@ -59,8 +82,13 @@ export async function createCalendarEvent(data: CalendarEventData): Promise<stri
     },
   };
 
+  if (conferenceData) {
+    event.conferenceData = conferenceData;
+  }
+
   const res = await calendar.events.insert({
     calendarId,
+    conferenceDataVersion: conferenceData ? 1 : 0,
     requestBody: event,
   });
 
@@ -81,10 +109,13 @@ export async function updateCalendarEvent(calendarEventId: string, data: Calenda
   const calendar = getCalendarClient();
   const calendarId = getCalendarId();
 
-  const event = {
+  const effectiveLocation = data.location || data.meetingLink || undefined;
+  const conferenceData = buildConferenceData(data.meetingLink);
+
+  const event: any = {
     summary: data.title,
     description: data.description || undefined,
-    location: data.location || undefined,
+    location: effectiveLocation,
     start: {
       dateTime: data.startDate.toISOString(),
     },
@@ -93,9 +124,14 @@ export async function updateCalendarEvent(calendarEventId: string, data: Calenda
     },
   };
 
+  if (conferenceData) {
+    event.conferenceData = conferenceData;
+  }
+
   await calendar.events.patch({
     calendarId,
     eventId: calendarEventId,
+    conferenceDataVersion: conferenceData ? 1 : 0,
     requestBody: event,
   });
 }

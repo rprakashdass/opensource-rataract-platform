@@ -3,6 +3,8 @@ import { PageIntro, EmptyState } from "@/components/ui/public/v2";
 import TeamClient from "./TeamClient";
 import React from "react";
 
+export const revalidate = 300;
+
 export default async function TeamPage() {
   const data = await getPublicTeam();
 

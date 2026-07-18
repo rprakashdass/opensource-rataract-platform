@@ -20,7 +20,7 @@ export function AnimatedSection({
       <m.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-8% 0px" }}
+        viewport={{ once: true, amount: 0.01 }}
         variants={{
           hidden: { opacity: 0, y: 16 },
           visible: { 
@@ -54,7 +54,7 @@ export function AnimatedGrid({
       <m.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-8% 0px" }}
+        viewport={{ once: true, amount: 0.01 }}
         variants={motionVariants.staggerContainer(staggerDelay, delayChildren)}
         className={className}
       >

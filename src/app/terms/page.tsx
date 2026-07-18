@@ -2,6 +2,8 @@ import React from 'react';
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { RevealBlock, Eyebrow } from "@/components/ui/public/v2";
 
+export const revalidate = 300;
+
 function LegalHeading({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="font-display font-medium tracking-[-0.01em] text-ink text-xl md:text-2xl mt-12 mb-4">

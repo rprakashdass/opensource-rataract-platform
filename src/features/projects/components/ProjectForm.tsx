@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ProjectFormData, projectSchema } from "../schemas/project.schema";
+import { istInputToISOString } from "@/lib/istDatetime";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { createProject } from "../actions/createProject";
-import { MediaUpload } from "@/components/ui/media-upload";
+import { FileUpload } from "@/components/ui/file-upload";
 import { Plus, X } from "lucide-react";
 
 export default function ProjectForm() {
@@ -25,6 +26,15 @@ export default function ProjectForm() {
   const [coverMediaId, setCoverMediaId] = useState<string>("");
   const [metrics, setMetrics] = useState<{key: string, value: string}[]>([]);
   const [submitAction, setSubmitAction] = useState<string>("DRAFT");
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
+    if (newStatus === "uploading") {
+      setActiveUploads(prev => prev + 1);
+    } else if (newStatus === "done" || newStatus === "error" || newStatus === "idle") {
+      setActiveUploads(prev => Math.max(0, prev - 1));
+    }
+  };
 
   useEffect(() => {
     fetch("/api/admin/members")
@@ -49,6 +59,7 @@ export default function ProjectForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (activeUploads > 0) return;
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -74,7 +85,7 @@ export default function ProjectForm() {
       impactSummary: formData.get("impactSummary") || undefined,
       visibility: formData.get("visibility"),
       publishStatus: submitAction,
-      publishAt: formData.get("publishAt") ? new Date(formData.get("publishAt") as string).toISOString() : null,
+      publishAt: formData.get("publishAt") ? istInputToISOString(formData.get("publishAt") as string) : null,
       publishedAt: (submitAction === "PUBLISHED") ? new Date().toISOString() : null,
       impactMetrics: impactMetricsJson,
       team: team,
@@ -168,13 +179,16 @@ export default function ProjectForm() {
 
           <div className="space-y-2">
             <Label htmlFor="coverImage">Cover Image</Label>
-            <MediaUpload 
+            <FileUpload 
               value={coverMediaId} 
               onChange={setCoverMediaId} 
               type="IMAGE"
               usage="COVER"
               accept="image/*"
               isCover={true}
+              context={{ kind: "general" }}
+              returnType="id"
+              onStatusChange={handleStatusChange}
             />
             <input type="hidden" name="coverMediaId" value={coverMediaId} />
           </div>
@@ -319,9 +333,15 @@ export default function ProjectForm() {
         <CardFooter className="bg-gray-50 p-6 rounded-b-xl border-t border-gray-100">
           <div className="flex flex-col sm:flex-row gap-3 w-full justify-end">
             <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">Cancel</Button>
-            <Button type="submit" onClick={() => setSubmitAction("DRAFT")} variant="secondary" disabled={loading} className="w-full sm:w-auto">Save Draft</Button>
-            <Button type="submit" onClick={() => setSubmitAction("SCHEDULED")} variant="outline" disabled={loading} className="border-purple-600 text-purple-600 w-full sm:w-auto">Schedule</Button>
-            <Button type="submit" onClick={() => setSubmitAction("PUBLISHED")} disabled={loading} className="w-full sm:w-auto">Publish Now</Button>
+            <Button type="submit" onClick={() => setSubmitAction("DRAFT")} variant="secondary" disabled={loading || activeUploads > 0} className="w-full sm:w-auto disabled:opacity-50">
+               {activeUploads > 0 ? "Uploading..." : "Save Draft"}
+            </Button>
+            <Button type="submit" onClick={() => setSubmitAction("SCHEDULED")} variant="outline" disabled={loading || activeUploads > 0} className="border-purple-600 text-purple-600 w-full sm:w-auto disabled:opacity-50">
+               {activeUploads > 0 ? "Uploading..." : "Schedule"}
+            </Button>
+            <Button type="submit" onClick={() => setSubmitAction("PUBLISHED")} disabled={loading || activeUploads > 0} className="w-full sm:w-auto disabled:opacity-50">
+               {activeUploads > 0 ? "Uploading..." : "Publish Now"}
+            </Button>
           </div>
         </CardFooter>
       </form>
