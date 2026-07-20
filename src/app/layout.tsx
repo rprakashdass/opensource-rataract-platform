@@ -72,7 +72,7 @@ export default async function RootLayout({
   const lightColor = settings?.lightColor || "#FAF9F6";
 
   return (
-    <html lang="en" className={`h-full antialiased ${fraunces.variable} ${figtree.variable} ${bricolageGrotesque.variable}`}>
+    <html lang="en" className={`antialiased ${fraunces.variable} ${figtree.variable} ${bricolageGrotesque.variable}`}>
       <head>
         <meta
           name="viewport"

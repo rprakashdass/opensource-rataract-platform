@@ -77,6 +77,8 @@ export default function EditMemberForm({ member }: { member: any }) {
                   accept="image/*"
                   context={{ kind: "members" }}
                   onStatusChange={handleStatusChange}
+                  enableCrop
+                  cropAspectRatio={1}
                 />
               </div>
               <div className="space-y-1.5">

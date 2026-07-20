@@ -7,7 +7,7 @@ import { ROUTES } from "@/lib/constants";
 import { 
   LayoutDashboard, Users, Calendar, Image as ImageIcon, Settings, 
   Banknote, Bell, Briefcase, ClipboardCheck, Globe, ArrowLeftRight, 
-  PieChart, FileSpreadsheet, Lightbulb, UserCircle, Mail, HandCoins
+  PieChart, FileSpreadsheet, Lightbulb, UserCircle, Mail, HandCoins, MessageSquareWarning, MessageSquarePlus
 } from "lucide-react";
 
 interface AdminLayoutClientProps {
@@ -45,8 +45,8 @@ export default function AdminLayoutClient({ children, club, user, notifications,
     adminNavGroups.push({
       group: "Club Operations",
       items: [
-        { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users },
-        { label: "Board", href: `${ROUTES.ADMIN}/board`, icon: UserCircle },
+        { label: "Inbox", href: `${ROUTES.ADMIN}/mailbox`, icon: MessageSquareWarning },
+        { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users, badgeCount: attentionSummary.memberships.count },
         { label: "Projects", href: `${ROUTES.ADMIN}/projects`, icon: Briefcase },
         { label: "Events", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
         { label: "Ideas", href: `${ROUTES.ADMIN}/proposals`, icon: Lightbulb, badgeCount: attentionSummary.ideas.count },

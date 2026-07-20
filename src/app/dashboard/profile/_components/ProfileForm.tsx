@@ -15,7 +15,6 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
     bio: member.bio || "",
     websiteQuote: member.websiteQuote || "",
     avatar: member.avatar || "",
-    showOnWebsite: member.showOnWebsite || false,
   });
   const [activeUploads, setActiveUploads] = useState(0);
 
@@ -62,6 +61,8 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
           accept="image/*"
           context={{ kind: "members" }}
           onStatusChange={handleStatusChange}
+          enableCrop
+          cropAspectRatio={1}
         />
       </div>
 
@@ -155,19 +156,6 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
         />
       </div>
 
-      <div className="flex items-center space-x-2 border p-4 rounded-md border-slate-300">
-        <input 
-          type="checkbox" 
-          id="showOnWebsite" 
-          name="showOnWebsite" 
-          checked={formData.showOnWebsite}
-          onChange={(e) => setFormData(prev => ({ ...prev, showOnWebsite: e.target.checked }))}
-          className="w-4 h-4 rounded border-slate-300 text-brand focus:ring-brand"
-        />
-        <label htmlFor="showOnWebsite" className="text-sm font-medium text-slate-700 cursor-pointer">
-          Show my profile on the public website (Club Directory / Project Teams)
-        </label>
-      </div>
 
       <div className="flex justify-end">
         <button

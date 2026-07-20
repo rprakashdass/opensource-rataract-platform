@@ -59,6 +59,7 @@ export default function LayoutProvider({
         orientation: "vertical",
         gestureOrientation: "vertical",
         smoothWheel: true,
+        autoResize: true,
       }}
     >
       {layout}

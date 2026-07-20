@@ -2,8 +2,32 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Edit, Trash2, Eye, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { deleteMember } from "@/features/members/actions/deleteMember";
+
+function getInitials(name: string) {
+  if (!name) return "?";
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 export function MemberListView({ members }: { members: any[] }) {
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) return;
+    setIsDeleting(id);
+    const res = await deleteMember(id);
+    if (res?.error) {
+      toast.error(res.error);
+    } else {
+      toast.success("Member deleted");
+    }
+    setIsDeleting(null);
+  };
   return (
     <>
       {/* Desktop Table */}
@@ -24,8 +48,12 @@ export function MemberListView({ members }: { members: any[] }) {
                 <tr key={member.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold shrink-0">
-                        {member.name?.[0] || "?"}
+                      <div className="w-10 h-10 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold shrink-0 text-sm tracking-wide overflow-hidden relative">
+                        {member.avatar ? (
+                          <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          getInitials(member.name)
+                        )}
                       </div>
                       <div>
                         <p className="font-bold text-slate-900">{member.name}</p>
@@ -48,11 +76,28 @@ export function MemberListView({ members }: { members: any[] }) {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/members/${member.id}`}>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        View Profile
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Link href={`/admin/members/${member.id}`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-slate-900" title="View Profile">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/members/${member.id}/edit`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-brand" title="Edit Member">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-slate-500 hover:text-rose-600 hover:bg-rose-50" 
+                        title="Delete Member"
+                        onClick={() => handleDelete(member.id, member.name)}
+                        disabled={isDeleting === member.id}
+                      >
+                        {isDeleting === member.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       </Button>
-                    </Link>
+                    </div>
                   </td>
                 </tr>
               );
@@ -69,8 +114,12 @@ export function MemberListView({ members }: { members: any[] }) {
             <div key={member.id} className="p-4 space-y-3">
               <div className="flex justify-between items-start gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold shrink-0 text-lg">
-                    {member.name?.[0] || "?"}
+                  <div className="w-12 h-12 rounded-full bg-pink-50 text-brand flex items-center justify-center font-bold shrink-0 text-base tracking-wide overflow-hidden relative">
+                    {member.avatar ? (
+                      <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(member.name)
+                    )}
                   </div>
                   <div>
                     <p className="font-bold text-slate-900 text-base">{member.name}</p>
@@ -88,12 +137,27 @@ export function MemberListView({ members }: { members: any[] }) {
                   </span>
                 ))}
               </div>
-              <div className="pt-2">
-                <Link href={`/admin/members/${member.id}`} className="block">
+              <div className="pt-3 flex gap-2">
+                <Link href={`/admin/members/${member.id}`} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">
-                    View Profile
+                    View
                   </Button>
                 </Link>
+                <Link href={`/admin/members/${member.id}/edit`} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Edit
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 shrink-0 px-3"
+                  onClick={() => handleDelete(member.id, member.name)}
+                  disabled={isDeleting === member.id}
+                  title="Delete Member"
+                >
+                  {isDeleting === member.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                </Button>
               </div>
             </div>
           );

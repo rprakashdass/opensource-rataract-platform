@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PortalHeader, NotificationItem } from "@/components/layout/PortalHeader";
 import { PortalSidebar, NavGroup } from "@/components/layout/PortalSidebar";
 import { ROUTES } from "@/lib/constants";
-import { LayoutDashboard, Calendar, Briefcase, Lightbulb, ClipboardCheck, UserCircle, Banknote } from "lucide-react";
+import { LayoutDashboard, Calendar, Briefcase, Lightbulb, ClipboardCheck, UserCircle, Banknote, Users, MessageSquare, MessageSquareWarning } from "lucide-react";
 
 interface DashboardLayoutClientProps {
   children: React.ReactNode;
@@ -21,6 +21,7 @@ export default function DashboardLayoutClient({ children, roles, club, user, not
     {
       items: [
         { label: "Overview", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+        { label: "Mailbox", href: "/dashboard/mailbox", icon: MessageSquareWarning },
         { label: "Events", href: `${ROUTES.DASHBOARD}/events`, icon: Calendar },
         { label: "Projects", href: `${ROUTES.DASHBOARD}/projects`, icon: Briefcase },
         { label: "Ideas", href: `${ROUTES.DASHBOARD}/initiatives`, icon: Lightbulb },

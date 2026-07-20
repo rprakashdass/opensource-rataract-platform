@@ -36,7 +36,8 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
                         include: { member: true }
                     }
                 }
-            }
+            },
+            media: true
         }
     });
 
@@ -64,7 +65,18 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
             />
 
             <div className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm">
-                <div className="h-32 sm:h-48 w-full bg-gradient-to-br from-brand to-brand-deep"></div>
+                {event.bannerMediaId && event.media.find((m: any) => m.id === event.bannerMediaId)?.url ? (
+                    <div className="h-32 sm:h-48 w-full bg-slate-100 relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                            src={event.media.find((m: any) => m.id === event.bannerMediaId)?.url!} 
+                            alt={`${event.title} banner`}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                ) : (
+                    <div className="h-32 sm:h-48 w-full bg-gradient-to-br from-brand to-brand-deep"></div>
+                )}
                 
                 <div className="p-6 sm:p-8">
                     <div className="flex flex-wrap gap-2 mb-4">

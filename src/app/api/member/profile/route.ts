@@ -30,7 +30,7 @@ export async function PUT(req: Request) {
         bio: data.bio,
         websiteQuote: data.websiteQuote,
         avatar: data.avatar,
-        showOnWebsite: data.showOnWebsite,
+        skills: data.skills,
       },
     });
 

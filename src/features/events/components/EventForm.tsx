@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileUpload } from "@/components/ui/file-upload";
@@ -219,6 +220,7 @@ export default function EventForm() {
                   <SelectItem value="DRAFT">Draft</SelectItem>
                   <SelectItem value="UPCOMING">Upcoming</SelectItem>
                   <SelectItem value="ONGOING">Ongoing</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,38 +288,38 @@ export default function EventForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Event Chair</Label>
-                <Select onValueChange={(val) => {
-                  setTeam(prev => {
-                    const filtered = prev.filter(t => t.role !== "CHAIR");
-                    return val && val !== "none" ? [...filtered, { memberId: val, role: "CHAIR" }] : filtered;
-                  });
-                }}>
-                  <SelectTrigger><SelectValue placeholder="Select Chair" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {members.map(m => (
-                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect 
+                  placeholder="Select Chair"
+                  value={team.find(t => t.role === "CHAIR")?.memberId || "none"}
+                  onChange={(val) => {
+                    setTeam(prev => {
+                      const filtered = prev.filter(t => t.role !== "CHAIR");
+                      return val && val !== "none" ? [...filtered, { memberId: val, role: "CHAIR" }] : filtered;
+                    });
+                  }}
+                  options={[
+                    { label: "None", value: "none" },
+                    ...members.map(m => ({ label: m.name, value: m.id }))
+                  ]}
+                />
               </div>
               
               <div className="space-y-2">
                 <Label>Co-Chair</Label>
-                <Select onValueChange={(val) => {
-                  setTeam(prev => {
-                    const filtered = prev.filter(t => t.role !== "CO_CHAIR");
-                    return val && val !== "none" ? [...filtered, { memberId: val, role: "CO_CHAIR" }] : filtered;
-                  });
-                }}>
-                  <SelectTrigger><SelectValue placeholder="Select Co-Chair" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {members.map(m => (
-                      <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect 
+                  placeholder="Select Co-Chair"
+                  value={team.find(t => t.role === "CO_CHAIR")?.memberId || "none"}
+                  onChange={(val) => {
+                    setTeam(prev => {
+                      const filtered = prev.filter(t => t.role !== "CO_CHAIR");
+                      return val && val !== "none" ? [...filtered, { memberId: val, role: "CO_CHAIR" }] : filtered;
+                    });
+                  }}
+                  options={[
+                    { label: "None", value: "none" },
+                    ...members.map(m => ({ label: m.name, value: m.id }))
+                  ]}
+                />
               </div>
             </div>
           </div>

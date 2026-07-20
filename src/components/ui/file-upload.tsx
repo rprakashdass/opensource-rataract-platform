@@ -10,6 +10,7 @@ import { MediaType, MediaUsage } from '@prisma/client';
 import { ALLOWED_MEDIA_TYPES, getMediaTypeFromExtension } from '@/lib/media-helpers';
 import imageCompression from 'browser-image-compression';
 import { MediaContext } from '@/features/media/lib/resolveAlbum';
+import { ImageCropperModal } from './image-cropper-modal';
 
 export type UploadStatus = "idle" | "uploading" | "done" | "error";
 
@@ -23,6 +24,8 @@ interface FileUploadProps {
   context: MediaContext;
   returnType?: "id" | "url";
   onStatusChange?: (status: UploadStatus) => void;
+  enableCrop?: boolean;
+  cropAspectRatio?: number;
 }
 
 export function FileUpload({ 
@@ -34,7 +37,9 @@ export function FileUpload({
   isCover = false, 
   context, 
   returnType = "url",
-  onStatusChange 
+  onStatusChange,
+  enableCrop = false,
+  cropAspectRatio = 1
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -43,13 +48,21 @@ export function FileUpload({
   const [errorMsg, setErrorMsg] = useState("");
   const [mediaId, setMediaId] = useState<string | null>(null); // To store the uploaded media ID for title updates
   const [isUpdatingTitle, setIsUpdatingTitle] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
+  const [pendingCropUrl, setPendingCropUrl] = useState<string>("");
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const onStatusChangeRef = useRef(onStatusChange);
   useEffect(() => {
-    onStatusChange?.(status);
-  }, [status, onStatusChange]);
+    onStatusChangeRef.current = onStatusChange;
+  }, [onStatusChange]);
+
+  useEffect(() => {
+    onStatusChangeRef.current?.(status);
+  }, [status]);
 
   const defaultAccept = type === "IMAGE"
     ? ALLOWED_MEDIA_TYPES.image
@@ -111,10 +124,42 @@ export function FileUpload({
   };
 
   const pickFile = (picked: File) => {
+    const isImage = getMediaTypeFromExtension(picked.name) === 'IMAGE' || type === 'IMAGE' || picked.type.startsWith('image/');
+    if (enableCrop && isImage) {
+      setPendingCropFile(picked);
+      setPendingCropUrl(URL.createObjectURL(picked));
+      setCropModalOpen(true);
+      return;
+    }
+
     setFile(picked);
     const defaultTitle = picked.name.replace(/\.[^.]+$/, '') || picked.name;
     setTitle(defaultTitle);
     doUpload(picked, defaultTitle);
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    setCropModalOpen(false);
+    if (pendingCropUrl) {
+      URL.revokeObjectURL(pendingCropUrl);
+      setPendingCropUrl("");
+    }
+    const finalFile = new File([croppedFile], pendingCropFile?.name.replace(/\.[^.]+$/, '.webp') || 'cropped.webp', { type: 'image/webp' });
+    setFile(finalFile);
+    const defaultTitle = pendingCropFile?.name.replace(/\.[^.]+$/, '') || 'Cropped Image';
+    setTitle(defaultTitle);
+    doUpload(finalFile, defaultTitle);
+    setPendingCropFile(null);
+  };
+
+  const handleCropCancel = () => {
+    setCropModalOpen(false);
+    if (pendingCropUrl) {
+      URL.revokeObjectURL(pendingCropUrl);
+      setPendingCropUrl("");
+    }
+    setPendingCropFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const cancelUpload = () => {
@@ -209,29 +254,41 @@ export function FileUpload({
 
   // ── Drop zone (Idle State) ─────────────────────────────────────────────────
   return (
-    <div
-      className={`border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${
-        isDragging ? 'border-brand bg-slate-50' : 'border-slate-300 hover:bg-slate-50'
-      }`}
-      onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={e => {
-        e.preventDefault();
-        setIsDragging(false);
-        const f = e.dataTransfer.files?.[0];
-        if (f) pickFile(f);
-      }}
-      onClick={() => fileInputRef.current?.click()}
-    >
-      <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
-      <p className="text-sm font-medium text-slate-700">Click or drag file to upload</p>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={e => { const f = e.target.files?.[0]; if (f) pickFile(f); }}
-        className="hidden"
-        accept={finalAccept}
-      />
-    </div>
+    <>
+      <div
+        className={`border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center transition-colors cursor-pointer ${
+          isDragging ? 'border-brand bg-slate-50' : 'border-slate-300 hover:bg-slate-50'
+        }`}
+        onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={e => {
+          e.preventDefault();
+          setIsDragging(false);
+          const f = e.dataTransfer.files?.[0];
+          if (f) pickFile(f);
+        }}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <UploadCloud className="h-8 w-8 text-slate-400 mb-2" />
+        <p className="text-sm font-medium text-slate-700">Click or drag file to upload</p>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={e => { const f = e.target.files?.[0]; if (f) pickFile(f); }}
+          className="hidden"
+          accept={finalAccept}
+        />
+      </div>
+      
+      {enableCrop && cropModalOpen && (
+        <ImageCropperModal
+          isOpen={cropModalOpen}
+          onClose={handleCropCancel}
+          imageSrc={pendingCropUrl}
+          onCropComplete={handleCropComplete}
+          aspectRatio={cropAspectRatio}
+        />
+      )}
+    </>
   );
 }

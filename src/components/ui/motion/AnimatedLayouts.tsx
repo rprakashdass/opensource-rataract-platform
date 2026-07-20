@@ -198,6 +198,8 @@ export function AnimatedImage({
   );
 }
 
+import { createPortal } from "react-dom";
+
 // 7. AnimatedDialog - Modal overlay + pop entry
 export function AnimatedDialog({
   isOpen,
@@ -210,11 +212,16 @@ export function AnimatedDialog({
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <LazyMotion features={domMax}>
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <m.div
               initial="hidden"
@@ -238,7 +245,8 @@ export function AnimatedDialog({
           </div>
         </LazyMotion>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

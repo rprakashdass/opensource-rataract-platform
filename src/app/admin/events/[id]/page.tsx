@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/portal";
 import EventDashboard from "./_components/EventDashboard";
 import EventSettingsButton from "./_components/EventSettingsButton";
 import EventPublishButton from "./_components/EventPublishButton";
+import DeleteEventButton from "./_components/DeleteEventButton";
 import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
 
 export default async function EventManagementPage(props: { params: Promise<{ id: string }> }) {
@@ -58,6 +59,7 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
           <>
             <EventSettingsButton event={event} />
             <EventPublishButton event={event} template={{ subject: renderedSubject, body: renderedBody }} />
+            <DeleteEventButton eventId={event.id} />
           </>
         }
         className="mb-0"

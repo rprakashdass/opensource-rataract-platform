@@ -90,6 +90,8 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
                   accept="image/*"
                   context={{ kind: "members" }}
                   onStatusChange={handleStatusChange}
+                  enableCrop
+                  cropAspectRatio={1}
                 />
               </div>
               <div className="space-y-1.5">

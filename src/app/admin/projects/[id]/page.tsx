@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader, TableWrap } from "@/components/portal";
 import ProjectSettingsButton from "./_components/ProjectSettingsButton";
 import ProjectPublishButton from "./_components/ProjectPublishButton";
+import DeleteProjectButton from "./_components/DeleteProjectButton";
 import ProjectUpdatesClient from "./_components/ProjectUpdatesClient";
 import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
 
@@ -66,6 +67,7 @@ export default async function ProjectManagementPage(props: { params: Promise<{ i
           <>
             <ProjectSettingsButton project={project} />
             <ProjectPublishButton project={project} template={{ subject: renderedSubject, body: renderedBody }} />
+            <DeleteProjectButton projectId={project.id} />
           </>
         }
       />

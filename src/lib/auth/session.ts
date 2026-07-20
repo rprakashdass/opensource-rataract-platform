@@ -105,7 +105,24 @@ export async function getSession() {
     return null;
   }
 
-  payload.member = user.member;
+  let member = user.member;
+
+  // Fallback: some Member records were created before the User-Member userId link
+  // was established (userId is nullable). Look up by email and backfill.
+  if (!member && user.email) {
+    const memberByEmail = await prisma.member.findFirst({
+      where: { email: user.email, userId: null }
+    });
+    if (memberByEmail) {
+      // Backfill the userId so future sessions resolve correctly via the join
+      member = await prisma.member.update({
+        where: { id: memberByEmail.id },
+        data: { userId: user.id }
+      });
+    }
+  }
+
+  payload.member = member;
   return payload;
 }
 

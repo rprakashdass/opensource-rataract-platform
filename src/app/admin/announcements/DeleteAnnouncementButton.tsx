@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 
-export default function DeleteAnnouncementButton({ id }: { id: string }) {
+import { Button } from "@/components/ui/button";
+
+export default function DeleteAnnouncementButton({ id, redirectAfterDelete = false }: { id: string, redirectAfterDelete?: boolean }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -21,14 +23,32 @@ export default function DeleteAnnouncementButton({ id }: { id: string }) {
         throw new Error("Failed to delete announcement");
       }
 
-      router.refresh();
+      if (redirectAfterDelete) {
+        router.push("/admin/announcements");
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       console.error(error);
       alert("Failed to delete announcement");
-    } finally {
       setIsDeleting(false);
     }
   };
+
+  if (redirectAfterDelete) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-2 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="w-4 h-4" />
+        {isDeleting ? "Deleting..." : "Delete Announcement"}
+      </Button>
+    );
+  }
 
   return (
     <button

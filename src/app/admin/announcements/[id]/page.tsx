@@ -4,6 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Calendar, MapPin, Video, Users, FileText, Mail, Clock } from "lucide-react";
 import AnnouncementActions from "./AnnouncementActions";
+import DeleteAnnouncementButton from "../DeleteAnnouncementButton";
 import { PageHeader } from "@/components/portal";
 
 export default async function AnnouncementDetailsPage({ params }: { params: { id: string } }) {
@@ -37,6 +38,7 @@ export default async function AnnouncementDetailsPage({ params }: { params: { id
               </Link>
             )}
             <AnnouncementActions id={announcement.id} status={announcement.status} />
+            <DeleteAnnouncementButton id={announcement.id} redirectAfterDelete={true} />
           </>
         }
       />

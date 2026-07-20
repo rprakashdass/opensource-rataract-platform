@@ -112,6 +112,8 @@ model Club {
   navigationItems         NavigationItem[]
   websiteMetrics          WebsiteMetric[]
   projectUpdates          ProjectUpdate[]
+  memberCommunications    MemberCommunication[]
+  anonComplaints          AnonComplaint[]
 }
 
 // ============================================================================
@@ -678,6 +680,9 @@ model Member {
 
   isActive      Boolean  @default(true)
   showOnWebsite Boolean  @default(false)
+
+  // Relations
+  communications MemberCommunication[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -1514,3 +1519,86 @@ model VerificationCode {
   @@unique([email, code])
 }
 
+
+// ============================================================================
+// COMPLAINTS
+// ============================================================================
+
+enum MailboxStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum MailboxPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MailboxType {
+  COMPLAINT
+  EXCUSE
+  INQUIRY
+  OTHER
+}
+
+model MemberCommunication {
+  id            String               @id @default(cuid())
+  clubId        String
+  club          Club                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  memberId      String
+  member        Member               @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  type          MailboxType          @default(COMPLAINT)
+  subject       String
+  description   String               @db.Text
+  status        MailboxStatus        @default(OPEN)
+  priority      MailboxPriority      @default(MEDIUM)
+  
+  adminNotes    String?              @db.Text
+  attachmentUrl String?              @db.Text
+  statusUpdatedAt DateTime? 
+  resolvedAt    DateTime?
+  resolvedById  String?              // The ID of the admin who resolved it
+
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([clubId, status])
+  @@index([memberId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// ANONYMOUS COMPLAINT BOX
+// ============================================================================
+
+/// Anonymous complaint / feedback submitted by any logged-in member.
+/// No user identity is stored — submission is intentionally anonymous.
+model AnonComplaint {
+  id      String @id @default(cuid())
+  clubId  String
+  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /// "COMPLAINT" | "FEEDBACK" | "SUGGESTION" | "OTHER"
+  category String @default("COMPLAINT")
+
+  message   String @db.Text
+
+  /// "OPEN" | "REVIEWING" | "RESOLVED" | "DISMISSED"
+  status    String @default("OPEN")
+
+  /// Optional admin note visible only to admins
+  adminNote String? @db.Text
+
+  /// Optional attachment for the complaint
+  attachmentUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clubId, status])
+  @@index([createdAt])
+}

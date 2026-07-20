@@ -199,14 +199,27 @@ export default function EventEditForm({ eventId, initialData, onSuccess }: { eve
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Visibility</label>
-            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
-              <option value="PUBLIC">Public</option>
-              <option value="INTERNAL">Internal</option>
-              <option value="MEMBERS_ONLY">Members Only</option>
-              <option value="BOARD_ONLY">Board Only</option>
-            </select>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
+                <option value="DRAFT">Draft</option>
+                <option value="PLANNING">Planning</option>
+                <option value="UPCOMING">Upcoming</option>
+                <option value="ONGOING">Ongoing</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Visibility</label>
+              <select value={visibility} onChange={(e) => setVisibility(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm bg-white">
+                <option value="PUBLIC">Public</option>
+                <option value="INTERNAL">Internal</option>
+                <option value="MEMBERS_ONLY">Members Only</option>
+                <option value="BOARD_ONLY">Board Only</option>
+              </select>
+            </div>
           </div>
           
           <div className="space-y-3 pt-6">

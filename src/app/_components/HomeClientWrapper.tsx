@@ -283,12 +283,12 @@ export default function HomeClientWrapper({
 
                         {/* Right: Author Stamp (Wax seal / press stamp portrait) */}
                         {presPhoto && (
-                          <div className="w-16 h-16 md:w-[72px] md:h-[72px] relative rounded-full overflow-hidden ring-1 ring-border/60 bg-wash shrink-0">
+                          <div className="w-20 h-20 md:w-24 md:h-24 relative rounded-full overflow-hidden ring-1 ring-border/60 bg-wash shrink-0">
                             <Image
                               src={getGoogleDriveDirectLink(presPhoto)}
                               alt={presName}
                               fill
-                              sizes="72px"
+                              sizes="96px"
                               className="object-cover"
                             />
                           </div>
