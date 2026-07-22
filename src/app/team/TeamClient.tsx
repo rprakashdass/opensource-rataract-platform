@@ -9,6 +9,7 @@ import {
   InvitePanel,
   EmptyState,
 } from "@/components/ui/public/v2";
+import { formatDesignations } from "@/lib/utils";
 
 interface BoardMember {
   id: string;
@@ -91,12 +92,10 @@ export default function TeamClient({ board, members, settings }: TeamClientProps
           {hasMembers ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
               {generalMembers.map((member, idx) => {
-                const activeBoard = member.boardMemberships?.find(
-                  (b) => b.financialYear?.status === "ACTIVE" || !b.leftAt
-                );
+                const activeBoardDesignation = formatDesignations(member.boardMemberships);
                 const portfoliosStr = member.portfolioAssignments?.map(pa => pa.portfolio.name).join(", ");
-                const roleDisplay = activeBoard 
-                  ? `${activeBoard.position}${portfoliosStr ? ` • ${portfoliosStr}` : ""}`
+                const roleDisplay = activeBoardDesignation
+                  ? `${activeBoardDesignation}${portfoliosStr ? ` • ${portfoliosStr}` : ""}`
                   : (portfoliosStr || member.profession);
                 return (
                   <RevealBlock key={member.id} delay={(idx % 5) * 0.04}>

@@ -2,74 +2,71 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { KeyRound, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { KeyRound, Loader2 } from "lucide-react";
 import { LazyMotion, domMax, m, AnimatePresence } from "framer-motion";
 import { springs } from "@/lib/motion-tokens";
 
-export default function PasswordChangeForm() {
-  const [step, setStep] = useState<"request" | "verify">("request");
+/**
+ * Compact password change. Collapsed to a single "Password ••••••  Change" row;
+ * clicking Change emails a one-time code and reveals the code + new-password
+ * fields inline — no permanent nested card.
+ */
+export default function PasswordChangeForm({ email }: { email?: string | null }) {
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
   const [formData, setFormData] = useState({
     code: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const handleSendOtp = async () => {
+  const reset = () => {
+    setOpen(false);
+    setSent(false);
+    setFormData({ code: "", newPassword: "", confirmPassword: "" });
+  };
+
+  const sendCode = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/member/profile/password", {
-        method: "POST",
-      });
+      const res = await fetch("/api/member/profile/password", { method: "POST" });
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to dispatch verification code");
-      }
-
-      toast.success("Verification code dispatched to your registered email");
-      setStep("verify");
+      if (!res.ok) throw new Error(data.error || "Failed to send code");
+      setSent(true);
+      toast.success("We emailed you a 6-digit code.");
     } catch (err: any) {
       toast.error(err.message);
+      setOpen(false);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleStart = () => {
+    setOpen(true);
+    if (!sent) sendCode();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.code.trim()) {
-      toast.error("Please enter the 6-digit OTP code");
-      return;
-    }
-    if (formData.newPassword.length < 6) {
-      toast.error("New password must be at least 6 characters long");
-      return;
-    }
-    if (formData.newPassword !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    if (!formData.code.trim()) return toast.error("Enter the 6-digit code");
+    if (formData.newPassword.length < 6)
+      return toast.error("New password must be at least 6 characters");
+    if (formData.newPassword !== formData.confirmPassword)
+      return toast.error("Passwords do not match");
 
     setLoading(true);
     try {
       const res = await fetch("/api/member/profile/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: formData.code.trim(),
-          newPassword: formData.newPassword,
-        }),
+        body: JSON.stringify({ code: formData.code.trim(), newPassword: formData.newPassword }),
       });
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to update password");
-      }
-
-      toast.success("Password updated successfully");
-      setFormData({ code: "", newPassword: "", confirmPassword: "" });
-      setStep("request");
+      if (!res.ok) throw new Error(data.error || "Failed to update password");
+      toast.success("Password updated.");
+      reset();
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -77,117 +74,117 @@ export default function PasswordChangeForm() {
     }
   };
 
+  const inputCls =
+    "w-full rounded-xl border border-hairline bg-white px-3 py-2.5 text-sm text-ink motion-input focus:border-brand focus:outline-none";
+
   return (
     <LazyMotion features={domMax}>
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-          <KeyRound className="w-5 h-5 text-[#F7A800]" />
-          <h2 className="text-xl font-bold text-[#0B132B]">Account Credentials</h2>
+      <div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-wash flex items-center justify-center shrink-0">
+              <KeyRound className="w-4 h-4 text-brand" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-ink">Password</p>
+              <p className="text-xs text-ink-faint font-medium tracking-[0.2em]">••••••••</p>
+            </div>
+          </div>
+          {!open && (
+            <button
+              type="button"
+              onClick={handleStart}
+              className="motion-button rounded-xl border border-hairline px-4 py-2 text-xs font-bold text-ink-soft hover:border-brand hover:text-brand transition-colors"
+            >
+              Change
+            </button>
+          )}
         </div>
 
-        <AnimatePresence mode="wait">
-          {step === "request" ? (
-            <m.div
-              key="request-step"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={springs.default}
-              className="space-y-4"
-            >
-              <div className="p-4 bg-slate-50 rounded-2xl flex items-start gap-3 border border-slate-100">
-                <ShieldAlert className="w-5 h-5 text-[#003DA5] shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-[#0b132b]">Secure Password Verification</p>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                    To update your login credentials, we will send a one-time passcode (OTP) to your registered email address to verify ownership.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                disabled={loading}
-                onClick={handleSendOtp}
-                className="w-full rounded-xl bg-[#0B132B] hover:bg-[#F7A800] text-white hover:text-[#0B132B] font-bold py-3 text-sm transition shadow-sm motion-button disabled:opacity-50"
-              >
-                {loading ? "Requesting OTP..." : "Send Verification OTP"}
-              </button>
-            </m.div>
-          ) : (
+        <AnimatePresence initial={false}>
+          {open && (
             <m.form
-              key="verify-step"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              key="pw-form"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
               transition={springs.default}
               onSubmit={handleSubmit}
-              className="space-y-4"
+              className="overflow-hidden"
             >
-              <div className="p-4 bg-emerald-50 rounded-2xl flex items-start gap-3 border border-emerald-100">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-emerald-800">OTP Sent</p>
-                  <p className="text-xs text-emerald-600 font-medium leading-relaxed">
-                    Please check your inbox. Enter the code along with your new password details below.
-                  </p>
-                </div>
-              </div>
+              <div className="pt-5 mt-5 border-t border-hairline space-y-3">
+                <p className="text-xs text-ink-soft font-medium leading-relaxed">
+                  {loading && !sent ? (
+                    "Sending a code to your email…"
+                  ) : (
+                    <>
+                      Enter the 6-digit code we emailed
+                      {email ? (
+                        <>
+                          {" "}
+                          to <span className="font-semibold text-ink">{email}</span>
+                        </>
+                      ) : null}
+                      , then set a new password.
+                    </>
+                  )}
+                </p>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Verification Code</label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    autoComplete="one-time-code"
-                    value={formData.code}
-                    onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input font-mono text-center tracking-widest text-lg font-bold"
-                    placeholder="000000"
-                  />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  autoComplete="one-time-code"
+                  value={formData.code}
+                  onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))}
+                  className={`${inputCls} font-mono text-center tracking-[0.4em] text-lg font-bold`}
+                  placeholder="000000"
+                />
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={formData.newPassword}
+                  onChange={(e) => setFormData((p) => ({ ...p, newPassword: e.target.value }))}
+                  className={inputCls}
+                  placeholder="New password (min 6 characters)"
+                />
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData((p) => ({ ...p, confirmPassword: e.target.value }))}
+                  className={inputCls}
+                  placeholder="Confirm new password"
+                />
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="motion-button flex-1 rounded-xl border border-hairline py-2.5 text-sm font-bold text-ink-soft hover:bg-wash transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || !sent}
+                    className="motion-button flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-brand py-2.5 text-sm font-bold text-white hover:bg-brand-deep transition-colors disabled:opacity-50"
+                  >
+                    {loading && sent && <Loader2 className="w-4 h-4 animate-spin" />}
+                    Update password
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">New Password</label>
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    value={formData.newPassword}
-                    onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input"
-                    placeholder="At least 6 characters"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Confirm New Password</label>
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm motion-input"
-                    placeholder="Confirm new password"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep("request")}
-                  className="flex-1 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 text-sm transition motion-button"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 rounded-xl bg-brand hover:bg-brand-deep text-white font-bold py-3 text-sm transition shadow-sm motion-button disabled:opacity-50"
-                >
-                  {loading ? "Verifying..." : "Update Password"}
-                </button>
+                {sent && (
+                  <button
+                    type="button"
+                    onClick={sendCode}
+                    disabled={loading}
+                    className="text-xs font-semibold text-ink-faint hover:text-brand transition-colors disabled:opacity-50"
+                  >
+                    Resend code
+                  </button>
+                )}
               </div>
             </m.form>
           )}

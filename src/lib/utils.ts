@@ -26,3 +26,26 @@ export function getGoogleDriveDirectLink(url: string | null | undefined): string
   }
   return url;
 }
+
+/**
+ * Aggregates board memberships into a single formatted designation string (e.g., "President & Treasurer").
+ * Filters out memberships that have `leftAt` set or where the financial year is not ACTIVE.
+ */
+export function formatDesignations(
+  boardMemberships?: { position: string; leftAt?: Date | null; financialYear?: { status: string } }[]
+): string | null {
+  if (!boardMemberships || boardMemberships.length === 0) return null;
+
+  const activePositions = boardMemberships
+    .filter((b) => !b.leftAt && (!b.financialYear || b.financialYear.status === "ACTIVE"))
+    .map((b) => b.position);
+
+  if (activePositions.length === 0) return null;
+
+  // e.g. ["President", "Treasurer", "Director"] -> "President, Treasurer & Director"
+  if (activePositions.length === 1) return activePositions[0];
+  if (activePositions.length === 2) return activePositions.join(" & ");
+  
+  const last = activePositions.pop();
+  return `${activePositions.join(", ")} & ${last}`;
+}

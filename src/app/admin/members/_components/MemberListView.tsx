@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Edit, Trash2, Eye, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteMember } from "@/features/members/actions/deleteMember";
+import { formatDesignations } from "@/lib/utils";
 
 function getInitials(name: string) {
   if (!name) return "?";
@@ -43,7 +44,7 @@ export function MemberListView({ members }: { members: any[] }) {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {members?.map((member) => {
-              const currentBoard = member.boardMemberships?.[0];
+              const designation = formatDesignations(member.boardMemberships) || "Member";
               return (
                 <tr key={member.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
@@ -63,7 +64,7 @@ export function MemberListView({ members }: { members: any[] }) {
                   </td>
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
-                      {currentBoard?.position || "Member"}
+                      {designation}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -109,7 +110,7 @@ export function MemberListView({ members }: { members: any[] }) {
       {/* Mobile Cards */}
       <div className="md:hidden flex flex-col divide-y divide-slate-100">
         {members?.map((member) => {
-          const currentBoard = member.boardMemberships?.[0];
+          const designation = formatDesignations(member.boardMemberships) || "Member";
           return (
             <div key={member.id} className="p-4 space-y-3">
               <div className="flex justify-between items-start gap-4">
@@ -129,7 +130,7 @@ export function MemberListView({ members }: { members: any[] }) {
               </div>
               <div className="flex flex-wrap gap-2 pt-2">
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
-                  {currentBoard?.position || "Member"}
+                  {designation}
                 </span>
                 {member.user?.roles?.map((role: string) => (
                   <span key={role} className="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">

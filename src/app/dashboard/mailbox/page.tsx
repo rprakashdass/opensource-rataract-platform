@@ -9,23 +9,23 @@ import { PenLine, Inbox, Clock, AlertCircle, CheckCircle2, XCircle, ChevronRight
 export const metadata = { title: "My Mailbox | Dashboard" };
 
 const TYPE_META: Record<string, { label: string; emoji: string; pill: string }> = {
-  EXCUSE:    { label: "Absence Excuse",       emoji: "🙏", pill: "bg-violet-50 text-violet-700 ring-1 ring-violet-200" },
+  EXCUSE:    { label: "Absence Excuse",       emoji: "🙏", pill: "bg-wash text-ink-soft ring-1 ring-hairline" },
   COMPLAINT: { label: "Complaint",            emoji: "🚩", pill: "bg-rose-50 text-rose-700 ring-1 ring-rose-200" },
-  INQUIRY:   { label: "Inquiry",              emoji: "💬", pill: "bg-sky-50 text-sky-700 ring-1 ring-sky-200" },
-  OTHER:     { label: "Other",                emoji: "📝", pill: "bg-slate-100 text-slate-600 ring-1 ring-slate-200" },
+  INQUIRY:   { label: "Inquiry",              emoji: "💬", pill: "bg-wash text-ink ring-1 ring-hairline" },
+  OTHER:     { label: "Other",                emoji: "📝", pill: "bg-wash text-ink-soft ring-1 ring-hairline" },
 };
 
 const STATUS_META: Record<string, { label: string; pill: string; icon: React.ReactNode }> = {
-  OPEN:        { label: "Open",        pill: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",    icon: <Clock className="w-3 h-3" /> },
+  OPEN:        { label: "Open",        pill: "bg-wash text-ink ring-1 ring-hairline",    icon: <Clock className="w-3 h-3" /> },
   IN_PROGRESS: { label: "In Progress", pill: "bg-amber-50 text-amber-700 ring-1 ring-amber-200", icon: <AlertCircle className="w-3 h-3" /> },
   RESOLVED:    { label: "Resolved",    pill: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200", icon: <CheckCircle2 className="w-3 h-3" /> },
-  CLOSED:      { label: "Closed",      pill: "bg-slate-100 text-slate-500 ring-1 ring-slate-200", icon: <XCircle className="w-3 h-3" /> },
+  CLOSED:      { label: "Closed",      pill: "bg-wash text-ink-faint ring-1 ring-hairline", icon: <XCircle className="w-3 h-3" /> },
 };
 
 const PRIORITY_DOT: Record<string, string> = {
   HIGH:   "bg-rose-500",
   MEDIUM: "bg-amber-400",
-  LOW:    "bg-slate-300",
+  LOW:    "bg-ink-faint",
 };
 
 const TYPE_FILTERS = [
@@ -56,8 +56,8 @@ export default async function MemberMailboxPage(props: {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My Mailbox</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-ink">My Mailbox</h1>
+          <p className="text-sm text-ink-soft mt-0.5">
             Messages you've sent to the board
           </p>
         </div>
@@ -87,7 +87,7 @@ export default async function MemberMailboxPage(props: {
               className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border ${
                 isActive
                   ? "bg-brand text-white border-brand shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                  : "bg-paper text-ink-soft border-hairline hover:border-ink-faint hover:bg-wash"
               }`}
             >
               {f.label}
@@ -98,15 +98,15 @@ export default async function MemberMailboxPage(props: {
 
       {/* Message list */}
       {messages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-            <Inbox className="w-7 h-7 text-slate-400" />
+        <div className="flex flex-col items-center justify-center py-20 bg-paper rounded-2xl border border-hairline gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-wash border border-hairline flex items-center justify-center">
+            <Inbox className="w-7 h-7 text-ink-faint" />
           </div>
           <div className="text-center">
-            <p className="font-semibold text-slate-800">
+            <p className="font-semibold text-ink">
               {typeFilter ? "No messages in this category" : "Nothing here yet"}
             </p>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-ink-soft mt-1">
               {typeFilter
                 ? "Try selecting a different filter above."
                 : "Send your first message to the board."}
@@ -130,26 +130,26 @@ export default async function MemberMailboxPage(props: {
             return (
               <div
                 key={msg.id}
-                className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all p-4 sm:p-5 flex items-start gap-4 group"
+                className="bg-paper rounded-2xl border border-hairline hover:border-ink-faint hover:shadow-sm transition-all p-4 sm:p-5 flex items-start gap-4 group"
               >
                 {/* Emoji icon */}
-                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 text-lg">
+                <div className="w-10 h-10 rounded-xl bg-wash border border-hairline flex items-center justify-center flex-shrink-0 text-lg">
                   {tm.emoji}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-900 truncate">{msg.subject}</p>
+                    <p className="text-sm font-semibold text-ink truncate">{msg.subject}</p>
                     <span
-                      className="text-[10px] text-slate-400 whitespace-nowrap mt-0.5 tabular-nums"
+                      className="text-[10px] text-ink-faint whitespace-nowrap mt-0.5 tabular-nums"
                       suppressHydrationWarning
                     >
                       {formatDistanceToNow(new Date(msg.createdAt), { addSuffix: true })}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-ink-soft mt-1 line-clamp-2 leading-relaxed">
                     {msg.description}
                   </p>
 
@@ -166,7 +166,7 @@ export default async function MemberMailboxPage(props: {
                     </span>
 
                     {/* Priority dot */}
-                    <span className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
+                    <span className="flex items-center gap-1 text-[11px] text-ink-faint font-medium">
                       <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
                       {msg.priority.charAt(0) + msg.priority.slice(1).toLowerCase()}
                     </span>
@@ -177,7 +177,7 @@ export default async function MemberMailboxPage(props: {
                         href={msg.attachmentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-wash text-ink-soft hover:bg-parchment transition-colors"
                       >
                         <Paperclip className="w-3 h-3" />
                         Attachment

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PortalHeader, NotificationItem } from "@/components/layout/PortalHeader";
 import { PortalSidebar, NavGroup } from "@/components/layout/PortalSidebar";
+import { PageTransition } from "@/components/ui/motion/PageTransition";
 import { ROUTES } from "@/lib/constants";
 import { 
   LayoutDashboard, Users, Calendar, Image as ImageIcon, Settings, 
@@ -104,7 +105,7 @@ export default function AdminLayoutClient({ children, club, user, notifications,
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-[#FAF8F5] text-slate-900 relative selection:bg-slate-200 selection:text-slate-900 flex flex-col">
+    <div className="h-screen overflow-hidden bg-background flex flex-col">
       <PortalHeader 
         club={club}
         user={user}
@@ -120,8 +121,10 @@ export default function AdminLayoutClient({ children, club, user, notifications,
           onMobileClose={() => setMobileMenuOpen(false)}
         />
 
-        <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden animate-in fade-in duration-700 slide-in-from-bottom-4">
-          {children}
+        <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <PageTransition className="max-w-6xl mx-auto">
+            {children}
+          </PageTransition>
         </main>
       </div>
     </div>

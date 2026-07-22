@@ -83,11 +83,11 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
   const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => {
     const collapsed = mobile ? false : isCollapsed;
     return (
-      <div className="flex flex-col h-full bg-white text-slate-900 border-r border-slate-200">
+      <div className="flex flex-col h-full bg-white text-ink border-r border-hairline">
         {/* Mobile Close Button & Header area (only visible on mobile drawer) */}
         {mobile && (
-          <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-100">
-            <span className="font-bold text-slate-800">Menu</span>
+          <div className="md:hidden flex items-center justify-between p-4 border-b border-hairline">
+            <span className="font-bold text-ink">Menu</span>
           </div>
         )}
 
@@ -95,12 +95,12 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
           {navGroups.map((group, gIdx) => (
             <div key={gIdx} className={group.group ? "space-y-1" : ""}>
               {group.group && !collapsed && (
-                <h3 className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-ink-soft uppercase tracking-wider mb-2">
                   {group.group}
                 </h3>
               )}
               {group.group && collapsed && (
-                <div className="w-full border-t border-slate-100 my-2" />
+                <div className="w-full border-t border-hairline my-2" />
               )}
               <div className="space-y-1">
                 {group.items.map((item) => {
@@ -115,11 +115,11 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
                       }}
                       title={collapsed ? item.label : undefined}
                       className={cn(
-                        "flex items-center rounded-lg font-medium transition-all text-sm group relative",
-                        collapsed ? "justify-center py-3 px-0" : "px-3 py-2.5 justify-between",
+                        "flex items-center rounded-lg font-medium transition-all text-sm group relative min-h-[44px]",
+                        collapsed ? "justify-center px-0" : "px-3 justify-between",
                         active
-                          ? "bg-pink-50/80 text-brand font-semibold shadow-sm"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          ? "bg-wash text-brand font-semibold shadow-sm"
+                          : "text-ink-soft hover:bg-wash hover:text-ink"
                       )}
                     >
                       <div className="flex items-center gap-3 w-full min-w-0">
@@ -127,7 +127,7 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
                           className={cn(
                             "flex-shrink-0 transition-colors",
                             collapsed ? "h-5 w-5 mx-auto" : "h-4 w-4",
-                            active ? "text-brand" : "text-slate-400 group-hover:text-slate-600"
+                            active ? "text-brand" : "text-ink-faint group-hover:text-ink-soft"
                           )}
                         />
                         {!collapsed && <span className="truncate flex-1">{item.label}</span>}
@@ -139,7 +139,7 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
                             collapsed
                               ? "absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full text-[9px] bg-red-500 text-white"
                               : "h-5 min-w-5 px-1.5 rounded-full text-xs ml-auto",
-                            !collapsed && active ? "bg-pink-100 text-brand" : !collapsed ? "bg-slate-100 text-slate-600" : ""
+                            !collapsed && active ? "bg-white text-brand" : !collapsed ? "bg-wash text-ink-soft" : ""
                           )}
                         >
                           {item.badgeCount}
@@ -155,10 +155,10 @@ export function PortalSidebar({ navGroups, isMobileOpen, onMobileClose }: Portal
 
         {/* Desktop Collapse Toggle */}
         {!mobile && (
-          <div className="hidden md:flex p-3 border-t border-slate-100">
+          <div className="hidden md:flex p-3 border-t border-hairline">
             <button
               onClick={toggleCollapse}
-              className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors w-full"
+              className="flex items-center justify-center min-h-[44px] p-2 rounded-lg text-ink-soft hover:bg-wash hover:text-ink transition-colors w-full"
               title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
               {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}

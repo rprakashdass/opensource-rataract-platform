@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PortalHeader, NotificationItem } from "@/components/layout/PortalHeader";
 import { PortalSidebar, NavGroup } from "@/components/layout/PortalSidebar";
+import { PageTransition } from "@/components/ui/motion/PageTransition";
 import { ROUTES } from "@/lib/constants";
 import { LayoutDashboard, Calendar, Briefcase, Lightbulb, ClipboardCheck, UserCircle, Banknote, Users, MessageSquare, MessageSquareWarning } from "lucide-react";
 
@@ -33,7 +34,7 @@ export default function DashboardLayoutClient({ children, roles, club, user, not
   ];
 
   return (
-    <div className="h-screen overflow-hidden bg-[#FAF8F5] flex flex-col">
+    <div className="h-screen overflow-hidden bg-background flex flex-col">
       <PortalHeader 
         club={club}
         user={user}
@@ -49,10 +50,10 @@ export default function DashboardLayoutClient({ children, roles, club, user, not
           onMobileClose={() => setMobileMenuOpen(false)}
         />
 
-        <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <PageTransition className="max-w-6xl mx-auto">
             {children}
-          </div>
+          </PageTransition>
         </main>
       </div>
     </div>

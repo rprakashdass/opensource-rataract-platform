@@ -19,7 +19,7 @@ export default function ProfileEditDialog({ member, triggerType = "button" }: Pr
       {triggerType === "link" ? (
         <button 
           onClick={() => setOpen(true)} 
-          className="text-xs font-bold text-[#F7A800] hover:text-[#003DA5] flex items-center gap-1 motion-link py-1 select-none"
+          className="text-xs font-bold text-brand hover:text-brand-deep flex items-center gap-1 motion-link py-1 select-none"
         >
           <Edit2 className="w-3.5 h-3.5" /> Edit details
         </button>
@@ -30,7 +30,7 @@ export default function ProfileEditDialog({ member, triggerType = "button" }: Pr
       )}
       <AnimatedDialog isOpen={open} onClose={() => setOpen(false)}>
         <div className="p-6 md:p-8 max-h-[90vh] overflow-y-auto bg-white">
-          <h2 className="text-2xl font-bold text-[#0B132B] mb-6 border-b pb-2">Edit Profile</h2>
+          <h2 className="text-2xl font-bold text-ink mb-6 border-b border-hairline pb-2">Edit Profile</h2>
           <ProfileForm member={member} onSuccess={() => { setOpen(false); window.location.reload(); }} />
         </div>
       </AnimatedDialog>

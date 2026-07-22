@@ -82,13 +82,25 @@ export async function getPublicTeam() {
 
       const avatarMap = new Map(avatars.map(a => [a.id, a.avatar]));
 
-      const board = base.board.map(bm => ({
-          ...bm,
-          member: {
-              ...bm.member,
-              avatar: avatarMap.get(bm.member.id) || null
+      const groupedBoardMap = new Map();
+      const board = [];
+
+      for (const bm of base.board) {
+          if (groupedBoardMap.has(bm.member.id)) {
+              const existing = groupedBoardMap.get(bm.member.id);
+              existing.position = existing.position + " & " + bm.position;
+          } else {
+              const newBm = {
+                  ...bm,
+                  member: {
+                      ...bm.member,
+                      avatar: avatarMap.get(bm.member.id) || null
+                  }
+              };
+              groupedBoardMap.set(bm.member.id, newBm);
+              board.push(newBm);
           }
-      }));
+      }
 
       const members = base.members.map(m => ({
           ...m,

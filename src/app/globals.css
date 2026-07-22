@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: 45 20% 98%; /* Warm White #FAF9F6 */
-  --foreground: 225 59% 11%; /* Ink Navy #0B132B */
+  --background: 33 41% 97%; /* Warm paper #FBF7F2 */
+  --foreground: 325 16% 15%; /* Ink #2B1F26 */
   --card: 0 0% 100%; /* Pure White */
-  --card-foreground: 225 59% 11%;
+  --card-foreground: 325 16% 15%;
   --popover: 0 0% 100%;
-  --popover-foreground: 225 59% 11%;
-  --primary: 41 100% 48%; /* Rotary Gold #F7A800 */
+  --popover-foreground: 325 16% 15%;
+  --primary: 334 84% 45%; /* Cranberry #D41367 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 218 100% 32%; /* Rotary Blue #003DA5 */
-  --secondary-foreground: 0 0% 100%;
-  --muted: 45 10% 95%;
-  --muted-foreground: 225 15% 45%;
-  --accent: 41 100% 48%; /* Rotary Gold */
-  --accent-foreground: 225 59% 11%;
+  --secondary: 19 38% 94%; /* Wash #F6EDE9 */
+  --secondary-foreground: 325 16% 15%;
+  --muted: 19 38% 94%; /* Wash #F6EDE9 */
+  --muted-foreground: 333 7% 57%; /* Ink faint */
+  --accent: 19 38% 94%;
+  --accent-foreground: 325 16% 15%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 225 15% 91%; /* Neutral slate/cream border */
-  --input: 225 15% 91%;
-  --ring: 41 100% 48%;
+  --border: 8 26% 89%; /* Hairline #EBDEDC */
+  --input: 8 26% 89%;
+  --ring: 334 84% 45%; /* Cranberry */
   --radius: 1rem;
 }
 
@@ -46,25 +46,25 @@
 }
 
 @theme {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-card: #FFFFFF;
+  --color-card-foreground: var(--color-ink);
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: var(--color-ink);
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: var(--color-wash);
+  --color-secondary-foreground: var(--color-ink);
+  --color-muted: var(--color-wash);
+  --color-muted-foreground: var(--color-ink-soft);
+  --color-accent: var(--color-wash);
+  --color-accent-foreground: var(--color-ink);
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
+  --color-border: var(--color-hairline);
+  --color-input: var(--color-hairline);
+  --color-ring: var(--color-brand);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 3px);

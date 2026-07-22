@@ -30,7 +30,7 @@ export function PageHeader({
       {backHref && (
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors mb-3"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-ink transition-colors mb-3"
         >
           <ArrowLeft className="w-4 h-4" />
           {backLabel || "Back"}
@@ -38,8 +38,8 @@ export function PageHeader({
       )}
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-slate-900">{title}</h1>
-          {description && <p className="text-sm text-slate-500 mt-1.5 max-w-2xl">{description}</p>}
+          <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight text-ink">{title}</h1>
+          {description && <p className="text-sm text-ink-soft mt-1.5 max-w-2xl">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
       </div>
@@ -64,14 +64,14 @@ export function StatCard({
   className?: string;
 }) {
   const tones: Record<string, string> = {
-    neutral: "bg-slate-50 text-slate-600",
-    positive: "bg-emerald-50 text-emerald-600",
-    warning: "bg-amber-50 text-amber-600",
-    critical: "bg-rose-50 text-rose-600",
-    brand: "bg-pink-50 text-brand",
+    neutral: "bg-wash text-ink-soft",
+    positive: "bg-wash text-gold",
+    warning: "bg-wash text-gold",
+    critical: "bg-wash text-brand",
+    brand: "bg-wash text-brand",
   };
   return (
-    <div className={cn("rounded-xl border border-slate-200 bg-white p-4 md:p-5", className)}>
+    <div className={cn("rounded-xl border border-hairline bg-paper p-4 md:p-5", className)}>
       <div className="flex items-center gap-3">
         {Icon && (
           <span className={cn("rounded-lg p-2 shrink-0", tones[tone])}>
@@ -79,13 +79,13 @@ export function StatCard({
           </span>
         )}
         <div className="min-w-0">
-          <p className="text-xs font-medium text-slate-500 truncate">{label}</p>
-          <p className="text-xl md:text-2xl font-display font-bold text-slate-900 tabular-nums leading-tight">
+          <p className="text-xs font-medium text-ink-soft truncate">{label}</p>
+          <p className="text-xl md:text-2xl font-display font-bold text-ink tabular-nums leading-tight">
             {value}
           </p>
         </div>
       </div>
-      {hint && <p className="text-xs text-slate-400 mt-2">{hint}</p>}
+      {hint && <p className="text-xs text-ink-faint mt-2">{hint}</p>}
     </div>
   );
 }
@@ -121,8 +121,8 @@ export function TableWrap({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-xl border border-slate-200 bg-white", className)}>
-      {mobile && <div className="md:hidden divide-y divide-slate-100">{mobile}</div>}
+    <div className={cn("rounded-xl border border-hairline bg-paper", className)}>
+      {mobile && <div className="md:hidden divide-y divide-hairline/50">{mobile}</div>}
       <div className={cn("overflow-x-auto", mobile && "hidden md:block")}>{children}</div>
     </div>
   );

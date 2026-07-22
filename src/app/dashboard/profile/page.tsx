@@ -45,7 +45,14 @@ export default async function MemberProfilePage() {
     });
 
     if (!member) {
-        return <div className="text-center py-20 text-slate-500">Profile not found.</div>;
+        return (
+            <div className="max-w-md mx-auto text-center py-24 px-6">
+                <h2 className="text-xl font-bold text-ink">Profile not found</h2>
+                <p className="text-sm text-ink-soft mt-2">
+                    We couldn&rsquo;t load your member profile. Try refreshing, or contact your club admin if this keeps happening.
+                </p>
+            </div>
+        );
     }
 
     const serializedMember = JSON.parse(JSON.stringify(member));

@@ -65,7 +65,7 @@ const CmsPreviewFrame = forwardRef<CmsPreviewFrameHandle, CmsPreviewFrameProps>(
             ref={iframeRef}
             src={previewUrl}
             onLoad={postUpdate}
-            className="absolute inset-0 w-full h-full border-0 select-none pointer-events-none"
+            className="absolute inset-0 w-full h-full border-0"
           />
         </div>
       </div>
