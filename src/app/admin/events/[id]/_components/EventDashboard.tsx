@@ -255,13 +255,17 @@ function LifecycleStepper({
   onTransition,
   loading,
   eventId,
+  chairMode = false,
 }: {
   status: string;
   onTransition: (s: string) => void;
   loading: boolean;
   eventId: string;
+  chairMode?: boolean;
 }) {
   const isCancelled = status === "CANCELLED";
+  // Publishing is admin-only; hide the "Publish event" CTA from chairs.
+  const isPublishStep = status === "DRAFT" || status === "PLANNING";
   const currentIdx = isCancelled ? -1 : getStepIndex(status);
 
   // Primary CTA per stage
@@ -365,7 +369,7 @@ function LifecycleStepper({
 
       {/* Primary CTA + overflow menu */}
       <div className="flex items-center gap-2 shrink-0">
-        {!isCancelled && action && action.next && (
+        {!isCancelled && action && action.next && !(chairMode && isPublishStep) && (
           <Button
             disabled={loading}
             onClick={() => onTransition(action.next)}
@@ -381,8 +385,8 @@ function LifecycleStepper({
           </div>
         )}
 
-        {/* Secondary / destructive in overflow menu — only render when there are actions */}
-        {(() => {
+        {/* Secondary / destructive in overflow menu — admin-only, and only when there are actions */}
+        {!chairMode && (() => {
           const canUnpublish = status === "UPCOMING";
           const canCancel = status !== "CANCELLED" && status !== "COMPLETED";
           const canRestore = status === "CANCELLED";
@@ -699,12 +703,14 @@ function CompletedBody({
   setReportText,
   onSaveReport,
   loading,
+  chairMode = false,
 }: {
   event: EventDashboardProps["event"];
   reportText: string;
   setReportText: (v: string) => void;
   onSaveReport: () => void;
   loading: boolean;
+  chairMode?: boolean;
 }) {
   const attendedCount = event.registrations.filter((r) => r.status === "ATTENDED").length;
   const attendanceRatio =
@@ -735,7 +741,12 @@ function CompletedBody({
           placeholder="Draft official minutes or post-event report here..."
           className="min-h-[200px] font-sans text-sm leading-relaxed bg-slate-50"
         />
-        <div className="flex justify-end pt-3">
+        <div className="flex justify-between items-center pt-3">
+          <Link href={`/reports/events/${event.id}?source=${chairMode ? "member" : "admin"}`} target="_blank">
+            <Button variant="outline" className="text-slate-600">
+              Preview & Download Report
+            </Button>
+          </Link>
           <Button
             onClick={onSaveReport}
             disabled={loading}
@@ -835,7 +846,7 @@ function CompletedBody({
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
-export default function EventDashboard({ event }: EventDashboardProps) {
+export default function EventDashboard({ event, chairMode = false }: EventDashboardProps & { chairMode?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState(event.minutes?.content || "");
@@ -900,6 +911,7 @@ export default function EventDashboard({ event }: EventDashboardProps) {
         onTransition={handleTransition}
         loading={loading}
         eventId={event.id}
+        chairMode={chairMode}
       />
 
       {/* ── Stage-Aware Body ───────────────────────────────── */}
@@ -919,6 +931,7 @@ export default function EventDashboard({ event }: EventDashboardProps) {
           setReportText={setReportText}
           onSaveReport={handleSaveReport}
           loading={loading}
+          chairMode={chairMode}
         />
       )}
     </div>

@@ -37,6 +37,8 @@ const nextConfig: NextConfig = {
       { source: "/board", destination: "/team", permanent: true },
       // Legacy donation page — sponsorship lives on /partner now
       { source: "/sponsor-us", destination: "/partner", permanent: true },
+      // Dashboard has been renamed to member portal
+      { source: "/dashboard/:path*", destination: "/member/:path*", permanent: true },
     ];
   },
 };

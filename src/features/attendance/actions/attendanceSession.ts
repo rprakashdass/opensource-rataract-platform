@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 
@@ -9,7 +10,7 @@ import crypto from "crypto";
 export async function generateAttendanceSession(eventId: string, validityMinutes: number = 60) {
     try {
         const session = await getSession();
-        if (!session || !canManageClub(session)) return { error: "Unauthorized" };
+        if (!session || !(await canManageEvent(session, eventId))) return { error: "Unauthorized" };
 
         const isAuthorized = session.roles?.some((r: string) => 
             ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN"].includes(r)
@@ -178,7 +179,7 @@ export async function memberPinCheckIn(eventId: string, pin: string) {
             }
         });
 
-        revalidatePath(`/dashboard/events`);
+        revalidatePath(`/member/events`);
         return { success: true };
     } catch (error: any) {
         console.error("PIN check-in error:", error);
@@ -190,7 +191,7 @@ export async function memberPinCheckIn(eventId: string, pin: string) {
 export async function invalidateAttendanceSession(sessionId: string, eventId: string) {
     try {
         const session = await getSession();
-        if (!session || !canManageClub(session)) return { error: "Unauthorized" };
+        if (!session || !(await canManageEvent(session, eventId))) return { error: "Unauthorized" };
 
         const isAuthorized = session.roles?.some((r: string) => 
             ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN"].includes(r)

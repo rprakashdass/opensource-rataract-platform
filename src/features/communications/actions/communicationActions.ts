@@ -90,7 +90,7 @@ export async function createCommunication(data: CreateCommunicationInput) {
       });
     }
 
-    revalidatePath("/dashboard/mailbox");
+    revalidatePath("/member/mailbox");
     revalidatePath("/admin/mailbox");
 
     return { success: true, data: comm };
@@ -176,7 +176,7 @@ export async function updateCommunicationStatus(data: UpdateCommunicationStatusI
       data: updateData
     });
 
-    revalidatePath("/dashboard/mailbox");
+    revalidatePath("/member/mailbox");
     revalidatePath("/admin/mailbox");
 
     return { success: true, data: comm };
@@ -211,7 +211,7 @@ export async function deleteCommunication(id: string) {
       where: { id },
     });
 
-    revalidatePath("/dashboard/mailbox");
+    revalidatePath("/member/mailbox");
     revalidatePath("/admin/mailbox");
     return { success: true };
   } catch (error: any) {

@@ -3,7 +3,7 @@ Allow: /
 
 # Disallow private sections
 Disallow: /admin/
-Disallow: /dashboard/
+Disallow: /member/
 Disallow: /auth/
 Disallow: /api/
 Disallow: /attendance/

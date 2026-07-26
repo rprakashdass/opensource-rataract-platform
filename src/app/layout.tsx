@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Inter, Fraunces, Figtree, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import LayoutProvider from "@/components/providers/LayoutProvider";
@@ -61,6 +62,24 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // When the launch gate rewrites a request to /coming-soon it sets this header.
+  // usePathname() still reports the original path on a rewrite, so LayoutProvider
+  // can't hide the chrome on its own — we render the teaser bare here instead.
+  const gated = (await headers()).get("x-site-gated") === "1";
+  if (gated) {
+    return (
+      <html lang="en" className={`antialiased ${fraunces.variable} ${figtree.variable} ${bricolageGrotesque.variable}`}>
+        <head>
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+          />
+        </head>
+        <body className={`${inter.className} min-h-full`}>{children}</body>
+      </html>
+    );
+  }
+
   const layoutData = await getPublicLayoutData();
   const settings = layoutData?.settings;
 

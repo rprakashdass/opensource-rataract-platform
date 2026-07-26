@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { EventStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { revalidatePublicRoutes } from "@/lib/revalidate";
@@ -9,7 +10,7 @@ import { revalidatePublicRoutes } from "@/lib/revalidate";
 export async function transitionEvent(eventId: string, newStatus: EventStatus) {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
+    if (!session || !(await canManageEvent(session, eventId))) { return { error: "Unauthorized" }; }
 
     const event = await prisma.event.findUnique({
       where: { id: eventId }
@@ -52,7 +53,12 @@ export async function transitionEvent(eventId: string, newStatus: EventStatus) {
     }
 
     const updateData: any = { status: newStatus };
+    // Leaving DRAFT auto-publishes — that's an admin-only action. A chair must
+    // use "Submit for approval"; only an admin can actually publish.
     if (currentStatus === "DRAFT" && newStatus !== "CANCELLED") {
+      if (!canManageClub(session)) {
+        return { error: "Only an admin can publish this event. Use “Submit for approval” instead." };
+      }
       updateData.publishStatus = "PUBLISHED";
       updateData.publishedAt = new Date();
     }

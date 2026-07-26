@@ -36,10 +36,10 @@ export async function createInitiative(data: InitiativeFormData, submit: boolean
       },
     });
 
-    revalidatePath("/dashboard/initiatives");
+    revalidatePath("/member/initiatives");
     revalidatePath("/admin/proposals");
 
-    return { success: true, initiative };
+    return { success: true, initiative: { id: initiative.id } };
   } catch (error: any) {
     console.error("Create initiative error:", error);
     return { error: error.message || "Failed to create proposal" };

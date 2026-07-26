@@ -2,12 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidatePath } from "next/cache";
 
 export async function toggleAttendanceLock(eventId: string, locked: boolean) {
     try {
         const session = await getSession();
-        if (!session || !canManageClub(session)) return { error: "Unauthorized" };
+        if (!session || !(await canManageEvent(session, eventId))) return { error: "Unauthorized" };
 
         const isAuthorized = session.roles?.some((r: string) => 
             ["SUPER_ADMIN", "CLUB_ADMIN"].includes(r) // Events admin might not be allowed to lock? Let's allow EVENTS_ADMIN for now.

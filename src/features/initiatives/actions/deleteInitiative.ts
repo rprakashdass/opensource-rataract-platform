@@ -19,7 +19,7 @@ export async function deleteInitiative(id: string) {
 
     await prisma.initiative.delete({ where: { id } });
 
-    revalidatePath("/dashboard/initiatives");
+    revalidatePath("/member/initiatives");
 
     return { success: true };
   } catch (error: any) {

@@ -28,7 +28,7 @@ export async function addInitiativeComment(initiativeId: string, body: string) {
       },
     });
 
-    revalidatePath(`/dashboard/initiatives/${initiativeId}`);
+    revalidatePath(`/member/initiatives/${initiativeId}`);
     revalidatePath(`/admin/proposals/${initiativeId}`);
 
     return { success: true, comment };

@@ -15,6 +15,7 @@ import {
   Flame,
   Settings,
   ArrowUpRight,
+  Rocket,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,22 @@ export default async function WebsiteControlCenter() {
           </Link>
         }
       />
+
+      {/* Launch control — gate the whole public site */}
+      <Link href="/admin/website/launch" className="group block">
+        <div className="flex items-center gap-4 rounded-xl border border-brand/20 bg-gradient-to-r from-brand/5 to-transparent p-5 transition-all hover:border-brand/40 hover:shadow-sm">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
+            <Rocket className="h-6 w-6" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-slate-900 group-hover:text-brand transition-colors">Launch Control</h3>
+            <p className="text-sm text-slate-500 mt-1">
+              Go live now, or schedule the reveal with a countdown. Hidden behind a coming-soon page until then.
+            </p>
+          </div>
+          <ArrowUpRight className="h-5 w-5 text-slate-300 group-hover:text-brand transition-colors" />
+        </div>
+      </Link>
 
       {/* Page editors */}
       <section>

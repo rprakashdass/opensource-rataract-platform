@@ -1,6 +1,7 @@
 "use server";
 
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { prisma } from "@/lib/prisma";
 import { GoogleDriveProvider } from "@/features/storage/google-drive";
 import { decrypt } from "@/lib/crypto";
@@ -10,7 +11,7 @@ import { revalidatePublicRoutes } from "@/lib/revalidate";
 export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, eventId: string) {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
+    if (!session || !(await canManageEvent(session, eventId))) { return { error: "Unauthorized" }; }
 
     await prisma.media.update({
       where: { id: mediaId },
@@ -30,7 +31,7 @@ export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, e
 export async function setEventMediaRole(mediaId: string, eventId: string, role: "banner" | "poster") {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
+    if (!session || !(await canManageEvent(session, eventId))) { return { error: "Unauthorized" }; }
 
     await prisma.event.update({
       where: { id: eventId },
@@ -50,7 +51,7 @@ export async function setEventMediaRole(mediaId: string, eventId: string, role: 
 export async function deleteEventMedia(mediaId: string, eventId: string) {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
+    if (!session || !(await canManageEvent(session, eventId))) { return { error: "Unauthorized" }; }
 
     const media = await prisma.media.findUnique({
       where: { id: mediaId }

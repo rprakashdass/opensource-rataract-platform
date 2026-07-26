@@ -1,21 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidateTag, revalidatePath } from "next/cache";
 
 export async function PUT(req: Request) {
   try {
     const session = await getSession();
-    if (!session || !session.roles?.some((role: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN"].includes(role))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const data = await req.json();
     const { id, title, slug, description, location, meetingLink, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured, bannerMediaId, posterMediaId, publishStatus, seekingSponsorship, sponsorshipGoal, sponsorshipPitch } = data;
 
     if (!id) {
       return NextResponse.json({ error: "Missing event ID" }, { status: 400 });
     }
+
+    // Admins manage any event; chairs/co-chairs only their own.
+    if (!session || !(await canManageEvent(session, id))) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const isAdmin = canManageClub(session);
+
+    // Publish state is admin-only — a chair's edit must never change it.
+    const existing = await prisma.event.findUnique({ where: { id }, select: { publishStatus: true, publishedAt: true } });
+    if (!existing) return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    const effPublishStatus = isAdmin ? publishStatus : existing.publishStatus;
+    const effPublishedAt = isAdmin ? (publishStatus === "PUBLISHED" ? new Date() : null) : existing.publishedAt;
 
     const event = await prisma.event.update({
       where: { id },
@@ -28,7 +37,7 @@ export async function PUT(req: Request) {
         startTime: startDate ? new Date(startDate) : undefined,
         startDate: startDate ? new Date(startDate) : undefined,
         endTime: endDate ? new Date(endDate) : null,
-        status: publishStatus === "DRAFT" ? "DRAFT" : (() => {
+        status: effPublishStatus === "DRAFT" ? "DRAFT" : (() => {
           if (status === "CANCELLED" || status === "ONGOING" || status === "COMPLETED") return status;
           if (!startDate) return status;
           const start = new Date(startDate);
@@ -42,8 +51,8 @@ export async function PUT(req: Request) {
         isFeatured,
         bannerMediaId: bannerMediaId || null,
         posterMediaId: posterMediaId || null,
-        publishStatus,
-        publishedAt: publishStatus === "PUBLISHED" ? new Date() : null,
+        publishStatus: effPublishStatus,
+        publishedAt: effPublishedAt,
         seekingSponsorship: seekingSponsorship || false,
         sponsorshipGoal: sponsorshipGoal || null,
         sponsorshipPitch: sponsorshipPitch || null,

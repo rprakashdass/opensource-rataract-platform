@@ -7,7 +7,8 @@ import InquiryActions from "./_components/InquiryActions";
 import { PageHeader, TableWrap, PortalEmptyState } from "@/components/portal";
 import Link from "next/link";
 
-export default async function InquiriesDashboard({ searchParams }: { searchParams: { tab?: string } }) {
+export default async function InquiriesDashboard(props: { searchParams: Promise<{ tab?: string }> }) {
+  const searchParams = await props.searchParams;
   const club = await getCurrentClub();
   if (!club) notFound();
 

@@ -70,6 +70,11 @@ function EventRow({ event }: { event: any }) {
             {event.title}
           </span>
           <StatusPill status={event.status} />
+          {event.publishStatus === "DRAFT" && event.submittedForReviewAt && (
+            <span className="inline-flex items-center rounded-full bg-brand/10 text-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+              Awaiting approval
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-400">
           {event.location && (

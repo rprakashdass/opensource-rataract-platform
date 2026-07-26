@@ -7,7 +7,7 @@ import Footer from "../layout/Footer";
 import { FootprintTrail } from "@/components/ui/public/v2/FootprintTrail";
 import { ReactLenis } from "lenis/react";
 
-const noLayoutPages = ["/join-now", "/sustainability-hackathon"];
+const noLayoutPages = ["/join-now", "/sustainability-hackathon", "/coming-soon"];
 
 export default function LayoutProvider({
   children,
@@ -35,7 +35,8 @@ export default function LayoutProvider({
     noLayoutPages.includes(pathname) ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/auth") ||
-    pathname.startsWith("/dashboard");
+    pathname.startsWith("/member") ||
+    pathname.startsWith("/reports");
 
   if (isNoLayout) {
     return <>{children}</>;

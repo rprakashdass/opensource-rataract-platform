@@ -38,12 +38,12 @@ export async function updateInitiative(id: string, data: InitiativeFormData, sub
       },
     });
 
-    revalidatePath("/dashboard/initiatives");
-    revalidatePath(`/dashboard/initiatives/${id}`);
+    revalidatePath("/member/initiatives");
+    revalidatePath(`/member/initiatives/${id}`);
     revalidatePath("/admin/proposals");
     revalidatePath(`/admin/proposals/${id}`);
 
-    return { success: true, initiative };
+    return { success: true, initiative: { id: initiative.id } };
   } catch (error: any) {
     console.error("Update initiative error:", error);
     return { error: error.message || "Failed to update proposal" };

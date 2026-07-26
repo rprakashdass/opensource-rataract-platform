@@ -125,6 +125,11 @@ model WebsiteSettings {
   clubId String @unique
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
+  // Public Launch Gate (admin-controlled from /admin/website/launch)
+  // Until the site is live, all public pages are hidden behind /coming-soon.
+  siteLive          Boolean  @default(false) // hard "we are live" switch
+  launchAt          DateTime?                 // scheduled reveal; site auto-goes-live once passed
+
   // SEO & General Branding
   seoTitle          String?
   seoDescription    String?
@@ -881,6 +886,7 @@ model Event {
   publishStatus PublishStatus @default(DRAFT)
   publishAt     DateTime?
   publishedAt   DateTime?
+  submittedForReviewAt DateTime? // chair requested publish approval
   isFeatured    Boolean       @default(false)
 
   status             EventStatus @default(UPCOMING)

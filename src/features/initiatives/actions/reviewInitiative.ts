@@ -45,8 +45,8 @@ export async function reviewInitiative(
 
     revalidatePath(`/admin/proposals/${id}`);
     revalidatePath("/admin/proposals");
-    revalidatePath(`/dashboard/initiatives/${id}`);
-    revalidatePath("/dashboard/initiatives");
+    revalidatePath(`/member/initiatives/${id}`);
+    revalidatePath("/member/initiatives");
 
     return { success: true, initiative };
   } catch (error: any) {

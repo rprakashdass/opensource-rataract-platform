@@ -59,7 +59,7 @@ export default function QRCheckInHandler({ token }: { token: string }) {
                 <p className="text-slate-600 font-medium mb-4">{eventTitle}</p>
                 <p className="text-sm text-slate-500 mb-8">{message}</p>
                 
-                <Link href="/dashboard" className="w-full">
+                <Link href="/member" className="w-full">
                     <Button className="w-full gap-2 bg-brand hover:bg-brand-deep text-white border-none font-semibold">Back to Dashboard <ArrowRight className="w-4 h-4" /></Button>
                 </Link>
             </div>
@@ -89,7 +89,7 @@ export default function QRCheckInHandler({ token }: { token: string }) {
             </h2>
             <p className="text-sm text-slate-500 mb-8">{message}</p>
             
-            <Link href="/dashboard" className="w-full">
+            <Link href="/member" className="w-full">
                 <Button variant={isLocked || isExpired ? "secondary" : "outline"} className="w-full gap-2">
                     Back to Dashboard <ArrowRight className="w-4 h-4" />
                 </Button>

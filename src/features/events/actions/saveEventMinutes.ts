@@ -2,12 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function saveEventMinutes(eventId: string, minutes: string) {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) { return { error: "Unauthorized" }; }
+    if (!session || !(await canManageEvent(session, eventId))) { return { error: "Unauthorized" }; }
 
     const updated = await prisma.eventMinutes.upsert({
       where: { eventId },

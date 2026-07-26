@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidatePath } from "next/cache";
 import { AttendanceStatus } from "@prisma/client";
 
@@ -13,7 +14,7 @@ export async function bulkMarkAttendance(
 ) {
   try {
     const session = await getSession();
-    if (!session || !canManageClub(session)) return { error: "Unauthorized" };
+    if (!session || !(await canManageEvent(session, eventId))) return { error: "Unauthorized" };
 
     const isAuthorized = session.roles?.some((r: string) => 
       ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN", "PRESIDENT", "SECRETARY"].includes(r)

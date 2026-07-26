@@ -34,7 +34,7 @@ interface PortalHeaderProps {
   };
   notifications: NotificationItem[];
   onMobileMenuToggle: () => void;
-  isAdminContext: boolean; // true if currently in /admin, false if in /dashboard
+  isAdminContext: boolean; // true if currently in /admin, false if in /member
 }
 
 export function PortalHeader({ club, user, notifications, onMobileMenuToggle, isAdminContext }: PortalHeaderProps) {
@@ -339,7 +339,7 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                           Visit Website
                         </Link>
 
-                        <div className="h-px bg-hairline my-1 mx-2" />
+                        <div className="h-px bg-hairline my-1 mx-2 md:hidden" />
 
                         <div className="px-3 py-2 w-full text-left" onClick={() => setProfileOpen(false)}>
                           <LogoutButton />
