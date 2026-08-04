@@ -86,7 +86,12 @@ export async function POST(req: Request) {
         paymentQr: typeof data.paymentQr === "string" ? data.paymentQr.trim() : null,
       },
     });
+    // Bust every cache that reads club data: getCurrentClub ("club") AND the
+    // public layout/header, which caches under "layout"/"settings" — without
+    // these the header keeps serving the old logo until the 1h revalidate.
     revalidateTag("club", "max");
+    revalidateTag("layout", "max");
+    revalidateTag("settings", "max");
     return NextResponse.json(updated);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";

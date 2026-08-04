@@ -1,4 +1,5 @@
 import { getPublicEvent } from "@/features/public/queries/getPublicEvent";
+import { getCurrentClub } from "@/lib/club";
 import { Metadata } from "next";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const { event } = data;
-  const title = `${event.title} | Rotaract Club`;
+  const club = await getCurrentClub();
+  const title = `${event.title} | ${club?.name || "Rotaract Club"}`;
   const description = event.description ? event.description.substring(0, 160) : `Check out ${event.title}`;
   const eventAny = event as any;
   const imageUrl: string | undefined =

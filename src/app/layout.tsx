@@ -4,6 +4,7 @@ import { Inter, Fraunces, Figtree, Bricolage_Grotesque } from "next/font/google"
 import "./globals.css";
 import LayoutProvider from "@/components/providers/LayoutProvider";
 import { getPublicLayoutData } from "@/features/public/queries/getPublicLayoutData";
+import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { Providers } from "@/app/providers";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
@@ -44,15 +45,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = settings?.seoTitle || appName;
   const description = settings?.seoDescription || "A modern platform for Rotaract clubs and districts";
 
+  // Use the club logo as the favicon when one is set; fall back to the static file.
+  const rawLogo = (layoutData?.club as any)?.logoUrl;
+  const logoIcon = rawLogo ? getGoogleDriveDirectLink(rawLogo) : null;
+
   return {
     title: {
       default: title,
       template: `%s | ${title}`,
     },
     description,
-    icons: {
-      icon: "/favicon.ico",
-    },
+    icons: logoIcon
+      ? { icon: logoIcon, shortcut: logoIcon, apple: logoIcon }
+      : { icon: "/favicon.ico" },
     metadataBase: new URL(appUrl),
   };
 }

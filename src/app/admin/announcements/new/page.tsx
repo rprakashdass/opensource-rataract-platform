@@ -14,7 +14,7 @@ export default async function NewAnnouncementPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader title="Create New Announcement" backHref="/admin/announcements" backLabel="Back to Announcements" />
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <AnnouncementForm clubId={club.id} />
+        <AnnouncementForm clubId={club.id} clubName={club.name} clubLogoUrl={club.logoUrl} />
       </div>
     </div>
   );

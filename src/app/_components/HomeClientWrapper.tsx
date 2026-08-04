@@ -277,7 +277,7 @@ export default function HomeClientWrapper({
 
                           <p className="font-semibold text-base text-ink tracking-tight">{presName}</p>
                           <p className="text-xs text-ink-faint mt-0.5 font-medium">
-                            {settings?.presQuote || "President"}, Rotaract Club of Coimbatore Nexus
+                            {settings?.presQuote || "President"}, {club?.name || "Rotaract Club"}
                           </p>
                         </div>
 

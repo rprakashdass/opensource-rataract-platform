@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { TransactionStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
 
 export async function updateTransactionStatus(transactionId: string, newStatus: TransactionStatus) {
   try {
@@ -74,6 +75,17 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
 
       return updated;
     });
+
+    // On approval, issue the official receipt (PDF → Drive) and email it.
+    // Runs AFTER the DB transaction (PDF render + Drive upload are slow/networked)
+    // and never blocks the status change if it fails.
+    if (newStatus === "APPROVED" && result?.status === "APPROVED") {
+      try {
+        await issueReceipt(transactionId, { approverName: (session as any)?.member?.name, email: true });
+      } catch (err) {
+        console.error("Failed to issue receipt on approval:", err);
+      }
+    }
 
     revalidatePath("/admin/finance");
     revalidatePath("/admin/finance/transactions");

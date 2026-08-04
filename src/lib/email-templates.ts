@@ -38,11 +38,12 @@ export function renderHtmlLayout({
       : `${appUrl}${logoUrl.startsWith("/") ? "" : "/"}${logoUrl}`
     : null;
 
-  // Fallback is a full wordmark, not a cryptic two-letter circle ("RO"),
-  // which reads as a broken element when the logo is missing.
+  // When a logo exists, show it. With no logo we render nothing here — the
+  // "Club Notification" title and club name below already identify the sender,
+  // so a generic "Rotaract" wordmark would just read as a stray, odd element.
   const logoHeader = absoluteLogoUrl
     ? `<img src="${absoluteLogoUrl}" alt="${clubName}" style="height: 60px; max-height: 60px; width: auto; display: block; margin: 0 auto 16px auto;" />`
-    : `<div style="font-size: 20px; font-weight: 900; letter-spacing: 0.18em; color: ${primaryColor}; text-transform: uppercase; margin: 0 auto 16px auto;">Rotaract</div>`;
+    : "";
 
   return `
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -54,7 +55,6 @@ export function renderHtmlLayout({
   <style type="text/css">
     body { margin: 0; padding: 0; min-width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #FAF8F5; }
     .content-table { width: 100%; max-width: 600px; border-spacing: 0; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #E5E7EB; }
-    .details-card { width: 100%; border-spacing: 0; background-color: ${primaryColor}05; border: 1px solid ${primaryColor}15; border-radius: 12px; margin-bottom: 24px; }
   </style>
 </head>
 <body style="background-color: #FAF8F5; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1F2937; line-height: 1.6;">
@@ -209,11 +209,16 @@ export function getAnnouncementHtml(ann: any, club: any, additionalHtml: string 
   if (ann.type === "IMPORTANT_NOTICE") headerTitle = "Important Club Notice";
 
   const showDetails = formattedDate || ann.location || ann.meetingLink;
+  const descriptionHtml = ann.description
+    ? `<div style="margin-bottom: 24px;"><p style="font-size: 15px; margin: 0; color: #4B5563; line-height: 1.6;">${ann.description}</p></div>`
+    : "";
+
   const detailsBlock = showDetails
     ? `
   <div style="background-color: #D4136706; border: 1px solid #D4136715; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       ${renderDetailRow("Topic/Title", ann.title)}
+      ${ann.description ? renderDetailRow("Summary", ann.description) : ""}
       ${renderDetailRow("Date & Time", formattedDate)}
       ${renderDetailRow("Location", ann.location)}
       ${renderDetailRow("Online Link", ann.meetingLink, true)}
@@ -223,6 +228,7 @@ export function getAnnouncementHtml(ann: any, club: any, additionalHtml: string 
     : `
   <div style="margin-bottom: 24px;">
     <h3 style="margin-top: 0; margin-bottom: 8px; color: #1F2937; font-size: 16px; font-weight: 800;">${ann.title}</h3>
+    ${ann.description ? `<p style="margin: 0; font-size: 15px; color: #4B5563; line-height: 1.6; white-space: pre-wrap;">${ann.description}</p>` : ""}
   </div>
   `;
 

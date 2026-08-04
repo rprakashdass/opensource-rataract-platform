@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
-import { Banknote, AlertCircle, Plus } from "lucide-react";
+import { Banknote, AlertCircle, Plus, Download } from "lucide-react";
 import Link from "next/link";
 import PendingRequests from "./_components/PendingRequests";
 import { PageHeader, StatCard, StatGrid } from "@/components/portal";
@@ -59,6 +59,14 @@ export default async function MemberFinancePage() {
 
   const totalPending = pendingRequests.reduce((acc: number, curr) => acc + Number(curr.amount), 0);
 
+  // Prisma Decimal can't cross the server→client boundary — serialize amounts
+  // (including nested transactions) before handing to the client component.
+  const safePendingRequests = pendingRequests.map((r: any) => ({
+    ...r,
+    amount: Number(r.amount),
+    transactions: (r.transactions ?? []).map((t: any) => ({ ...t, amount: Number(t.amount) })),
+  }));
+
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <PageHeader
@@ -86,7 +94,7 @@ export default async function MemberFinancePage() {
             <AlertCircle className="h-5 w-5" />
             <h2 className="font-semibold text-base">Action Required: Pending Payments</h2>
           </div>
-          <PendingRequests requests={pendingRequests} />
+          <PendingRequests requests={safePendingRequests} />
         </div>
       )}
 
@@ -122,6 +130,17 @@ export default async function MemberFinancePage() {
                           </span>
                         </div>
                       </div>
+                      {tx.status === "APPROVED" && tx.receiptDocUrl && (
+                        <a
+                          href={tx.receiptDocUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand hover:underline"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          Download receipt{tx.receiptNumber ? ` · ${tx.receiptNumber}` : ""}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>

@@ -65,8 +65,18 @@ export default function Header({ layoutData }: { layoutData?: any }) {
         {/* Wordmark / logo */}
         <Link href="/" className="flex items-center gap-3 select-none shrink-0 group">
           {logoUrl && (
-            <span className="relative w-9 h-9 rounded-full overflow-hidden bg-white/90">
-              <Image src={logoUrl} alt={`${appName} logo`} fill sizes="36px" priority className="object-contain p-0.5" />
+            // Medallion: a light disc keeps the logo's dark ring-text legible on
+            // the dark hero. The wordmark beside it carries the readable name,
+            // since the detailed logo art isn't legible at this size.
+            <span className="relative h-11 w-11 md:h-12 md:w-12 shrink-0 rounded-full bg-white ring-2 ring-gold/80 shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src={logoUrl}
+                alt={`${appName} logo`}
+                fill
+                sizes="48px"
+                priority
+                className="object-contain p-1.5"
+              />
             </span>
           )}
           <span
@@ -144,9 +154,16 @@ export default function Header({ layoutData }: { layoutData?: any }) {
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:w-[400px] border-l-0 bg-paper p-0 flex flex-col">
               <div className="p-8 flex-1">
-                <span className="font-display font-semibold text-xl text-ink tracking-[-0.01em]">
-                  {wordmark}
-                  <span className="text-brand">.</span>
+                <span className="flex items-center gap-3">
+                  {logoUrl && (
+                    <span className="relative block h-11 w-11 shrink-0">
+                      <Image src={logoUrl} alt={`${appName} logo`} fill sizes="44px" className="object-contain" />
+                    </span>
+                  )}
+                  <span className="font-display font-semibold text-xl text-ink tracking-[-0.01em]">
+                    {wordmark}
+                    <span className="text-brand">.</span>
+                  </span>
                 </span>
                 <nav className="flex flex-col gap-1 mt-12">
                   {navLinks.map((item: any, index: number) => {

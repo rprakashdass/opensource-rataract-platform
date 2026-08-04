@@ -14,11 +14,13 @@ export default async function EditAnnouncementPage({ params }: { params: { id: s
     notFound();
   }
 
+  const club = await prisma.club.findUnique({ where: { id: announcement.clubId } });
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader title="Edit Announcement" backHref={`/admin/announcements/${id}`} backLabel="Back to Announcement" />
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <AnnouncementForm initialData={announcement} clubId={announcement.clubId} />
+        <AnnouncementForm initialData={announcement} clubId={announcement.clubId} clubName={club?.name} clubLogoUrl={club?.logoUrl} />
       </div>
     </div>
   );

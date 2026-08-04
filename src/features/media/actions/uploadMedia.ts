@@ -61,12 +61,14 @@ export async function uploadMedia(formData: FormData) {
     const club = await getCurrentClub();
     if (!club) return { error: "Club not found" };
 
-    // Security check: Only admins can upload media (except members for profile photos? Wait, the existing code says:
-    // "Only admins can assign files to albums, events, projects, or set as covers. If !isAdmin, return error if isCover || eventId || projectId || albumId || albumTitle"
-    // Since everything is now an album, non-admins (e.g. regular members updating their profile) need access to { kind: "members" }. Let's allow members if it's their profile... wait, profile updates usually happen via member actions. For now, let's keep the existing auth logic:
-    const isAdmin = canManageClub(session);
-    if (!isAdmin && context.kind !== "members" && context.kind !== "general") {
-       return { error: "Unauthorized: Admin privileges required for this context." };
+    // Authorization by context. A signed-in member may upload to contexts that
+    // are theirs to fill — their profile photo ("members"), general attachments,
+    // and their own payment proof ("finance"). Every other context (events,
+    // projects, gallery, covers) manages shared club content and needs
+    // club-management rights.
+    const SELF_SERVICE_KINDS = ["members", "general", "finance"];
+    if (!SELF_SERVICE_KINDS.includes(context.kind) && !canManageClub(session)) {
+       return { error: `Uploading to “${context.kind}” requires club management access.` };
     }
 
     if (!file && type !== "VIDEO_LINK") {

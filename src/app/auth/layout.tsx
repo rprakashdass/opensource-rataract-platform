@@ -27,7 +27,7 @@ export default async function AuthLayout({
               )}
               <div className="space-y-1">
                 <span className="font-display font-bold text-slate-900 text-lg tracking-tight group-hover:text-brand transition-colors block">
-                  {club?.name || "Rotaract Platform"}
+                  {club?.name || "Rotaract Club"}
                 </span>
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest block">
                   Portal Sign In

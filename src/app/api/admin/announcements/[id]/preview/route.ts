@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAnnouncementHtml } from "@/lib/email-templates";
 import { getSession, canManageClub } from "@/lib/auth/session";
-import { getCurrentClub } from "@/lib/club";
 
 export async function GET(
   req: NextRequest,
@@ -14,7 +13,7 @@ export async function GET(
   }
 
   const { id } = await context.params;
-  const club = await getCurrentClub();
+  const club = await prisma.club.findFirst();
   if (!club) return new NextResponse("Club not found", { status: 404 });
 
   const announcement = await prisma.announcement.findUnique({ where: { id } });

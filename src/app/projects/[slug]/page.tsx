@@ -1,6 +1,7 @@
 export const revalidate = 300;
 import { getPublicProject } from "@/features/public/queries/getPublicProject";
 import { getProjectUpdatesPage, getProjectUpdatesImpact } from "@/features/public/actions/getProjectUpdates";
+import { getCurrentClub } from "@/lib/club";
 import { Metadata } from "next";
 import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const { project } = data;
-  const title = `${project.title} | Rotaract Club`;
+  const club = await getCurrentClub();
+  const title = `${project.title} | ${club?.name || "Rotaract Club"}`;
   const description = project.description ? project.description.substring(0, 160) : `Check out ${project.title}`;
   const projectAny = project as any;
   const imageUrl = projectAny.media?.[0]?.url;

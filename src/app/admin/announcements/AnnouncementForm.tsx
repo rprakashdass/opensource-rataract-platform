@@ -18,9 +18,11 @@ const RichTextEditor = dynamic(
 interface AnnouncementFormProps {
   initialData?: any;
   clubId: string;
+  clubName?: string;
+  clubLogoUrl?: string | null;
 }
 
-export default function AnnouncementForm({ initialData, clubId }: AnnouncementFormProps) {
+export default function AnnouncementForm({ initialData, clubId, clubName: clubNameProp, clubLogoUrl }: AnnouncementFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,8 +208,13 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
 
   const getPreviewHtml = () => {
     const primaryColor = "#D41367";
-    const clubName = "Rotaract Club of Coimbatore Nexus";
-    
+    const clubName = clubNameProp || "Rotaract Club";
+    // Mirror the real email: show the club logo if set, otherwise nothing —
+    // never a stray generic "Rotaract" wordmark.
+    const logoHeader = clubLogoUrl
+      ? `<img src="${clubLogoUrl}" alt="${clubName}" style="height: 48px; max-height: 48px; width: auto; display: block; margin: 0 auto 12px auto;" />`
+      : "";
+
     if (type === "CUSTOM") {
       return `
 <!DOCTYPE html>
@@ -309,7 +316,7 @@ export default function AnnouncementForm({ initialData, clubId }: AnnouncementFo
     </tr>
     <tr>
       <td align="center" style="padding: 24px; border-bottom: 1px solid #F3F4F6;">
-        <div style="font-size: 16px; font-weight: 900; letter-spacing: 0.18em; color: ${primaryColor}; text-transform: uppercase; margin: 0 auto 12px auto;">Rotaract</div>
+        ${logoHeader}
         <h2 style="margin: 0; color: ${primaryColor}; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${headerTitle}</h2>
         <p style="margin: 2px 0 0 0; font-size: 11px; color: #6B7280;">${clubName}</p>
       </td>

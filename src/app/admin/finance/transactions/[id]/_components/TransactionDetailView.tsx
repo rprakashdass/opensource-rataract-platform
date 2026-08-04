@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { voidTransaction } from "@/features/finance/actions/voidTransaction";
 import { updateTransactionStatus } from "@/features/finance/actions/updateTransactionStatus";
+import { generateReceipt } from "@/features/finance/actions/generateReceipt";
+import { Receipt, Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PageHeader } from "@/components/portal";
 
@@ -25,6 +27,24 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
     transaction.status,
     (state, newStatus: string) => newStatus
   );
+
+  const [receiptLoading, setReceiptLoading] = useState(false);
+
+  const handleGenerateReceipt = async (force = false) => {
+    setReceiptLoading(true);
+    try {
+      const res = await generateReceipt(transaction.id, { force });
+      if (res.error) throw new Error(res.error);
+      toast.success(
+        `Receipt ${res.receiptNumber} ready${res.emailed ? " and emailed to the payer" : " (no payer email on file)"}.`
+      );
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate receipt");
+    } finally {
+      setReceiptLoading(false);
+    }
+  };
 
   const handleStatusUpdate = async (newStatus: "APPROVED" | "REJECTED") => {
     setLoading(true);
@@ -333,6 +353,68 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
                 <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-sm font-medium text-slate-500">No receipt uploaded</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Official club-issued receipt (generated PDF) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-brand" /> Official Receipt
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Preview is always available — review the exact receipt before it is sent. */}
+              <Button variant="outline" className="w-full mb-3" asChild>
+                <a
+                  href={`/admin/finance/transactions/${transaction.id}/receipt/preview`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileText className="w-4 h-4 mr-2" /> Preview receipt
+                </a>
+              </Button>
+              {transaction.receiptDocUrl ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Receipt No.</p>
+                    <p className="font-bold text-slate-900">{transaction.receiptNumber}</p>
+                  </div>
+                  <Button variant="outline" className="w-full" asChild>
+                    <a href={transaction.receiptDocUrl} target="_blank" rel="noopener noreferrer">
+                      <Download className="w-4 h-4 mr-2" /> Download receipt
+                    </a>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full text-slate-500"
+                    disabled={receiptLoading}
+                    onClick={() => handleGenerateReceipt(true)}
+                  >
+                    {receiptLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    Regenerate & re-send
+                  </Button>
+                </div>
+              ) : optimisticStatus === "APPROVED" ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-500">
+                    No receipt has been issued yet. Generate the official receipt and email it to the payer.
+                  </p>
+                  <Button
+                    className="w-full bg-brand hover:bg-brand-deep text-white"
+                    disabled={receiptLoading}
+                    onClick={() => handleGenerateReceipt(false)}
+                  >
+                    {receiptLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Receipt className="w-4 h-4 mr-2" />}
+                    Generate receipt
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-slate-500">Issued automatically once approved</p>
                 </div>
               )}
             </CardContent>

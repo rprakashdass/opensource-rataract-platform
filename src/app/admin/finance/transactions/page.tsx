@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import TransactionLedger from "./_components/TransactionLedger";
 import { PageHeader } from "@/components/portal";
+import { RecordDirectPaymentDialog } from "@/app/admin/finance/_components/RecordDirectPaymentDialog";
 
 export default async function AdminFinanceTransactionsPage() {
   const club = await getOrCreateDefaultClub();
@@ -21,6 +22,13 @@ export default async function AdminFinanceTransactionsPage() {
   // Fetch Categories
   const categories = await prisma.financeCategory.findMany({
     orderBy: { name: "asc" }
+  });
+
+  // Members — so a direct payment from a member can auto-fill name + email.
+  const members = await prisma.member.findMany({
+    where: { clubId: club.id },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
   });
 
   // Fetch Projects
@@ -73,6 +81,7 @@ export default async function AdminFinanceTransactionsPage() {
         description="Verify all recorded incomes, expense claims, and inter-account transfers."
         backHref="/admin/finance"
         backLabel="Back to Finance"
+        actions={<RecordDirectPaymentDialog accounts={accountsSerialized} categories={categories} members={members} />}
       />
 
       <TransactionLedger

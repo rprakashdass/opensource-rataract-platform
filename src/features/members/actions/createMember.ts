@@ -45,12 +45,8 @@ export async function createMember(data: any) {
         return { error: "A user with this email already exists" };
     }
 
-    const regexPattern = process.env.DEFAULT_PASSWORD_REGEX || "\\s+";
-    const replaceValue = process.env.DEFAULT_PASSWORD_REPLACE !== undefined ? process.env.DEFAULT_PASSWORD_REPLACE : ".";
-    const nameRegex = new RegExp(regexPattern, "g");
-    const formattedName = data.name.trim().toLowerCase().replace(nameRegex, replaceValue);
-    const suffix = process.env.DEFAULT_PASSWORD_SUFFIX || "@nexus";
-    const defaultPassword = formattedName + suffix;
+    const username = data.email.split("@")[0];
+    const defaultPassword = `${username}@nexus`;
 
     const result = await prisma.$transaction(async (tx) => {
         // 1. Create User account (with default MEMBER role)

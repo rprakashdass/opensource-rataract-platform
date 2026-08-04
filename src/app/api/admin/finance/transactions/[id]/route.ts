@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
+import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
 
 function adminOnly(session: any) {
   return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
@@ -34,21 +35,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
     });
 
-    if (transaction.user?.email) {
-      const emailSubject = status === "APPROVED" 
-        ? "Payment Request Approved" 
-        : "Payment Request Rejected";
-      
-      const club = await prisma.club.findFirst();
-      const plainText = `Hi ${transaction.user.name || "Member"},\n\nYour recent payment request for ₹${transaction.amount} (${transaction.description || "No description"}) has been ${status} by the finance team.\n\nYou can view the full details in your member portal.`;
+    const club = await prisma.club.findFirst();
 
-      // Fire and forget email
+    if (status === "APPROVED") {
+      // Generate the official receipt (PDF → Google Drive) and email it, attached.
+      // Wrapped so a receipt/email failure never blocks the approval itself.
+      try {
+        await issueReceipt(id, { approverName: (session as any)?.member?.name, email: true });
+      } catch (err) {
+        console.error("Failed to issue receipt on approval:", err);
+      }
+    } else if (transaction.user?.email) {
+      // Rejected — notify, no receipt.
       sendEmail({
         to: transaction.user.email,
-        subject: emailSubject,
-        text: plainText,
-        html: getTransactionReceiptEmailHtml(transaction, club)
-      }).catch(err => console.error("Failed to send transaction email:", err));
+        subject: "Payment Request Rejected",
+        text: `Hi ${transaction.user.name || "Member"},\n\nYour recent payment request for Rs. ${transaction.amount} (${transaction.description || "No description"}) has been rejected by the finance team.`,
+        html: getTransactionReceiptEmailHtml(transaction, club),
+      }).catch((err) => console.error("Failed to send transaction email:", err));
     }
 
     return NextResponse.json(transaction);

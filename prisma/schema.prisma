@@ -1262,7 +1262,13 @@ model Transaction {
   eventId String?
   event   Event?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
-  receiptUrl String?
+  receiptUrl String? // member-uploaded proof of payment (NOT the generated receipt)
+
+  // Club-issued official receipt (generated PDF, stored in Google Drive)
+  receiptNumber    String?   @unique // e.g. RCPT/RY 2026-27/0042
+  receiptDocUrl    String? // Drive webViewLink to the generated receipt PDF
+  receiptDocFileId String? // Drive file id (for regeneration / cleanup)
+  receiptIssuedAt  DateTime?
 
   createdBy  String?
   approvedBy String?
