@@ -39,6 +39,12 @@ export const eventSchema = z.object({
   attachCalendarInvite: z.boolean().default(false),
   
   tags: z.string().optional(), // Will be split by comma
+
+  // Report-reused event attributes
+  beneficiaries: z.string().optional().nullable(),
+  objectives: z.array(z.string()).optional().default([]),
+  // Volunteer hours awarded to each attendee marked present.
+  volunteerHours: z.number().int().min(0).optional().nullable(),
   
   team: z.array(
     z.object({

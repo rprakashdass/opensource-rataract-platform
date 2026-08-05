@@ -117,7 +117,7 @@ export default function HomeClientWrapper({
           switch (sec.id) {
             /* ── ACT 1 · AWARENESS — full-bleed hero, real members ── */
             case "hero": {
-              const heroHeadline = settings?.heroHeadline || "We don't wait for the world to fix itself.";
+              const heroHeadline = settings?.heroHeadline || "Leave a mark. Make an impact.";
               const heroSubtitle =
                 settings?.heroSubtitle ||
                 club.missionStatement ||

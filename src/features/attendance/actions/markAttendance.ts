@@ -10,15 +10,8 @@ import { AttendanceStatus } from "@prisma/client";
 export async function markAttendance(eventId: string, memberId: string, status: AttendanceStatus, volunteerHours?: number) {
   try {
     const session = await getSession();
+    // canManageEvent already authorizes admins AND this event's chair/co-chair.
     if (!session || !(await canManageEvent(session, eventId))) return { error: "Unauthorized" };
-
-    const isAuthorized = session.roles?.some((r: string) => 
-      ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN", "PRESIDENT", "SECRETARY"].includes(r)
-    );
-
-    if (!isAuthorized) {
-        return { error: "Permission denied. Only admins can mark attendance." };
-    }
 
     // Upsert attendance record
     const attendance = await prisma.attendance.upsert({

@@ -13,7 +13,8 @@ export async function getEventAttendance(eventId: string) {
                   member: true
               }
           },
-          attendance: true,
+          // include member so attendees who never registered still resolve
+          attendance: { include: { member: true } },
           attendanceSessions: {
               where: { active: true },
               take: 1
@@ -23,5 +24,13 @@ export async function getEventAttendance(eventId: string) {
 
   if (!event) return { error: "Event not found" };
 
-  return { event };
+  // All club members — so an admin/chair can add someone who attended but
+  // never registered (walk-ins, council guests recorded as members, etc.).
+  const members = await prisma.member.findMany({
+      where: { clubId: event.clubId },
+      select: { id: true, name: true, email: true, avatar: true },
+      orderBy: { name: "asc" },
+  });
+
+  return { event, members };
 }

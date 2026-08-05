@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, ClipboardCheck, FileText } from "lucide-react";
 import { PageHeader } from "@/components/portal";
+import { Button } from "@/components/ui/button";
 import EventDashboard from "./_components/EventDashboard";
 import EventSettingsButton from "./_components/EventSettingsButton";
+import EventReadiness from "./_components/EventReadiness";
 import EventPublishButton from "./_components/EventPublishButton";
 import DeleteEventButton from "./_components/DeleteEventButton";
 import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
@@ -26,11 +28,18 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
       attendance: { select: { id: true, memberId: true } },
       transactions: { select: { id: true, title: true, amount: true, type: true, status: true } },
       media: { orderBy: { createdAt: "desc" } },
+      members: { select: { memberId: true, role: true } },
       initiative: { select: { id: true, proposedBy: { select: { name: true, avatar: true } } } }
     }
   });
 
   if (!event) notFound();
+
+  const clubMembers = await prisma.member.findMany({
+    where: { clubId: event.clubId },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   const templateObj = await getTemplate(event.clubId, "EVENT_PUBLISHED");
   const renderedSubject = renderTemplate(templateObj.subjectTemplate, {
@@ -57,7 +66,13 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
         backLabel="Back to Events"
         actions={
           <>
-            <EventSettingsButton event={event} />
+            <Link href={`/admin/events/${event.id}/attendance`}>
+              <Button variant="outline" className="gap-2"><ClipboardCheck className="w-4 h-4" /> Attendance</Button>
+            </Link>
+            <Link href={`/reports/events/${event.id}?source=admin`} target="_blank">
+              <Button variant="outline" className="gap-2"><FileText className="w-4 h-4" /> Report</Button>
+            </Link>
+            <EventSettingsButton event={event} members={clubMembers} />
             <EventPublishButton event={event} template={{ subject: renderedSubject, body: renderedBody }} />
             <DeleteEventButton eventId={event.id} />
           </>
@@ -72,6 +87,8 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
           <Link href={`/admin/proposals/${event.initiative.id}`} className="underline hover:text-brand">View proposal</Link>
         </div>
       )}
+
+      <EventReadiness event={event} />
 
       <EventDashboard event={event as any} />
     </div>

@@ -8,7 +8,7 @@ export async function PUT(req: Request) {
   try {
     const session = await getSession();
     const data = await req.json();
-    const { id, title, slug, description, location, meetingLink, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured, bannerMediaId, posterMediaId, publishStatus, seekingSponsorship, sponsorshipGoal, sponsorshipPitch } = data;
+    const { id, title, slug, description, location, meetingLink, startDate, endDate, status, initiativeId, visibility, registrationEnabled, isFeatured, bannerMediaId, posterMediaId, publishStatus, seekingSponsorship, sponsorshipGoal, sponsorshipPitch, beneficiaries, objectives, volunteerHours, team } = data;
 
     if (!id) {
       return NextResponse.json({ error: "Missing event ID" }, { status: 400 });
@@ -56,8 +56,24 @@ export async function PUT(req: Request) {
         seekingSponsorship: seekingSponsorship || false,
         sponsorshipGoal: sponsorshipGoal || null,
         sponsorshipPitch: sponsorshipPitch || null,
+        beneficiaries: beneficiaries || null,
+        ...(objectives !== undefined ? { objectives: Array.isArray(objectives) ? objectives.filter(Boolean) : [] } : {}),
+        ...(volunteerHours !== undefined ? { volunteerHours: volunteerHours != null ? Number(volunteerHours) : null } : {}),
       },
     });
+
+    // Sync team roles (chair / co-chair / volunteers). Replace the set; the
+    // @@unique([eventId, memberId]) means one role per member, so dedupe first.
+    if (Array.isArray(team)) {
+      const seen = new Set<string>();
+      const rows = team
+        .filter((t: any) => t?.memberId && !seen.has(t.memberId) && seen.add(t.memberId))
+        .map((t: any) => ({ eventId: id, memberId: t.memberId, role: t.role }));
+      await prisma.$transaction([
+        prisma.eventMember.deleteMany({ where: { eventId: id } }),
+        ...(rows.length ? [prisma.eventMember.createMany({ data: rows, skipDuplicates: true })] : []),
+      ]);
+    }
 
     const linkedMediaIds = [bannerMediaId, posterMediaId].filter(Boolean) as string[];
     if (linkedMediaIds.length > 0) {

@@ -20,10 +20,16 @@ export const currentYear: number =
  */
 export function getGoogleDriveDirectLink(url: string | null | undefined): string {
   if (!url) return "";
-  const match = url.match(/(?:id=|\/d\/|file\/d\/)([\w-]{25,})/);
-  if (match && match[1]) {
-    return `https://lh3.googleusercontent.com/d/${match[1]}`;
-  }
+  // Already a direct-serve Google image URL — leave untouched.
+  if (/googleusercontent\.com/.test(url)) return url;
+  // Only rewrite Google Drive / Docs links; pass everything else (e.g. Supabase) through.
+  if (!/(drive|docs)\.google\.com/.test(url)) return url;
+  // Folders aren't files — don't try to turn them into an image link.
+  if (/\/(drive\/)?folders\//.test(url)) return url;
+  // Extract the file id from the common shapes:
+  //   /file/d/ID/... , /d/ID , open?id=ID , uc?id=ID , ?id=ID , thumbnail?id=ID
+  const m = url.match(/\/d\/([\w-]+)/) || url.match(/[?&]id=([\w-]+)/);
+  if (m && m[1]) return `https://lh3.googleusercontent.com/d/${m[1]}`;
   return url;
 }
 

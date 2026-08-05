@@ -14,15 +14,8 @@ export async function bulkMarkAttendance(
 ) {
   try {
     const session = await getSession();
+    // canManageEvent already authorizes admins AND this event's chair/co-chair.
     if (!session || !(await canManageEvent(session, eventId))) return { error: "Unauthorized" };
-
-    const isAuthorized = session.roles?.some((r: string) => 
-      ["SUPER_ADMIN", "CLUB_ADMIN", "EVENTS_ADMIN", "PRESIDENT", "SECRETARY"].includes(r)
-    );
-
-    if (!isAuthorized) {
-        return { error: "Permission denied. Only admins can mark attendance." };
-    }
 
     // Check if event is locked
     const event = await prisma.event.findUnique({ where: { id: eventId } });

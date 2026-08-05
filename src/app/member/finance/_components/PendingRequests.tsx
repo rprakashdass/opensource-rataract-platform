@@ -30,7 +30,7 @@ export default function PendingRequests({ requests }: { requests: any[] }) {
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-bold text-slate-900">{req.title}</h3>
               <div className="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded text-sm whitespace-nowrap">
-                ₹{req.amount}
+                ₹{Number(req.amount).toLocaleString("en-IN")}
               </div>
             </div>
             {req.description && (

@@ -773,7 +773,7 @@ model ProjectUpdate {
   beneficiaries  Int?
   volunteerHours Float?
   impactNote     String?
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -897,6 +897,16 @@ model Event {
   /// Rich metadata
   tags     String[]
   category String?
+
+  // Event attributes surfaced in the event form and reused by the report.
+  beneficiaries String? // who benefited + how many
+  objectives    String[] // goals/objectives, in points
+
+  // Report-only finishing fields (chair-filled in the report editor):
+  // { secretary, councilPresence, partners, photographer, designer, emcee }.
+  // Everything else on the report derives from the event's own data
+  // (avenue = type, chair/co-chair/volunteers = team, purpose = description).
+  reportDetails Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

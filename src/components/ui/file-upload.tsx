@@ -51,6 +51,9 @@ export function FileUpload({
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
   const [pendingCropUrl, setPendingCropUrl] = useState<string>("");
+  // The actual image URL for the preview. `value` may be a media ID (returnType
+  // "id"), which is not a valid <img> src — so we track the URL separately.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -108,6 +111,7 @@ export function FileUpload({
 
       if (result.success && result.media) {
         setMediaId(result.media.id);
+        setPreviewUrl(result.media.url || null);
         const outValue = returnType === "id" ? result.media.id : result.media.url;
         // MUST call onChange BEFORE setting status to done to avoid race condition where form submits without value
         onChange(outValue, result.media);
@@ -169,6 +173,7 @@ export function FileUpload({
     setTitle('');
     setStatus("idle");
     setMediaId(null);
+    setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -210,10 +215,30 @@ export function FileUpload({
 
   // ── Uploading or Done State ────────────────────────────────────────────────
   if (status === "uploading" || status === "done" || value) {
-    const isImage = value && getMediaTypeFromExtension(value) === "IMAGE";
-    
+    // Only a real URL is a valid <img> src (value can be a media ID).
+    const urlLike = (s?: string | null) => !!s && /^(https?:|data:|blob:|\/)/.test(s);
+    const previewSrc = previewUrl || (urlLike(value) ? value! : null);
+    const isImage =
+      !!previewSrc &&
+      (getMediaTypeFromExtension(previewSrc) === "IMAGE" ||
+        type === "IMAGE" ||
+        (accept?.includes("image") ?? false) ||
+        /\.(png|jpe?g|webp|gif|avif|svg)(\?|$)/i.test(previewSrc));
+
     return (
       <div className={`border rounded-md p-3 space-y-2 ${status === "done" ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"}`}>
+        {/* Image preview — shown once we have a real URL for the upload */}
+        {isImage && previewSrc && (
+          <div className="flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewSrc}
+              alt="Uploaded preview"
+              className="h-28 w-28 rounded-lg object-cover border border-slate-200 bg-white"
+            />
+          </div>
+        )}
+
         {/* Header row with icon, title input, and cancel */}
         <div className="flex items-center gap-2 min-w-0">
           {status === "done" ? (

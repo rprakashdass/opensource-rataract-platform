@@ -45,6 +45,24 @@ export async function uploadFile(
 }
 
 /**
+ * Grants "anyone with the link" read access to a Drive file. Needed for files
+ * whose link is shared outside the club's Drive (e.g. receipts emailed to a
+ * payer) — otherwise the webViewLink resolves to a Google login / no-access page.
+ */
+export async function makeFilePublic(refreshToken: string, fileId: string): Promise<void> {
+  const drive = getAuthenticatedDriveClient(refreshToken);
+  try {
+    await drive.permissions.create({
+      fileId,
+      requestBody: { role: "reader", type: "anyone" },
+    });
+  } catch (error: any) {
+    console.error(`Failed to make Drive file ${fileId} public:`, error.message);
+    // Non-fatal — the link just may not be publicly accessible.
+  }
+}
+
+/**
  * Deletes a file from Google Drive.
  */
 export async function deleteFile(refreshToken: string, fileId: string): Promise<void> {

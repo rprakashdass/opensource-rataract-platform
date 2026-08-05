@@ -11,7 +11,7 @@ interface PageProps {
 
 export default async function EventAttendancePage({ params }: PageProps) {
   const { id } = await params;
-  const { event, error } = await getEventAttendance(id);
+  const { event, members, error } = await getEventAttendance(id);
 
   if (error || !event) {
     notFound();
@@ -27,7 +27,7 @@ export default async function EventAttendancePage({ params }: PageProps) {
         backLabel="Back to Event Details"
       />
 
-      <AttendanceTracker event={event} activeSession={event.attendanceSessions?.[0]} />
+      <AttendanceTracker event={event} members={members || []} activeSession={event.attendanceSessions?.[0]} />
 
     </div>
   );

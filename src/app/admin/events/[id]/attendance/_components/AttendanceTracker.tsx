@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, XCircle, QrCode, Search, Users, Lock, Unlock, FileSpreadsheet, Clock, Percent } from "lucide-react";
+import { CheckCircle2, XCircle, QrCode, Search, Users, Lock, Unlock, FileSpreadsheet, Clock, Percent, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,12 +16,14 @@ import { useRouter } from "next/navigation";
 import { AttendanceStatus } from "@prisma/client";
 import { StatCard, TableWrap, PortalEmptyState } from "@/components/portal";
 
-export default function AttendanceTracker({ event, activeSession }: { event: any, activeSession?: any }) {
+export default function AttendanceTracker({ event, members = [], activeSession }: { event: any, members?: any[], activeSession?: any }) {
     const router = useRouter();
     const [loading, setLoading] = useState<boolean>(false);
     const [search, setSearch] = useState("");
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState<"ALL" | "PRESENT" | "ABSENT">("ALL");
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addSearch, setAddSearch] = useState("");
 
     const [qrToken, setQrToken] = useState<string | null>(null);
     const [checkInCode, setCheckInCode] = useState<string | null>(null);
@@ -39,12 +41,15 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
 
     const isLocked = event.isAttendanceLocked;
 
+    // Present attendees are credited the event's per-attendee volunteer hours; absent clears them.
+    const eventHours = event.volunteerHours != null ? Number(event.volunteerHours) : undefined;
+
     const handleMark = async (memberId: string, status: AttendanceStatus) => {
         if (isLocked) return toast.error("Attendance is locked for this event");
 
         setLoading(true);
         try {
-            const res = await markAttendance(event.id, memberId, status);
+            const res = await markAttendance(event.id, memberId, status, status === "PRESENT" ? eventHours : null as any);
             if (res.error) throw new Error(res.error);
             toast.success(`Marked as ${status}`);
             router.refresh();
@@ -61,7 +66,7 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
 
         setLoading(true);
         try {
-            const res = await bulkMarkAttendance(event.id, selectedIds, status);
+            const res = await bulkMarkAttendance(event.id, selectedIds, status, status === "PRESENT" ? eventHours ?? null : null);
             if (res.error) throw new Error(res.error);
             toast.success(`Updated ${selectedIds.length} members to ${status}`);
             setSelectedIds([]);
@@ -147,20 +152,42 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
         const attendanceRecord = event.attendance.find((a: any) => a.memberId === r.memberId);
         return {
             ...r.member,
+            registered: true,
             attendanceStatus: attendanceRecord?.status || "PENDING",
             checkedInAt: attendanceRecord?.checkedInAt,
             hours: attendanceRecord?.volunteerHours || 0
         };
     });
 
-    const filteredMembers = registeredMembers.filter((m: any) => {
+    // Attendees who were marked but never registered (walk-ins, guests) still
+    // belong on the roster — otherwise a chair "adds" someone who then vanishes.
+    const registeredIds = new Set(registeredMembers.map((m: any) => m.id));
+    const walkInMembers = event.attendance
+        .filter((a: any) => a.member && !registeredIds.has(a.memberId))
+        .map((a: any) => ({
+            ...a.member,
+            registered: false,
+            attendanceStatus: a.status || "PENDING",
+            checkedInAt: a.checkedInAt,
+            hours: a.volunteerHours || 0,
+        }));
+
+    const roster = [...registeredMembers, ...walkInMembers];
+    const rosterIds = new Set(roster.map((m: any) => m.id));
+
+    // Members not yet on the roster — offered in the "Add attendee" picker.
+    const addableMembers = members
+        .filter((m: any) => !rosterIds.has(m.id))
+        .filter((m: any) => (m.name || "").toLowerCase().includes(addSearch.toLowerCase()));
+
+    const filteredMembers = roster.filter((m: any) => {
         if (activeTab === "PRESENT" && m.attendanceStatus !== "PRESENT") return false;
         if (activeTab === "ABSENT" && m.attendanceStatus !== "ABSENT") return false;
         return m.name?.toLowerCase().includes(search.toLowerCase());
     });
 
-    const presentCount = registeredMembers.filter((m: any) => m.attendanceStatus === "PRESENT").length;
-    const totalCount = registeredMembers.length;
+    const presentCount = roster.filter((m: any) => m.attendanceStatus === "PRESENT").length;
+    const totalCount = roster.length;
     const percent = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
     const totalHours = event.attendance.reduce((acc: number, curr: any) => acc + Number(curr.volunteerHours || 0), 0);
 
@@ -192,7 +219,7 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
             <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
                 <StatCard label="Turnout" value={`${presentCount} / ${totalCount}`} icon={Users} tone="brand" hint="Present / registered" />
                 <StatCard label="Attendance Rate" value={`${percent}%`} icon={Percent} tone="positive" />
-                <StatCard label="Volunteer Hours" value={totalHours} icon={Clock} tone="neutral" />
+                <StatCard label="Volunteer Hours" value={totalHours} icon={Clock} tone="neutral" hint={eventHours ? `${eventHours} hr / attendee` : "Set on the event"} />
 
                 <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col justify-center gap-2 col-span-2 lg:col-span-1">
                     {!activeSession ? (
@@ -232,6 +259,9 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                     <Button variant={activeTab === "ABSENT" ? "secondary" : "ghost"} size="sm" onClick={() => setActiveTab("ABSENT")}>Absent</Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="outline" size="sm" className="gap-2 text-brand border-pink-200 hover:bg-pink-50" onClick={() => setShowAddModal(true)} disabled={loading || isLocked}>
+                        <UserPlus className="w-4 h-4" /> Add attendee
+                    </Button>
                     <Button variant="outline" size="sm" className="gap-2 text-slate-600" onClick={handleExportCsv} disabled={loading}>
                         <FileSpreadsheet className="w-4 h-4" /> Export CSV
                     </Button>
@@ -355,6 +385,60 @@ export default function AttendanceTracker({ event, activeSession }: { event: any
                     </table>
                 </TableWrap>
             )}
+
+            <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+                <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Add attendee</DialogTitle>
+                        <DialogDescription>
+                            Add a member who attended but didn&apos;t register. They&apos;re marked Present and added to the roster.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="relative mb-3">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search members..."
+                            value={addSearch}
+                            onChange={(e) => setAddSearch(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                        />
+                    </div>
+
+                    <div className="max-h-[50vh] overflow-y-auto divide-y divide-slate-100 border border-slate-100 rounded-xl">
+                        {addableMembers.length === 0 ? (
+                            <p className="p-6 text-center text-sm text-slate-500">
+                                {members.length === 0 ? "No members found." : "Everyone is already on the roster."}
+                            </p>
+                        ) : (
+                            addableMembers.map((m: any) => (
+                                <div key={m.id} className="flex items-center justify-between gap-3 p-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <MemberAvatar name={m.name} avatarUrl={m.avatar} className="w-8 h-8 border border-slate-200" textClassName="text-xs" />
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-slate-900 truncate">{m.name}</p>
+                                            <p className="text-xs text-slate-500 truncate">{m.email || "No email"}</p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        className="gap-1.5 bg-brand hover:bg-brand-deep text-white shrink-0"
+                                        disabled={loading}
+                                        onClick={() => handleMark(m.id, "PRESENT")}
+                                    >
+                                        <CheckCircle2 className="w-4 h-4" /> Present
+                                    </Button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="flex justify-end pt-3">
+                        <Button variant="outline" onClick={() => setShowAddModal(false)}>Done</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={showSessionModal} onOpenChange={setShowSessionModal}>
                 <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">

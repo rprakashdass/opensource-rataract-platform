@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import EventEditForm from "./EventEditForm";
 
-export default function EventSettingsButton({ event }: { event: any }) {
+export default function EventSettingsButton({ event, members = [] }: { event: any; members?: { id: string; name: string | null }[] }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -22,7 +22,7 @@ export default function EventSettingsButton({ event }: { event: any }) {
           <DialogTitle className="sr-only">Event Settings</DialogTitle>
         </DialogHeader>
         <div className="mt-2">
-          <EventEditForm eventId={event.id} initialData={event} onSuccess={() => setOpen(false)} />
+          <EventEditForm eventId={event.id} initialData={event} members={members} onSuccess={() => setOpen(false)} />
         </div>
       </DialogContent>
     </Dialog>

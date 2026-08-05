@@ -86,9 +86,8 @@ export function renderHtmlLayout({
               ${contentHtml}
 
               <!-- Optional CTA Button -->
-              ${
-                cta
-                  ? `
+              ${cta
+      ? `
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0 16px 0;">
                 <tr>
                   <td align="center">
@@ -105,8 +104,8 @@ export function renderHtmlLayout({
                 </tr>
               </table>
               `
-                  : ""
-              }
+      : ""
+    }
             </td>
           </tr>
 
@@ -114,11 +113,10 @@ export function renderHtmlLayout({
           <tr>
             <td style="background-color: #FAF8F5; padding: 32px; text-align: center; border-top: 1px solid #E5E7EB; font-size: 12px; color: #6B7280; font-weight: 500;">
               <p style="margin: 0 0 8px 0;">You are receiving this email because you are a member or partner of <strong>${clubName}</strong>.</p>
-              ${
-                clubAddress || clubEmail || clubPhone
-                  ? `<p style="margin: 0 0 8px 0; color: #9CA3AF;">${[clubAddress, clubPhone, clubEmail].filter(Boolean).join(" · ")}</p>`
-                  : ""
-              }
+              ${clubAddress || clubEmail || clubPhone
+      ? `<p style="margin: 0 0 8px 0; color: #9CA3AF;">${[clubAddress, clubPhone, clubEmail].filter(Boolean).join(" · ")}</p>`
+      : ""
+    }
               <p style="margin: 0; font-size: 11px; color: #9CA3AF;">© ${currentYear} ${clubName}. All rights reserved.</p>
               <p style="margin: 16px 0 0 0; font-size: 10px; color: #9CA3AF;">If you no longer wish to receive notifications, you can manage your preferences in the member portal.</p>
             </td>
@@ -189,15 +187,15 @@ export function getAnnouncementHtml(ann: any, club: any, additionalHtml: string 
   // Pre-formatted Date & Time
   const formattedDate = ann.startDate
     ? new Date(ann.startDate).toLocaleString("en-US", {
-        timeZone: "Asia/Kolkata",
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }) + " (IST)"
+      timeZone: "Asia/Kolkata",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }) + " (IST)"
     : null;
 
   // Header Title mapping
@@ -408,10 +406,10 @@ export function getPasswordResetEmailHtml(resetUrl: string, club: any) {
 export function getTransactionReceiptEmailHtml(transaction: any, club: any) {
   const formattedDate = transaction.date
     ? new Date(transaction.date).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "TBD";
 
   const detailsBlock = `

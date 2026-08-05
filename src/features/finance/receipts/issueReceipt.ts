@@ -3,7 +3,7 @@ import { decrypt } from "@/lib/crypto";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 import { findFolder, createFolder, setupRootFolder } from "@/features/storage/google-drive/folders";
-import { uploadFile } from "@/features/storage/google-drive/upload";
+import { uploadFile, makeFilePublic } from "@/features/storage/google-drive/upload";
 import { renderReceiptPdf, type ReceiptData } from "./renderReceiptPdf";
 import { sendEmail } from "@/lib/email";
 import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
@@ -132,6 +132,9 @@ export async function issueReceipt(
       const token = decrypt(tx.club.googleDriveRefreshToken);
       const folderId = await ensureDriveFolder(token, tx.club.googleDriveRootFolderId, ["Finance", "Receipts", fyLabel]);
       const up = await uploadFile(token, buffer, "application/pdf", fileName, folderId);
+      // The receipt link is emailed to the payer, so it must be openable by
+      // anyone with the link — not just people inside the club's Drive.
+      await makeFilePublic(token, up.id);
       url = up.url;
       driveFileId = up.id;
     } catch (err) {

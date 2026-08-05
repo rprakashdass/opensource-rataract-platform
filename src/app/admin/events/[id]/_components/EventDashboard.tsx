@@ -379,6 +379,19 @@ function LifecycleStepper({
             {action.label}
           </Button>
         )}
+
+        {/* Check-in is optional — allow skipping straight to completed from
+            UPCOMING (e.g. past events, or events that don't track live attendance). */}
+        {!isCancelled && status === "UPCOMING" && (
+          <Button
+            variant="ghost"
+            disabled={loading}
+            onClick={() => onTransition("COMPLETED")}
+            className="gap-2 text-slate-500 hover:text-slate-800"
+          >
+            <Check className="w-4 h-4" /> Mark completed
+          </Button>
+        )}
         {!isCancelled && action && !action.next && (
           <div className="flex items-center gap-1.5 text-emerald-600 font-semibold text-sm">
             <CheckCircle className="w-4 h-4" /> Completed
@@ -599,10 +612,15 @@ function PublishedBody({
 function OngoingBody({
   event,
   onToggleCheckIn,
+  chairMode = false,
 }: {
   event: EventDashboardProps["event"];
   onToggleCheckIn: (id: string, status: string) => void;
+  chairMode?: boolean;
 }) {
+  const attendanceHref = chairMode
+    ? `/member/events/${event.id}/attendance`
+    : `/admin/events/${event.id}/attendance`;
   const attendedCount = event.registrations.filter((r) => r.status === "ATTENDED").length;
   const attendanceRatio =
     event.registrations.length > 0
@@ -620,7 +638,7 @@ function OngoingBody({
             Open QR sessions, track real-time check-ins, and manage manual attendance.
           </p>
         </div>
-        <Link href={`/admin/events/${event.id}/attendance`}>
+        <Link href={attendanceHref}>
           <Button className="bg-brand hover:bg-brand-deep text-white gap-2 font-semibold px-6 py-5 shrink-0">
             <QrCode className="w-5 h-5" />
             Open Attendance Manager
@@ -741,12 +759,19 @@ function CompletedBody({
           placeholder="Draft official minutes or post-event report here..."
           className="min-h-[200px] font-sans text-sm leading-relaxed bg-slate-50"
         />
-        <div className="flex justify-between items-center pt-3">
-          <Link href={`/reports/events/${event.id}?source=${chairMode ? "member" : "admin"}`} target="_blank">
-            <Button variant="outline" className="text-slate-600">
-              Preview & Download Report
-            </Button>
-          </Link>
+        <div className="flex flex-wrap justify-between items-center gap-2 pt-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/reports/events/${event.id}?source=${chairMode ? "member" : "admin"}&edit=1`} target="_blank">
+              <Button variant="outline" className="text-slate-600">
+                <FileText className="w-4 h-4 mr-2" /> Edit report details
+              </Button>
+            </Link>
+            <Link href={`/reports/events/${event.id}?source=${chairMode ? "member" : "admin"}`} target="_blank">
+              <Button variant="outline" className="text-slate-600">
+                Preview & Download Report
+              </Button>
+            </Link>
+          </div>
           <Button
             onClick={onSaveReport}
             disabled={loading}
@@ -922,7 +947,7 @@ export default function EventDashboard({ event, chairMode = false }: EventDashbo
         <PublishedBody event={event} onToggleCheckIn={handleToggleCheckIn} />
       )}
       {(status === "ONGOING") && (
-        <OngoingBody event={event} onToggleCheckIn={handleToggleCheckIn} />
+        <OngoingBody event={event} onToggleCheckIn={handleToggleCheckIn} chairMode={chairMode} />
       )}
       {(status === "COMPLETED" || status === "CANCELLED") && (
         <CompletedBody

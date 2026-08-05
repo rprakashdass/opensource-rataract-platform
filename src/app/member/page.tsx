@@ -116,7 +116,7 @@ export default async function MemberDashboardPage() {
                       {pr.description && <p className="text-xs text-ink-soft mt-1">{pr.description}</p>}
                     </div>
                     <div className="text-right">
-                      <span className="text-xl font-bold text-brand">₹{pr.amount}</span>
+                      <span className="text-xl font-bold text-brand">₹{amount}</span>
                       {pr.dueDate && (
                         <p className="text-[10px] text-ink-soft font-semibold mt-0.5 whitespace-nowrap" suppressHydrationWarning>
                           Due {new Date(pr.dueDate).toLocaleDateString()}

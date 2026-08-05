@@ -3,8 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { PageHeader } from "@/components/portal";
+import { Button } from "@/components/ui/button";
+import { ClipboardCheck, FileText } from "lucide-react";
+import Link from "next/link";
 import EventDashboard from "@/app/admin/events/[id]/_components/EventDashboard";
 import EventSettingsButton from "@/app/admin/events/[id]/_components/EventSettingsButton";
+import EventReadiness from "@/app/admin/events/[id]/_components/EventReadiness";
 import SubmitForApprovalButton from "./SubmitForApprovalButton";
 
 export const dynamic = "force-dynamic";
@@ -30,11 +34,18 @@ export default async function ChairEventManagePage(props: { params: Promise<{ id
       attendance: { select: { id: true, memberId: true } },
       transactions: { select: { id: true, title: true, amount: true, type: true, status: true } },
       media: { orderBy: { createdAt: "desc" } },
+      members: { select: { memberId: true, role: true } },
       initiative: { select: { id: true, proposedBy: { select: { name: true, avatar: true } } } },
     },
   });
 
   if (!event) notFound();
+
+  const clubMembers = await prisma.member.findMany({
+    where: { clubId: event.clubId },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-6">
@@ -45,7 +56,13 @@ export default async function ChairEventManagePage(props: { params: Promise<{ id
         backLabel="Back to Events"
         actions={
           <>
-            <EventSettingsButton event={event} />
+            <Link href={`/member/events/${event.id}/attendance`}>
+              <Button variant="outline" className="gap-2"><ClipboardCheck className="w-4 h-4" /> Attendance</Button>
+            </Link>
+            <Link href={`/reports/events/${event.id}?source=member`} target="_blank">
+              <Button variant="outline" className="gap-2"><FileText className="w-4 h-4" /> Report</Button>
+            </Link>
+            <EventSettingsButton event={event} members={clubMembers} />
             {event.publishStatus === "DRAFT" && (
               <SubmitForApprovalButton
                 eventId={event.id}
@@ -62,6 +79,8 @@ export default async function ChairEventManagePage(props: { params: Promise<{ id
           This event is a draft. Set it up here, then submit it for admin approval — only an admin can publish it live.
         </div>
       )}
+
+      <EventReadiness event={event} />
 
       <EventDashboard event={event as any} chairMode />
     </div>

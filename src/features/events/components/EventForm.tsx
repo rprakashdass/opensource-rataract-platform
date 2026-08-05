@@ -7,6 +7,7 @@ import { createEvent } from "../actions/createEvent";
 import { getActiveProjects } from "@/features/projects/actions/getActiveProjects";
 import { istInputToISOString } from "@/lib/istDatetime";
 
+import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +36,10 @@ export default function EventForm() {
   const [sendToBoard, setSendToBoard] = useState(false);
   const [submitAction, setSubmitAction] = useState<string>("DRAFT");
   const [activeUploads, setActiveUploads] = useState(0);
+  const [objectives, setObjectives] = useState<string[]>([""]);
+  const setObjective = (i: number, v: string) => setObjectives((prev) => prev.map((o, idx) => (idx === i ? v : o)));
+  const addObjective = () => setObjectives((prev) => [...prev, ""]);
+  const removeObjective = (i: number) => setObjectives((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev));
 
   const handleStatusChange = (newStatus: "idle" | "uploading" | "done" | "error") => {
     if (newStatus === "uploading") {
@@ -107,6 +112,9 @@ export default function EventForm() {
       attachCalendarInvite: formData.get("attachCalendarInvite") === "on",
       projectId: isStandalone ? null : formData.get("projectId") || null,
       team: team,
+      beneficiaries: (formData.get("beneficiaries") as string) || null,
+      objectives: objectives.map((o) => o.trim()).filter(Boolean),
+      volunteerHours: formData.get("volunteerHours") ? Number(formData.get("volunteerHours")) : null,
     };
 
     try {
@@ -190,6 +198,35 @@ export default function EventForm() {
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea id="description" name="description" placeholder="Event details..." required className="min-h-[100px]" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="beneficiaries">Beneficiaries</Label>
+              <Textarea id="beneficiaries" name="beneficiaries" placeholder="Who benefited, and how many" className="min-h-[60px]" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="volunteerHours">Volunteer hours / attendee</Label>
+              <Input id="volunteerHours" name="volunteerHours" type="number" min="0" step="1" placeholder="e.g. 2" />
+              <p className="text-xs text-gray-500">Awarded to each attendee marked present.</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Objectives / Goals</Label>
+            {objectives.map((o, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input value={o} onChange={(e) => setObjective(i, e.target.value)} placeholder={`Objective ${i + 1}`} />
+                {objectives.length > 1 && (
+                  <button type="button" onClick={() => removeObjective(i)} className="shrink-0 text-slate-400 hover:text-rose-600 p-1" aria-label="Remove objective">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={addObjective} className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:text-brand-deep">
+              <Plus className="h-3.5 w-3.5" /> Add objective
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,6 +357,47 @@ export default function EventForm() {
                     ...members.map(m => ({ label: m.name, value: m.id }))
                   ]}
                 />
+              </div>
+            </div>
+
+            {/* Volunteers — any number of members */}
+            <div className="space-y-2">
+              <Label>Volunteers</Label>
+              <SearchableSelect
+                placeholder="Add a volunteer"
+                value="none"
+                onChange={(val) => {
+                  if (!val || val === "none") return;
+                  setTeam((prev) =>
+                    prev.some((t) => t.memberId === val && t.role === "VOLUNTEER")
+                      ? prev
+                      : [...prev, { memberId: val, role: "VOLUNTEER" }]
+                  );
+                }}
+                options={[
+                  { label: "Select a member…", value: "none" },
+                  ...members
+                    .filter((m) => !team.some((t) => t.memberId === m.id && t.role === "VOLUNTEER"))
+                    .map((m) => ({ label: m.name, value: m.id })),
+                ]}
+              />
+              <div className="flex flex-wrap gap-2 pt-1">
+                {team.filter((t) => t.role === "VOLUNTEER").map((t) => {
+                  const m = members.find((mm) => mm.id === t.memberId);
+                  return (
+                    <span key={t.memberId} className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
+                      {m?.name || "Member"}
+                      <button
+                        type="button"
+                        onClick={() => setTeam((prev) => prev.filter((x) => !(x.memberId === t.memberId && x.role === "VOLUNTEER")))}
+                        className="text-slate-400 hover:text-rose-600"
+                        aria-label="Remove volunteer"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  );
+                })}
               </div>
             </div>
           </div>

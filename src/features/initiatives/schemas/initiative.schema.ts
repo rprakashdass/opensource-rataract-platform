@@ -6,7 +6,7 @@ export const initiativeSchema = z.object({
   portfolioId: z.string().optional().nullable(),
   problemStatement: z.string().optional().nullable(),
   expectedImpact: z.string().optional().nullable(),
-  estimatedBudget: z.number().positive().optional().nullable(),
+  estimatedBudget: z.number().min(0, "Budget cannot be negative").optional().nullable(),
   preferredDate: z.string().optional().nullable(),
   attachments: z.array(z.string()).default([]),
 });
