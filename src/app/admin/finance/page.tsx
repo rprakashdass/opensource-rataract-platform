@@ -51,13 +51,26 @@ export default async function AdminFinancePage() {
   }
 
   // 2. Seed default Accounts if none exist
-  const accountsCount = await prisma.account.count({ where: { clubId: activeClubId } });
-  if (accountsCount === 0) {
+  const existingAccounts = await prisma.account.findMany({
+    where: {
+      clubId: activeClubId,
+      name: { in: ["Cash Account", "Rotaract Bank Account"] }
+    }
+  });
+
+  const hasCash = existingAccounts.some(a => a.name === "Cash Account");
+  const hasBank = existingAccounts.some(a => a.name === "Rotaract Bank Account");
+
+  if (!hasCash || !hasBank) {
+    const toCreate = [];
+    if (!hasCash) {
+      toCreate.push({ clubId: activeClubId, name: "Cash Account", type: "CASH", currentBalance: 0 });
+    }
+    if (!hasBank) {
+      toCreate.push({ clubId: activeClubId, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0 });
+    }
     await prisma.account.createMany({
-      data: [
-        { clubId: activeClubId, name: "Cash Account", type: "CASH", currentBalance: 0 },
-        { clubId: activeClubId, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0 },
-      ]
+      data: toCreate
     });
   }
 

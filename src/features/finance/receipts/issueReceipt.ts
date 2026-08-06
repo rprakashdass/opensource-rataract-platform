@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { decrypt } from "@/lib/crypto";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
-import { findFolder, createFolder, setupRootFolder } from "@/features/storage/google-drive/folders";
-import { uploadFile, makeFilePublic } from "@/features/storage/google-drive/upload";
 import { renderReceiptPdf, type ReceiptData } from "./renderReceiptPdf";
 import { sendEmail } from "@/lib/email";
 import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
@@ -32,20 +29,10 @@ async function loadLogo(logoUrl?: string | null): Promise<ReceiptData["logo"]> {
   }
 }
 
-async function ensureDriveFolder(token: string, rootId: string | null, path: string[]): Promise<string> {
-  let parent = rootId || (await setupRootFolder(token));
-  for (const name of path) {
-    let id = await findFolder(token, name, parent);
-    if (!id) id = await createFolder(token, name, parent);
-    parent = id;
-  }
-  return parent;
-}
-
 /**
- * Generates the official receipt PDF for a transaction, stores it in Google
- * Drive (Supabase fallback), and records the number + links on the transaction.
- * Idempotent: if a receipt was already issued, it is returned as-is.
+ * Generates the official receipt PDF for a transaction, stores it in Supabase
+ * Storage, and records the number + link on the transaction. Idempotent: if a
+ * receipt was already issued, it is returned as-is.
  */
 // Emails the receipt (PDF attached) to the payer. No-op if we have no address.
 async function emailReceipt(tx: any, r: IssuedReceipt): Promise<void> {
@@ -122,46 +109,27 @@ export async function issueReceipt(
   const data = await buildData(tx, payerName, amount, receiptNumber, opts?.approverName);
   const buffer = await renderReceiptPdf(data);
 
-  // Store: Google Drive first, Supabase as fallback.
   let url: string | null = null;
-  let driveFileId: string | null = null;
   const fileName = `${receiptNumber.replace(/[\/\\]/g, "-")}.pdf`;
 
-  if (tx.club.googleDriveRefreshToken) {
-    try {
-      const token = decrypt(tx.club.googleDriveRefreshToken);
-      const folderId = await ensureDriveFolder(token, tx.club.googleDriveRootFolderId, ["Finance", "Receipts", fyLabel]);
-      const up = await uploadFile(token, buffer, "application/pdf", fileName, folderId);
-      // The receipt link is emailed to the payer, so it must be openable by
-      // anyone with the link — not just people inside the club's Drive.
-      await makeFilePublic(token, up.id);
-      url = up.url;
-      driveFileId = up.id;
-    } catch (err) {
-      console.warn("[issueReceipt] Drive upload failed, falling back to Supabase:", err);
+  try {
+    const supabase = getSupabaseAdmin();
+    const path = `${tx.clubId}/finance/receipts/${fileName}`;
+    const { error } = await supabase.storage.from("rotaract-media").upload(path, buffer, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+    if (!error) {
+      url = supabase.storage.from("rotaract-media").getPublicUrl(path).data.publicUrl;
     }
-  }
-
-  if (!url) {
-    try {
-      const supabase = getSupabaseAdmin();
-      const path = `${tx.clubId}/finance/receipts/${fileName}`;
-      const { error } = await supabase.storage.from("rotaract-media").upload(path, buffer, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
-      if (!error) {
-        url = supabase.storage.from("rotaract-media").getPublicUrl(path).data.publicUrl;
-      }
-    } catch (err) {
-      console.error("[issueReceipt] Supabase fallback failed:", err);
-    }
+  } catch (err) {
+    console.error("[issueReceipt] Supabase upload failed:", err);
   }
 
   try {
     await prisma.transaction.update({
       where: { id: tx.id },
-      data: { receiptNumber, receiptDocUrl: url, receiptDocFileId: driveFileId, receiptIssuedAt: new Date() },
+      data: { receiptNumber, receiptDocUrl: url, receiptIssuedAt: new Date() },
     });
   } catch (err: any) {
     // Unique collision on receiptNumber — allocate the next one and retry once.
@@ -169,7 +137,7 @@ export async function issueReceipt(
       receiptNumber = await nextReceiptNumber(tx.clubId, fyLabel);
       await prisma.transaction.update({
         where: { id: tx.id },
-        data: { receiptNumber, receiptDocUrl: url, receiptDocFileId: driveFileId, receiptIssuedAt: new Date() },
+        data: { receiptNumber, receiptDocUrl: url, receiptIssuedAt: new Date() },
       });
     } else {
       throw err;

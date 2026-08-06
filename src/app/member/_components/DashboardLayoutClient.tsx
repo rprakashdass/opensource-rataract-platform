@@ -22,6 +22,7 @@ export default function DashboardLayoutClient({ children, roles, club, user, not
     {
       items: [
         { label: "Overview", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+        { label: "Nexus Calendar", href: "/member/calendar", icon: Calendar },
         { label: "Mailbox", href: "/member/mailbox", icon: MessageSquareWarning },
         { label: "Events", href: `${ROUTES.DASHBOARD}/events`, icon: Calendar },
         { label: "Projects", href: `${ROUTES.DASHBOARD}/projects`, icon: Briefcase },

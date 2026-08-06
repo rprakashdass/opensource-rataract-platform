@@ -36,6 +36,22 @@ export default async function PaymentRequestsPage() {
     prisma.member.count({ where: { clubId: club.id, isActive: true } }),
   ]);
 
+  const members = await prisma.member.findMany({
+    where: { clubId: club.id },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
+
+  const rawAccounts = await prisma.account.findMany({
+    where: { clubId: club.id },
+    orderBy: { name: "asc" }
+  });
+
+  const accountsSerialized = rawAccounts.map(a => ({
+    id: a.id,
+    name: a.name,
+  }));
+
   const rows = requests.map((req) => {
     const paidCount = req.transactions.filter(t => t.status === "APPROVED").length;
     const audienceCount = req.isGlobal ? totalMembers : req.assignees.length;
@@ -91,7 +107,7 @@ export default async function PaymentRequestsPage() {
                 {row.dueDate && <span>Due: {row.dueDate}</span>}
               </div>
               <div className="flex justify-end pt-1 border-t border-slate-100">
-                <RequestActions request={row.actionsPayload} />
+                <RequestActions request={row.actionsPayload} members={members} accounts={accountsSerialized} />
               </div>
             </div>
           ))}
@@ -126,7 +142,7 @@ export default async function PaymentRequestsPage() {
                   <td className="px-6 py-4 text-slate-500">{row.dismissedCount}</td>
                   <td className="px-6 py-4 text-slate-500 whitespace-nowrap">{row.dueDate || "—"}</td>
                   <td className="px-6 py-4 text-right">
-                    <RequestActions request={row.actionsPayload} />
+                    <RequestActions request={row.actionsPayload} members={members} accounts={accountsSerialized} />
                   </td>
                 </tr>
               ))}

@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Star, Trash2, Loader2, Play, Image as ImageIcon, FileImage } from "lucide-react";
+import { Star, Trash2, Loader2, Play, Image as ImageIcon, FileImage, Upload, MoreVertical } from "lucide-react";
 import { toggleMediaFeature, deleteEventMedia, setEventMediaRole } from "@/features/events/actions/manageEventMedia";
+import { uploadMedia } from "@/features/media/actions/uploadMedia";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
 interface MediaItem {
@@ -12,19 +20,47 @@ interface MediaItem {
   url: string;
   title: string | null;
   isFeatured: boolean;
-  driveFileId: string | null;
 }
 
 interface Props {
   eventId: string;
+  eventTitle: string;
   media: MediaItem[];
-  driveFolderId: string | null;
   bannerMediaId?: string | null;
   posterMediaId?: string | null;
 }
 
-export default function EventMediaModeration({ eventId, media, driveFolderId, bannerMediaId, posterMediaId }: Props) {
+export default function EventMediaModeration({ eventId, eventTitle, media, bannerMediaId, posterMediaId }: Props) {
+  const router = useRouter();
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setUploading(true);
+    try {
+      for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("mediaContext", JSON.stringify({ kind: "event", eventId, title: eventTitle }));
+        formData.append("usage", "GALLERY");
+
+        const res = await uploadMedia(formData);
+        if (!res.success) {
+          toast.error(`Failed to upload ${file.name}: ${res.error}`);
+        } else {
+          toast.success(`Uploaded ${file.name}`);
+        }
+      }
+      router.refresh();
+    } catch {
+      toast.error("An unexpected error occurred during upload.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
 
   const handleToggleFeature = async (id: string, currentStatus: boolean) => {
     setLoadingId(id);
@@ -38,12 +74,12 @@ export default function EventMediaModeration({ eventId, media, driveFolderId, ba
     setLoadingId(id);
     const res = await setEventMediaRole(id, eventId, role);
     if (res.error) toast.error(res.error);
-    else toast.success(`Set as ${role} for the public event page`);
+    else toast.success(res.cleared ? `Removed as ${role}` : `Set as ${role} for the public event page`);
     setLoadingId(null);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this media? This will permanently remove it from Google Drive.")) return;
+    if (!confirm("Are you sure you want to delete this media? This cannot be undone.")) return;
     setLoadingId(id);
     const res = await deleteEventMedia(id, eventId);
     if (res.error) toast.error(res.error);
@@ -51,24 +87,24 @@ export default function EventMediaModeration({ eventId, media, driveFolderId, ba
     setLoadingId(null);
   };
 
-  const driveLink = driveFolderId ? `https://drive.google.com/drive/folders/${driveFolderId}` : null;
-
   return (
-    <div className="space-y-6 mt-6">
-      <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
-        <div>
-          <h3 className="font-bold text-slate-900">Google Drive Integration</h3>
-          <p className="text-sm text-slate-500">Members upload directly to the shared Drive.</p>
+    <div className="space-y-4">
+      <div className="flex flex-wrap justify-between items-center gap-3">
+        <p className="text-sm text-slate-500">Members can also add their own photos from the event page.</p>
+        <div className="relative">
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleUpload}
+            disabled={uploading}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          />
+          <Button disabled={uploading} className="flex items-center gap-2 bg-brand hover:bg-brand-deep text-white">
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {uploading ? "Uploading..." : "Upload Photos"}
+          </Button>
         </div>
-        {driveLink ? (
-          <a href={driveLink} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" className="flex items-center gap-2">
-              <ExternalLink className="w-4 h-4" /> Open Native Drive
-            </Button>
-          </a>
-        ) : (
-          <span className="text-sm text-slate-500 italic">No Drive folder configured</span>
-        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -80,48 +116,37 @@ export default function EventMediaModeration({ eventId, media, driveFolderId, ba
               <Image src={item.url} alt={item.title || "Event Media"} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
 
               {/* Overlay Actions */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
-                <div className="flex justify-end">
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="w-8 h-8 rounded-full"
-                    onClick={() => handleDelete(item.id)}
-                    disabled={loadingId === item.id}
-                  >
-                    {loadingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                  </Button>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex gap-1.5">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex justify-end p-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
-                      variant={isBanner ? "default" : "secondary"}
-                      className={`flex-1 text-xs h-8 ${isBanner ? "bg-blue-500 hover:bg-blue-600 text-white" : ""}`}
-                      onClick={() => handleSetRole(item.id, "banner")}
-                      disabled={loadingId === item.id || isBanner}
+                      size="icon"
+                      variant="secondary"
+                      className="w-8 h-8 rounded-full shadow-sm"
+                      disabled={loadingId === item.id}
                     >
-                      <ImageIcon className="w-3 h-3 mr-1" /> {isBanner ? "Banner" : "Set Banner"}
+                      {loadingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <MoreVertical className="w-4 h-4" />}
                     </Button>
-                    <Button
-                      variant={isPoster ? "default" : "secondary"}
-                      className={`flex-1 text-xs h-8 ${isPoster ? "bg-brand hover:bg-brand-deep text-white" : ""}`}
-                      onClick={() => handleSetRole(item.id, "poster")}
-                      disabled={loadingId === item.id || isPoster}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleSetRole(item.id, "banner")}>
+                      <ImageIcon className="w-4 h-4 mr-2" /> {isBanner ? "Remove as banner" : "Set as banner"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleSetRole(item.id, "poster")}>
+                      <FileImage className="w-4 h-4 mr-2" /> {isPoster ? "Remove as poster" : "Set as poster"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleToggleFeature(item.id, item.isFeatured)}>
+                      <Star className={`w-4 h-4 mr-2 ${item.isFeatured ? "fill-current" : ""}`} />
+                      {item.isFeatured ? "Remove from featured" : "Feature on website"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDelete(item.id)}
+                      className="text-rose-600 focus:text-rose-600"
                     >
-                      <FileImage className="w-3 h-3 mr-1" /> {isPoster ? "Poster" : "Set Poster"}
-                    </Button>
-                  </div>
-                  <Button
-                    variant={item.isFeatured ? "default" : "secondary"}
-                    className={`w-full text-xs h-8 ${item.isFeatured ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}`}
-                    onClick={() => handleToggleFeature(item.id, item.isFeatured)}
-                    disabled={loadingId === item.id}
-                  >
-                    {loadingId === item.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Star className={`w-3 h-3 mr-1 ${item.isFeatured ? "fill-white" : ""}`} />}
-                    {item.isFeatured ? "Featured" : "Feature"}
-                  </Button>
-                </div>
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               <div className="absolute top-2 left-2 flex gap-1">

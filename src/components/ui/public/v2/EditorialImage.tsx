@@ -6,9 +6,9 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 import { THADAM_EASE } from "./reveal";
 
-type Ratio = "4/5" | "3/2" | "16/9" | "21/9" | "square";
+type Ratio = "4/5" | "3/2" | "16/9" | "21/9" | "square" | "natural";
 
-const RATIO_CLASS: Record<Ratio, string> = {
+const RATIO_CLASS: Partial<Record<Ratio, string>> = {
   "4/5": "aspect-[4/5]",
   "3/2": "aspect-[3/2]",
   "16/9": "aspect-video",
@@ -19,6 +19,10 @@ const RATIO_CLASS: Record<Ratio, string> = {
 /**
  * The one image primitive: warm grade, curtain reveal, caption slot,
  * typographic fallback (never stock).
+ *
+ * ratio="natural" skips the fixed-crop box entirely (no object-cover) — use
+ * it for designed artwork like posters, where cropping to a fixed box cuts
+ * through text/layout instead of just tightening a photo.
  */
 export function EditorialImage({
   src,
@@ -46,6 +50,44 @@ export function EditorialImage({
   const reduce = useReducedMotion();
   const [error, setError] = useState(false);
   const url = src ? getGoogleDriveDirectLink(src) : null;
+
+  if (ratio === "natural") {
+    return (
+      <figure className={cn("w-full", className)}>
+        <motion.div
+          className={cn("relative overflow-hidden bg-wash", rounded && "rounded-xl", "shadow-sm")}
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.01 }}
+          transition={{ duration: 0.7, ease: [...THADAM_EASE] }}
+        >
+          {url && !error ? (
+            <Image
+              src={url}
+              alt={alt}
+              width={0}
+              height={0}
+              sizes={sizes}
+              priority={priority}
+              className={cn("w-full h-auto thadam-grade", imgClassName)}
+              onError={() => setError(true)}
+            />
+          ) : (
+            <div className="aspect-[4/5] flex items-center justify-center bg-wash p-8">
+              <span className="font-display font-medium italic text-ink-faint text-xl md:text-2xl text-center text-balance">
+                {fallbackText || alt}
+              </span>
+            </div>
+          )}
+        </motion.div>
+        {caption && (
+          <figcaption className="mt-3 text-[13px] font-medium text-ink-faint">
+            {caption}
+          </figcaption>
+        )}
+      </figure>
+    );
+  }
 
   return (
     <figure className={cn("w-full", className)}>

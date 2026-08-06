@@ -2,14 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
 import { MediaType, MediaUsage } from "@prisma/client";
 import { getCurrentClub } from "@/lib/club";
 import { getMediaTypeFromExtension, ALLOWED_MEDIA_TYPES } from "@/lib/media-helpers";
 import { revalidatePublicRoutes } from "@/lib/revalidate";
 import { getOrCreateAlbum, MediaContext, MediaContextSchema } from "../lib/resolveAlbum";
-import { GoogleDriveProvider } from "@/features/storage/google-drive";
-import { decrypt } from "@/lib/crypto";
+import { revalidatePath } from "next/cache";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
@@ -63,12 +63,33 @@ export async function uploadMedia(formData: FormData) {
 
     // Authorization by context. A signed-in member may upload to contexts that
     // are theirs to fill — their profile photo ("members"), general attachments,
-    // and their own payment proof ("finance"). Every other context (events,
-    // projects, gallery, covers) manages shared club content and needs
-    // club-management rights.
+    // and their own payment proof ("finance"). Event photos are open to the
+    // event's chair/co-chair (canManageEvent) and to any member who registered
+    // or attended that event (sharing their own photos), not just club admins.
+    // Every other context (projects, gallery, covers) manages shared club
+    // content and needs club-management rights.
     const SELF_SERVICE_KINDS = ["members", "general", "finance"];
     if (!SELF_SERVICE_KINDS.includes(context.kind) && !canManageClub(session)) {
-       return { error: `Uploading to “${context.kind}” requires club management access.` };
+      let allowedViaEvent = false;
+      if (context.kind === "event") {
+        allowedViaEvent = await canManageEvent(session, context.eventId);
+        if (!allowedViaEvent && session.member?.id) {
+          const participation = await prisma.event.findFirst({
+            where: {
+              id: context.eventId,
+              OR: [
+                { registrations: { some: { memberId: session.member.id } } },
+                { attendance: { some: { memberId: session.member.id } } },
+              ],
+            },
+            select: { id: true },
+          });
+          allowedViaEvent = !!participation;
+        }
+      }
+      if (!allowedViaEvent) {
+        return { error: `Uploading to “${context.kind}” requires club management access.` };
+      }
     }
 
     if (!file && type !== "VIDEO_LINK") {
@@ -79,7 +100,6 @@ export async function uploadMedia(formData: FormData) {
     const { albumId, eventId, projectId } = await getOrCreateAlbum(club.id, context);
 
     let publicUrl = "";
-    let driveFileId: string | null = null;
 
     if (type === "IMAGE" || type === "DOCUMENT") {
       if (!file) return { error: "File data is missing for upload." };
@@ -90,24 +110,6 @@ export async function uploadMedia(formData: FormData) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // --- Google Drive Mirror (Non-blocking) ---
-      try {
-         if (club.googleDriveRefreshToken) {
-            const clearToken = decrypt(club.googleDriveRefreshToken);
-            const provider = new GoogleDriveProvider(clearToken);
-            const driveFolderId = await provider.resolveDriveFolder(club.googleDriveRootFolderId, context);
-            
-            if (driveFolderId) {
-               const driveUpload = await provider.uploadFile(buffer, file.type, file.name, driveFolderId);
-               driveFileId = driveUpload.id;
-            }
-         }
-      } catch (driveErr) {
-         console.warn("Failed to mirror upload to Google Drive:", driveErr);
-         // Continue with Supabase upload
-      }
-
-      // --- Supabase Upload ---
       const supabase = getSupabaseAdmin();
       const { data: uploadData, error: uploadError } = await supabase
         .storage
@@ -165,7 +167,6 @@ export async function uploadMedia(formData: FormData) {
     const media = await prisma.media.create({
       data: {
         url: publicUrl,
-        driveFileId,
         title: title || (file ? file.name : "Video Link"),
         caption,
         altText,
@@ -182,6 +183,12 @@ export async function uploadMedia(formData: FormData) {
       }
     });
 
+    // revalidatePublicRoutes() only busts the static /events listing — the
+    // individual /events/[slug] detail page is its own ISR-cached route.
+    if (eventId) {
+      const ev = await prisma.event.findUnique({ where: { id: eventId }, select: { slug: true } });
+      if (ev?.slug) revalidatePath(`/events/${ev.slug}`);
+    }
     revalidatePublicRoutes();
     return { success: true, media };
   } catch (error: any) {

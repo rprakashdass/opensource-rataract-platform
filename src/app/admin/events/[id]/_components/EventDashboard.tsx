@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,7 +18,6 @@ import {
   MoreHorizontal,
   ArrowRight,
   FileText,
-  Camera,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -477,25 +475,6 @@ function DraftBody({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-4">
         <DetailsCard event={event} />
-        <SectionToggle title="Gallery & Media" defaultOpen={false}>
-          <p className="text-sm text-slate-500 mb-4">
-            Upload event posters and photos here to complete readiness.
-          </p>
-          {event.media.length > 0 ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {event.media.slice(0, 8).map((m) => (
-                <div
-                  key={m.id}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-slate-200"
-                >
-                  <Image src={m.url} alt={m.title || ""} fill className="object-cover" sizes="120px" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <PortalEmptyState title="No media yet" detail="Use Event Settings to upload poster or photos." />
-          )}
-        </SectionToggle>
       </div>
       <div>
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -736,8 +715,6 @@ function CompletedBody({
       ? `${Math.round((attendedCount / event.registrations.length) * 100)}%`
       : "0%";
 
-  const bannerThumb = event.media?.find((m) => m.id === event.bannerMediaId) || event.media?.[0];
-
   return (
     <div className="space-y-6">
       {/* Impact row */}
@@ -783,26 +760,6 @@ function CompletedBody({
       </div>
 
       {/* Media moderation */}
-      <SectionToggle title="Photos & Media" defaultOpen={true}>
-        {bannerThumb?.url ? (
-          <div className="mb-4 relative aspect-video max-w-sm rounded-xl overflow-hidden border border-slate-100">
-            <Image src={bannerThumb.url} alt={event.title} fill sizes="384px" className="object-cover" />
-          </div>
-        ) : (
-          <div className="mb-4 p-8 border border-dashed border-slate-200 rounded-xl text-center">
-            <Camera className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">No cover image yet</p>
-          </div>
-        )}
-        <EventMediaModeration
-          eventId={event.id}
-          media={event.media}
-          driveFolderId={event.driveFolderId}
-          bannerMediaId={event.bannerMediaId}
-          posterMediaId={event.posterMediaId}
-        />
-      </SectionToggle>
-
       {/* Finance summary (always present for completed) */}
       <SectionToggle title="Finance Summary" defaultOpen={false}>
         <StatGrid className="lg:grid-cols-2">
@@ -870,6 +827,22 @@ function CompletedBody({
 }
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
+
+// Photos & media — available at every stage so photos can be uploaded before,
+// during, or after the event (used on the report and the public website).
+function PhotosSection({ event, defaultOpen = false }: { event: EventDashboardProps["event"]; defaultOpen?: boolean }) {
+  return (
+    <SectionToggle title="Photos & Media" defaultOpen={defaultOpen}>
+      <EventMediaModeration
+        eventId={event.id}
+        eventTitle={event.title}
+        media={event.media}
+        bannerMediaId={event.bannerMediaId}
+        posterMediaId={event.posterMediaId}
+      />
+    </SectionToggle>
+  );
+}
 
 export default function EventDashboard({ event, chairMode = false }: EventDashboardProps & { chairMode?: boolean }) {
   const router = useRouter();
@@ -958,6 +931,13 @@ export default function EventDashboard({ event, chairMode = false }: EventDashbo
           loading={loading}
           chairMode={chairMode}
         />
+      )}
+
+      {/* Photos are uploadable at every live stage (for the report + website). */}
+      {status !== "CANCELLED" && (
+        <div className="mt-6">
+          <PhotosSection event={event} defaultOpen={status === "COMPLETED" || status === "ONGOING"} />
+        </div>
       )}
     </div>
   );

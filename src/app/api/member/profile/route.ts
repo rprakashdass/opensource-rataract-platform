@@ -23,6 +23,7 @@ export async function PUT(req: Request) {
       where: { id: member.id },
       data: {
         phone: data.phone,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
         bloodGroup: data.bloodGroup,
         profession: data.profession,
         companyName: data.companyName,

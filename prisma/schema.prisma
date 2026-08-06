@@ -669,6 +669,7 @@ model Member {
 
   // Member Profile
   phone            String?
+  dateOfBirth      DateTime?
   profession       String?
   companyName      String?
   location         String?

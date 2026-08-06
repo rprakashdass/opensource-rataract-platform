@@ -8,6 +8,7 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     phone: member.phone || "",
+    dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth).toISOString().split("T")[0] : "",
     bloodGroup: member.bloodGroup || "",
     profession: member.profession || "",
     companyName: member.companyName || "",
@@ -76,6 +77,17 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
             onChange={handleChange}
             className="w-full border border-hairline rounded-md px-3 py-2 text-sm motion-input"
             placeholder="+91 9876543210"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ink-soft mb-1">Date of Birth</label>
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={formData.dateOfBirth}
+            onChange={handleChange}
+            className="w-full border border-hairline rounded-md px-3 py-2 text-sm motion-input"
           />
         </div>
 
