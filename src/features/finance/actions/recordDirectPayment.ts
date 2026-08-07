@@ -7,6 +7,7 @@ import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
 
 export interface DirectPaymentInput {
   memberId?: string; // set when the payer is an existing member
+  paymentRequestId?: string; // set when recording against a specific request (dues, etc.)
   payerName: string;
   payerEmail?: string;
   amount: number;
@@ -70,6 +71,19 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
       const m = await prisma.member.findUnique({ where: { id: input.memberId }, select: { id: true } });
       if (!m) return { error: "Selected member not found." };
       memberId = m.id;
+
+      if (input.paymentRequestId) {
+        const duplicate = await prisma.transaction.findFirst({
+          where: {
+            memberId: m.id,
+            paymentRequestId: input.paymentRequestId,
+            status: "APPROVED"
+          }
+        });
+        if (duplicate) {
+          return { error: "This member has already paid for this request." };
+        }
+      }
     } else {
       let contributor = await prisma.contributor.findFirst({ where: { clubId, name } });
       if (!contributor) {
@@ -102,6 +116,7 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
           referenceNumber: input.referenceNumber?.trim() || null,
           memberId,
           contributorId,
+          paymentRequestId: input.paymentRequestId || null,
           createdBy: session.id,
           approvedBy: session.id,
           approvedAt: new Date(),
@@ -148,6 +163,7 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
 
     revalidatePath("/admin/finance");
     revalidatePath("/admin/finance/transactions");
+    revalidatePath("/admin/finance/requests");
     return { success: true, transactionId: txn.id, receiptNumber, url, emailed: !!input.payerEmail?.trim() };
   } catch (e: any) {
     console.error("recordDirectPayment error:", e);

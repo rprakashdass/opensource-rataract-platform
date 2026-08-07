@@ -29,6 +29,7 @@ export async function updateMember(id: string, data: any) {
         name: data.name,
         email: data.email,
         phone: data.phone,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
         bloodGroup: data.bloodGroup,
         emergencyContact: data.emergencyContact,
         profession: data.profession,

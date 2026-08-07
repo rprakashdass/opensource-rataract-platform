@@ -62,35 +62,6 @@ export async function createEvent(data: EventFormData) {
       }
     });
 
-    if (club.googleDriveRefreshToken) {
-      try {
-        const { decrypt } = await import("@/lib/crypto");
-        const { GoogleDriveProvider } = await import("@/features/storage/google-drive");
-        
-        const clearToken = decrypt(club.googleDriveRefreshToken);
-        const provider = new GoogleDriveProvider(clearToken);
-        
-        const rootFolderId = club.googleDriveRootFolderId || await provider.setupRootFolder();
-        const eventsFolderId = await provider.findFolder("Events", rootFolderId) || await provider.createFolder("Events", rootFolderId);
-        
-        const eventFolderName = event.title.replace(/[/\\?%*:|"<>]/g, '-');
-        let eventFolderId = await provider.findFolder(eventFolderName, eventsFolderId);
-        if (!eventFolderId) {
-          eventFolderId = await provider.createFolder(eventFolderName, eventsFolderId);
-          await provider.createFolder("Photos", eventFolderId);
-          await provider.createFolder("Posters", eventFolderId);
-          await provider.createFolder("Documents", eventFolderId);
-        }
-        
-        await prisma.event.update({
-          where: { id: event.id },
-          data: { driveFolderId: eventFolderId }
-        });
-      } catch (err) {
-        console.error("Failed to provision Google Drive folder for event:", err);
-      }
-    }
-
     const linkedMediaIds = [bannerMediaId, posterMediaId].filter(Boolean) as string[];
     if (linkedMediaIds.length > 0) {
       await prisma.media.updateMany({

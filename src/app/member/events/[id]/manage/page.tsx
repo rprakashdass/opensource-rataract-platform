@@ -51,7 +51,6 @@ export default async function ChairEventManagePage(props: { params: Promise<{ id
     <div className="max-w-6xl mx-auto py-8 space-y-6">
       <PageHeader
         title={event.title}
-        description={event.description || undefined}
         backHref="/member/events"
         backLabel="Back to Events"
         actions={
@@ -77,6 +76,12 @@ export default async function ChairEventManagePage(props: { params: Promise<{ id
       {event.publishStatus === "DRAFT" && (
         <div className="inline-flex items-center gap-2 text-sm bg-wash border border-hairline text-ink-soft px-4 py-2 rounded-xl">
           This event is a draft. Set it up here, then submit it for admin approval — only an admin can publish it live.
+        </div>
+      )}
+
+      {event.description && (
+        <div className="rounded-xl border border-slate-100 bg-white p-4 sm:p-5">
+          <p className="text-sm text-ink-soft whitespace-pre-line max-w-3xl">{event.description}</p>
         </div>
       )}
 

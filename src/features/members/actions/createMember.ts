@@ -68,6 +68,7 @@ export async function createMember(data: any) {
                 name: data.name,
                 email: data.email,
                 phone: data.phone || null,
+                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
                 profession: data.profession || null,
                 avatar: data.avatar || null,
                 bloodGroup: data.bloodGroup || null,

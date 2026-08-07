@@ -61,7 +61,6 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
     <div className="max-w-6xl mx-auto py-8 space-y-6">
       <PageHeader
         title={event.title}
-        description={event.description || undefined}
         backHref="/admin/events"
         backLabel="Back to Events"
         actions={
@@ -85,6 +84,12 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
           <Lightbulb className="w-4 h-4" />
           Originally proposed by <span className="font-semibold">{event.initiative.proposedBy?.name || "a member"}</span>
           <Link href={`/admin/proposals/${event.initiative.id}`} className="underline hover:text-brand">View proposal</Link>
+        </div>
+      )}
+
+      {event.description && (
+        <div className="rounded-xl border border-slate-100 bg-white p-4 sm:p-5">
+          <p className="text-sm text-ink-soft whitespace-pre-line max-w-3xl">{event.description}</p>
         </div>
       )}
 

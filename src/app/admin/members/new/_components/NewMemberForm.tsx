@@ -29,6 +29,7 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
     name: "",
     email: "",
     phone: "",
+    dateOfBirth: "",
     bloodGroup: "",
     emergencyContact: "",
     profession: "",
@@ -124,6 +125,15 @@ export default function NewMemberForm({ roles }: { roles: ClubRoleOption[] }) {
                   onChange={e => setFormData({...formData, phone: e.target.value})}
                   className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
                   placeholder="+91 98765 43210"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Date of Birth</label>
+                <input
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={e => setFormData({...formData, dateOfBirth: e.target.value})}
+                  className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
                 />
               </div>
               <div className="space-y-1.5">

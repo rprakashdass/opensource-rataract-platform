@@ -38,7 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const club = await prisma.club.findFirst();
 
     if (status === "APPROVED") {
-      // Generate the official receipt (PDF → Google Drive) and email it, attached.
+      // Generate the official receipt (PDF → Supabase Storage) and email it, attached.
       // Wrapped so a receipt/email failure never blocks the approval itself.
       try {
         await issueReceipt(id, { approverName: (session as any)?.member?.name, email: true });

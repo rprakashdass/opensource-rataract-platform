@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
             <LegalHeading>6. Third Party Services</LegalHeading>
             <p className="mb-4">We may use trusted services including:</p>
             <ul className="list-disc pl-5 mb-6 space-y-1">
-              <li>Google Drive for media storage</li>
+              <li>Supabase for secure data and media storage</li>
               <li>Email providers for communication</li>
             </ul>
 

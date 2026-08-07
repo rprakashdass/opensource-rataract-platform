@@ -24,10 +24,18 @@ export function RecordDirectPaymentDialog({
   accounts = [],
   categories = [],
   members = [],
+  paymentRequestId,
+  defaultAmount,
+  defaultDescription,
+  trigger,
 }: {
   accounts?: { id: string; name: string }[];
   categories?: { id: string; name: string }[];
   members?: { id: string; name: string | null; email: string | null }[];
+  paymentRequestId?: string;
+  defaultAmount?: number;
+  defaultDescription?: string;
+  trigger?: React.ReactNode;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -37,10 +45,10 @@ export function RecordDirectPaymentDialog({
     memberId: "",
     payerName: "",
     payerEmail: "",
-    amount: "",
+    amount: defaultAmount != null ? String(defaultAmount) : "",
     paymentMethod: "CASH",
     referenceNumber: "",
-    description: "",
+    description: defaultDescription || "",
     categoryId: "",
     accountId: "",
     date: new Date().toISOString().split("T")[0],
@@ -65,6 +73,7 @@ export function RecordDirectPaymentDialog({
     try {
       const res = await recordDirectPayment({
         memberId: form.memberId || undefined,
+        paymentRequestId,
         payerName: form.payerName,
         payerEmail: form.payerEmail || undefined,
         amount: parseFloat(form.amount),
@@ -105,10 +114,14 @@ export function RecordDirectPaymentDialog({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant="outline" className="gap-2">
-        <HandCoins className="h-4 w-4" />
-        Record direct payment
-      </Button>
+      {trigger ? (
+        <span onClick={() => setOpen(true)}>{trigger}</span>
+      ) : (
+        <Button onClick={() => setOpen(true)} variant="outline" className="gap-2">
+          <HandCoins className="h-4 w-4" />
+          Record direct payment
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">

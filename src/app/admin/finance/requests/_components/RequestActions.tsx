@@ -4,11 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, HandCoins } from "lucide-react";
 import RequestEditDialog from "../../_components/RequestEditDialog";
+import { RecordDirectPaymentDialog } from "../../_components/RecordDirectPaymentDialog";
 
 export default function RequestActions({
   request,
+  members = [],
+  accounts = [],
 }: {
   request: {
     id: string;
@@ -19,6 +22,8 @@ export default function RequestActions({
     isGlobal: boolean;
     dueDate: string | null;
   };
+  members?: { id: string; name: string | null; email: string | null }[];
+  accounts?: { id: string; name: string }[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -42,6 +47,18 @@ export default function RequestActions({
 
   return (
     <div className="flex justify-end gap-2">
+      <RecordDirectPaymentDialog
+        members={members}
+        accounts={accounts}
+        paymentRequestId={request.id}
+        defaultAmount={request.amount}
+        defaultDescription={request.title}
+        trigger={
+          <Button variant="outline" size="icon" className="h-8 w-8 hover:text-emerald-700 hover:bg-emerald-50" title="Record a cash / direct payment for this request">
+            <HandCoins className="w-3.5 h-3.5 text-emerald-600" />
+          </Button>
+        }
+      />
       <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setEditing(true)}>
         <Edit2 className="w-3.5 h-3.5 text-slate-500" />
       </Button>

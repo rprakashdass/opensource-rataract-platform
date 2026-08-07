@@ -191,18 +191,53 @@ export default function TreasurerWorkspace({
       </div>
 
       {/* Account Balances Grid */}
-      <StatGrid>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard label="Current Balance" value={`₹${Number(totalBalance).toLocaleString()}`} icon={Wallet} tone="brand" />
-        <StatCard label="Cash Balance" value={`₹${Number(cashBalance).toLocaleString()}`} icon={Banknote} tone="neutral" />
-        <StatCard label="Bank Balance" value={`₹${Number(bankBalance).toLocaleString()}`} icon={Banknote} tone="neutral" />
-        <StatCard
-          label="Pending Approvals"
-          value={pendingApprovals.length}
-          icon={AlertCircle}
-          tone={pendingApprovals.length > 0 ? "warning" : "neutral"}
-          hint="transactions awaiting review"
-        />
-      </StatGrid>
+        <Card className="md:col-span-2">
+          <CardHeader className="py-4">
+            <CardTitle className="text-sm font-bold">Managed Accounts</CardTitle>
+          </CardHeader>
+          <CardContent className="py-2 space-y-3">
+            {accounts.map(a => (
+              <div key={a.id} className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
+                <div className="flex items-center gap-2">
+                  <Banknote className="w-4 h-4 text-slate-400" />
+                  <div>
+                    <p className="text-xs font-semibold text-slate-700">{a.name}</p>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold">{a.type}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-slate-900">₹{Number(a.currentBalance).toLocaleString()}</span>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Are you sure you want to delete ${a.name}?`)) return;
+                      try {
+                        const res = await fetch(`/api/admin/finance/accounts/${a.id}`, { method: "DELETE" });
+                        const data = await res.json();
+                        if (data.error) {
+                          toast.error(data.error);
+                        } else {
+                          toast.success("Account deleted successfully");
+                          router.refresh();
+                        }
+                      } catch (err) {
+                        toast.error("Failed to delete account");
+                      }
+                    }}
+                    className="p-1 hover:bg-rose-50 text-rose-500 rounded transition cursor-pointer"
+                    title="Delete Account"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Monthly Net Change & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

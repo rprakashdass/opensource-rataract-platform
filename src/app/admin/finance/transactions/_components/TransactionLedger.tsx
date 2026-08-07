@@ -375,16 +375,46 @@ export default function TransactionLedger({
               )}
 
               {/* Moderate workflow triggers inside dialog */}
-              {(selectedTx.status === "PENDING_APPROVAL" || selectedTx.status === "DRAFT") && (
-                <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 justify-end">
-                  <Button onClick={() => handleStatusUpdate(selectedTx.id, "REJECTED")} disabled={loading} variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50">
-                    Reject Claim
-                  </Button>
-                  <Button onClick={() => handleStatusUpdate(selectedTx.id, "APPROVED")} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700">
-                    Approve & Disburse
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100 justify-between items-center">
+                <div>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Are you sure you want to permanently delete this transaction?")) return;
+                      setLoading(true);
+                      try {
+                        const res = await fetch(`/api/admin/finance/transactions/${selectedTx.id}`, { method: "DELETE" });
+                        const data = await res.json();
+                        if (data.error) {
+                          toast.error(data.error);
+                        } else {
+                          toast.success("Transaction deleted successfully");
+                          setSelectedTx(null);
+                          router.refresh();
+                        }
+                      } catch (err) {
+                        toast.error("Failed to delete transaction");
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                    variant="outline"
+                    className="text-rose-600 border-rose-200 hover:bg-rose-50"
+                  >
+                    Delete Transaction
                   </Button>
                 </div>
-              )}
+                {(selectedTx.status === "PENDING_APPROVAL" || selectedTx.status === "DRAFT") && (
+                  <div className="flex gap-2">
+                    <Button onClick={() => handleStatusUpdate(selectedTx.id, "REJECTED")} disabled={loading} variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50">
+                      Reject Claim
+                    </Button>
+                    <Button onClick={() => handleStatusUpdate(selectedTx.id, "APPROVED")} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700">
+                      Approve & Disburse
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>

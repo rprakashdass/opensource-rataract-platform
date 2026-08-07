@@ -34,7 +34,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const description = event.description ? event.description.substring(0, 160) : `Check out ${event.title}`;
   const eventAny = event as any;
   const imageUrl: string | undefined =
-    eventAny.media?.find((m: any) => m.isCover)?.url || eventAny.media?.[0]?.url || undefined;
+    eventAny.media?.find((m: any) => m.id === eventAny.posterMediaId)?.url ||
+    eventAny.media?.find((m: any) => m.id === eventAny.bannerMediaId)?.url ||
+    eventAny.media?.find((m: any) => m.isFeatured)?.url ||
+    undefined;
 
   return {
     title,
@@ -73,17 +76,22 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   const isPast = eventDate < new Date() || eventAny.status === "COMPLETED";
 
   const featuredMedia = eventAny.media?.filter((m: any) => m.isFeatured) || [];
-  const bannerImage: string | null =
-    eventAny.media?.find((m: any) => m.id === eventAny.bannerMediaId)?.url ||
-    featuredMedia[0]?.url ||
-    eventAny.media?.[0]?.url ||
-    null;
   const posterImage: string | null =
-    eventAny.media?.find((m: any) => m.id === eventAny.posterMediaId)?.url ||
-    featuredMedia[1]?.url ||
-    featuredMedia[0]?.url ||
-    null;
-  const gallery = eventAny.media || [];
+    eventAny.media?.find((m: any) => m.id === eventAny.posterMediaId)?.url || null;
+  const bannerImage: string | null =
+    eventAny.media?.find((m: any) => m.id === eventAny.bannerMediaId)?.url || null;
+  // Hero prefers the poster (the intended promotional image for most events,
+  // which rarely have a distinct wide banner) — never falls back to an
+  // arbitrary uploaded photo the admin didn't explicitly choose. Posters are
+  // designed artwork at whatever aspect ratio they were made in, so the hero
+  // renders them at their natural ratio instead of force-cropping into a
+  // fixed landscape box that slices through the design/text.
+  const heroImage: string | null = posterImage || bannerImage || featuredMedia[0]?.url || null;
+  const heroIsPoster = !!posterImage && heroImage === posterImage;
+  const heroRatio = heroIsPoster ? "natural" : "3/2";
+  // Only explicitly "featured" photos are shown publicly — not the entire
+  // unmoderated upload gallery.
+  const gallery = featuredMedia;
 
   // Registration state for the logged-in viewer, if any
   const session = await getSession();
@@ -175,11 +183,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           <MaxWidthWrapper>
             <RevealBlock>
               <EditorialImage
-                src={posterImage || bannerImage}
+                src={heroImage}
                 alt={event.title}
-                ratio="3/2"
+                ratio={heroRatio}
+                className={heroIsPoster ? "max-w-[280px] sm:max-w-xs mx-auto" : undefined}
                 priority
-                sizes="(max-width: 768px) 100vw, 80vw"
+                sizes={heroIsPoster ? "280px" : "(max-width: 768px) 100vw, 80vw"}
                 caption={[longDate, event.location].filter(Boolean).join(" · ")}
                 fallbackText={`${event.title} — ${monthYear}`}
               />
@@ -324,11 +333,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         <MaxWidthWrapper>
           <RevealBlock>
             <EditorialImage
-              src={bannerImage}
+              src={heroImage}
               alt={event.title}
-              ratio="3/2"
+              ratio={heroRatio}
+              className={heroIsPoster ? "max-w-[280px] sm:max-w-xs mx-auto" : undefined}
               priority
-              sizes="(max-width: 768px) 100vw, 80vw"
+              sizes={heroIsPoster ? "280px" : "(max-width: 768px) 100vw, 80vw"}
               caption={[longDate, event.location].filter(Boolean).join(" · ")}
               fallbackText={`${event.title} — ${monthYear}`}
             />

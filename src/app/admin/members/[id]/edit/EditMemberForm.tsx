@@ -18,6 +18,7 @@ export default function EditMemberForm({ member }: { member: any }) {
     name: member.name || "",
     email: member.email || "",
     phone: member.phone || "",
+    dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth).toISOString().split("T")[0] : "",
     bloodGroup: member.bloodGroup || "",
     emergencyContact: member.emergencyContact || "",
     profession: member.profession || "",
@@ -111,6 +112,15 @@ export default function EditMemberForm({ member }: { member: any }) {
                   onChange={e => setFormData({...formData, phone: e.target.value})}
                   className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
                   placeholder="+91 98765 43210"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Date of Birth</label>
+                <input
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={e => setFormData({...formData, dateOfBirth: e.target.value})}
+                  className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
                 />
               </div>
               <div className="space-y-1.5">
