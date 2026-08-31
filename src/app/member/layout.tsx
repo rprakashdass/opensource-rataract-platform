@@ -41,7 +41,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       user={{
         name: session.name,
         email: session.email,
-        roles: session.roles
+        roles: session.roles,
+        readNotifications: session.readNotifications
       }}
       notifications={notifications}
     >

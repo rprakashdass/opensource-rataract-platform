@@ -123,6 +123,7 @@ export async function getSession() {
   }
 
   payload.member = member;
+  payload.readNotifications = user.readNotifications || [];
   return payload;
 }
 

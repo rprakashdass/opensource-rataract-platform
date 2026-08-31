@@ -17,6 +17,7 @@ export async function getTransaction(id: string) {
       financialYear: { select: { name: true } },
       user: { select: { name: true, email: true } },
       member: { select: { name: true, email: true } },
+      contributor: { select: { name: true, contact: true } },
       paymentRequest: { select: { title: true } },
     }
   });
@@ -32,7 +33,17 @@ export async function getTransaction(id: string) {
       },
       orderBy: { createdAt: 'desc' }
     });
-    return { ...transaction, auditLogs };
+
+    // `createdBy`/`approvedBy` are plain userId strings (no Prisma relation),
+    // so resolve them to display names manually.
+    const actorIds = [transaction.createdBy, transaction.approvedBy].filter((v): v is string => !!v);
+    const actors = actorIds.length
+      ? await prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, email: true } })
+      : [];
+    const creator = actors.find((u) => u.id === transaction.createdBy) || null;
+    const approver = actors.find((u) => u.id === transaction.approvedBy) || null;
+
+    return { ...transaction, auditLogs, creator, approver };
   }
 
   return null;

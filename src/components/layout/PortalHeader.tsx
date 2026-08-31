@@ -31,6 +31,7 @@ interface PortalHeaderProps {
     name: string;
     email: string;
     roles: string[];
+    readNotifications?: string[];
   };
   notifications: NotificationItem[];
   onMobileMenuToggle: () => void;
@@ -40,37 +41,39 @@ interface PortalHeaderProps {
 export function PortalHeader({ club, user, notifications, onMobileMenuToggle, isAdminContext }: PortalHeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [readNotifIds, setReadNotifIds] = useState<string[]>([]);
-
+  const [readNotifIds, setReadNotifIds] = useState<string[]>(user.readNotifications || []);
 
   const handleNotifOpen = (open: boolean) => {
     setNotifOpen(open);
   };
 
-  useEffect(() => {
-    const stored = localStorage.getItem(`read_notifications_${user.email}`);
-    if (stored) {
-      try {
-        setReadNotifIds(JSON.parse(stored));
-      } catch (e) {
-        // ignore JSON parse errors
-      }
-    }
-  }, []);
-
   const markAsRead = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
+    if (readNotifIds.includes(id)) return;
+    
     const newReadIds = [...readNotifIds, id];
     setReadNotifIds(newReadIds);
-    localStorage.setItem(`read_notifications_${user.email}`, JSON.stringify(newReadIds));
+    
+    fetch("/api/user/notifications/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notificationIds: [id] })
+    }).catch(err => console.error("Failed to mark as read", err));
   };
 
   const markAllAsRead = () => {
-    const allIds = notifications.map(n => n.id);
-    const newReadIds = Array.from(new Set([...readNotifIds, ...allIds]));
+    const unreadIds = notifications.map(n => n.id).filter(id => !readNotifIds.includes(id));
+    if (unreadIds.length === 0) return;
+    
+    const newReadIds = Array.from(new Set([...readNotifIds, ...unreadIds]));
     setReadNotifIds(newReadIds);
-    localStorage.setItem(`read_notifications_${user.email}`, JSON.stringify(newReadIds));
+    
+    fetch("/api/user/notifications/read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ notificationIds: unreadIds })
+    }).catch(err => console.error("Failed to mark all as read", err));
   };
 
   const unreadCount = notifications.filter(n => !readNotifIds.includes(n.id)).length;

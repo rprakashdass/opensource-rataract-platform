@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2, HandCoins } from "lucide-react";
+import { Edit2, Trash2, HandCoins, Users } from "lucide-react";
 import RequestEditDialog from "../../_components/RequestEditDialog";
 import { RecordDirectPaymentDialog } from "../../_components/RecordDirectPaymentDialog";
+import { BulkRecordPaymentsDialog } from "./BulkRecordPaymentsDialog";
 
 export default function RequestActions({
   request,
@@ -56,6 +57,18 @@ export default function RequestActions({
         trigger={
           <Button variant="outline" size="icon" className="h-8 w-8 hover:text-emerald-700 hover:bg-emerald-50" title="Record a cash / direct payment for this request">
             <HandCoins className="w-3.5 h-3.5 text-emerald-600" />
+          </Button>
+        }
+      />
+      <BulkRecordPaymentsDialog
+        requestId={request.id}
+        requestTitle={request.title}
+        members={members}
+        accounts={accounts}
+        defaultAmount={request.amount}
+        trigger={
+          <Button variant="outline" size="icon" className="h-8 w-8 hover:text-brand hover:bg-pink-50" title="Bulk record payments for members who already paid">
+            <Users className="w-3.5 h-3.5 text-brand" />
           </Button>
         }
       />

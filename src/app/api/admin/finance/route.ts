@@ -75,7 +75,7 @@ export async function POST(req: Request) {
         amount: parseFloat(amount),
         description,
         categoryId: category || null,
-        status: (status as TransactionStatus) || "COMPLETED",
+        status: (status as TransactionStatus) || "APPROVED",
         receiptUrl: receiptUrl || null,
         eventId: eventId || null,
       },

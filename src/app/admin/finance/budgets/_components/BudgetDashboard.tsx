@@ -98,7 +98,7 @@ export default function BudgetDashboard({ data }: BudgetDashboardProps) {
           label="Total Spent"
           value={`₹${totalSpent.toLocaleString()}`}
           tone="critical"
-          hint="Across all approved transactions"
+          hint="Across all approved expenses"
         />
         <StatCard
           label="Remaining"

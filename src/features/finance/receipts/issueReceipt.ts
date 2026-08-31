@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from "@/lib/db/supabase";
 import { renderReceiptPdf, type ReceiptData } from "./renderReceiptPdf";
 import { sendEmail } from "@/lib/email";
 import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
+import sharp from "sharp";
 
 export interface IssuedReceipt {
   receiptNumber: string;
@@ -13,17 +14,24 @@ export interface IssuedReceipt {
   payerEmail: string | null;
 }
 
-// Fetch the club logo as PDF-embeddable bytes. react-pdf only decodes PNG/JPEG,
-// so we skip anything else (e.g. WebP) rather than crash the render.
+// Fetch a logo/signature image as PDF-embeddable bytes. react-pdf only decodes
+// PNG/JPEG — uploads (e.g. the treasurer signature field) are auto-compressed
+// to WebP by the upload widget, so anything else is converted to PNG here
+// rather than silently dropped from the receipt.
 async function loadLogo(logoUrl?: string | null): Promise<ReceiptData["logo"]> {
   if (!logoUrl) return null;
   try {
     const res = await fetch(getGoogleDriveDirectLink(logoUrl));
     if (!res.ok) return null;
     const type = res.headers.get("content-type") || "";
-    const format = type.includes("png") ? "png" : type.includes("jpeg") || type.includes("jpg") ? "jpg" : null;
-    if (!format) return null;
-    return { data: Buffer.from(await res.arrayBuffer()), format };
+    const bytes = Buffer.from(await res.arrayBuffer());
+
+    if (type.includes("png")) return { data: bytes, format: "png" };
+    if (type.includes("jpeg") || type.includes("jpg")) return { data: bytes, format: "jpg" };
+
+    // Any other format (WebP, etc.) — re-encode to PNG.
+    const png = await sharp(bytes).png().toBuffer();
+    return { data: png, format: "png" };
   } catch {
     return null;
   }
@@ -63,13 +71,13 @@ async function emailReceipt(tx: any, r: IssuedReceipt): Promise<void> {
 
 export async function issueReceipt(
   transactionId: string,
-  opts?: { approverName?: string; force?: boolean; email?: boolean; preview?: boolean }
+  opts?: { force?: boolean; email?: boolean; preview?: boolean }
 ): Promise<IssuedReceipt> {
   const tx = await prisma.transaction.findUnique({
     where: { id: transactionId },
     include: {
       club: {
-        include: { websiteSettings: { select: { treasSignature: true } } },
+        include: { websiteSettings: { select: { treasSignature: true, presSignature: true, presName: true } } },
       },
       member: { select: { name: true, email: true } },
       user: { select: { name: true, email: true } },
@@ -92,13 +100,13 @@ export async function issueReceipt(
   // otherwise a provisional one for display.
   if (opts?.preview) {
     const receiptNumber = tx.receiptNumber || (await nextReceiptNumber(tx.clubId, fyLabel));
-    const data = await buildData(tx, payerName, amount, receiptNumber, opts?.approverName);
+    const data = await buildData(tx, payerName, amount, receiptNumber);
     return { receiptNumber, url: tx.receiptDocUrl ?? null, buffer: await renderReceiptPdf(data), payerName, payerEmail };
   }
 
   // Already issued → return existing (unless forced to regenerate).
   if (tx.receiptNumber && tx.receiptDocUrl && !opts?.force) {
-    const data = await buildData(tx, payerName, amount, tx.receiptNumber, opts?.approverName);
+    const data = await buildData(tx, payerName, amount, tx.receiptNumber);
     const buffer = await renderReceiptPdf(data);
     const issued: IssuedReceipt = { receiptNumber: tx.receiptNumber, url: tx.receiptDocUrl, buffer, payerName, payerEmail };
     if (opts?.email) await emailReceipt(tx, issued).catch((e) => console.error("[issueReceipt] email failed:", e));
@@ -108,7 +116,7 @@ export async function issueReceipt(
   // Allocate a receipt number (retry once on the unique constraint).
   let receiptNumber = tx.receiptNumber || (await nextReceiptNumber(tx.clubId, fyLabel));
 
-  const data = await buildData(tx, payerName, amount, receiptNumber, opts?.approverName);
+  const data = await buildData(tx, payerName, amount, receiptNumber);
   const buffer = await renderReceiptPdf(data);
 
   let url: string | null = null;
@@ -156,17 +164,39 @@ async function nextReceiptNumber(clubId: string, fyLabel: string): Promise<strin
   return `RCPT/${fyLabel}/${String(count + 1).padStart(4, "0")}`;
 }
 
+// President/Treasurer are registered board roles (BoardMember), not free
+// text — look up whoever currently holds the role rather than asking someone
+// to type the name in settings.
+async function currentBoardMemberName(
+  clubId: string,
+  financialYearId: string | null,
+  position: string
+): Promise<string | null> {
+  const where = {
+    clubId,
+    position: { equals: position, mode: "insensitive" as const },
+    leftAt: null,
+  };
+  const boardMember =
+    (financialYearId &&
+      (await prisma.boardMember.findFirst({ where: { ...where, financialYearId }, include: { member: true } }))) ||
+    (await prisma.boardMember.findFirst({ where, include: { member: true } }));
+  return boardMember?.member?.name || null;
+}
+
 async function buildData(
   tx: any,
   payerName: string,
   amount: number,
-  receiptNumber: string,
-  approverName?: string
+  receiptNumber: string
 ): Promise<ReceiptData> {
   const contact = [tx.club.email, tx.club.phone].filter(Boolean).join(" · ") || null;
-  const [logo, treasSignature] = await Promise.all([
+  const [logo, treasSignature, presSignature, presName, treasName] = await Promise.all([
     loadLogo(tx.club.logoUrl),
     loadLogo(tx.club.websiteSettings?.treasSignature),
+    loadLogo(tx.club.websiteSettings?.presSignature),
+    currentBoardMemberName(tx.clubId, tx.financialYear?.id ?? null, "President"),
+    currentBoardMemberName(tx.clubId, tx.financialYear?.id ?? null, "Treasurer"),
   ]);
   return {
     receiptNumber,
@@ -180,7 +210,9 @@ async function buildData(
     paymentMethod: tx.paymentMethod || null,
     referenceNumber: tx.referenceNumber || null,
     purpose: tx.description || tx.category?.name || tx.title || "Contribution",
-    approvedBy: approverName || null,
+    presName: presName || tx.club.websiteSettings?.presName || null,
+    treasName,
     treasSignature,
+    presSignature,
   };
 }

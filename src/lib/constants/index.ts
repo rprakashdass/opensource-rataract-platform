@@ -102,3 +102,23 @@ export const TRANSACTION_CATEGORIES = {
   MARKETING: "Marketing",
   OTHER: "Other"
 } as const;
+
+// Which transaction type(s) each category applies to — used to filter the
+// category dropdown wherever a form also lets the user pick INCOME vs EXPENSE
+// (e.g. "Membership Dues" should never show up as an expense category).
+export const TRANSACTION_CATEGORY_TYPES: Record<keyof typeof TRANSACTION_CATEGORIES, Array<"INCOME" | "EXPENSE">> = {
+  DUES: ["INCOME"],
+  EVENT_FEE: ["INCOME"],
+  DONATION: ["INCOME"],
+  SPONSORSHIP: ["INCOME"],
+  CATERING: ["EXPENSE"],
+  LOGISTICS: ["EXPENSE"],
+  MARKETING: ["EXPENSE"],
+  OTHER: ["INCOME", "EXPENSE"],
+};
+
+export function categoriesForType(type: "INCOME" | "EXPENSE") {
+  return Object.entries(TRANSACTION_CATEGORIES).filter(([key]) =>
+    TRANSACTION_CATEGORY_TYPES[key as keyof typeof TRANSACTION_CATEGORIES].includes(type)
+  );
+}

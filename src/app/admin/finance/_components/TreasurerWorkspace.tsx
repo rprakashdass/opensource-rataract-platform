@@ -186,7 +186,7 @@ export default function TreasurerWorkspace({
               <Receipt className="w-4 h-4" /> Payment Requests
             </Button>
           </Link>
-          <TransactionCreateDialog />
+          <TransactionCreateDialog accounts={accounts} />
         </div>
       </div>
 

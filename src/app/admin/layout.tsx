@@ -63,7 +63,8 @@ export default async function AdminLayout({
       user={{
         name: session.name,
         email: session.email,
-        roles: session.roles
+        roles: session.roles,
+        readNotifications: session.readNotifications
       }}
       notifications={notifications}
       attentionSummary={attentionSummary}

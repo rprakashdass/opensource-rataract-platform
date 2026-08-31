@@ -14,7 +14,6 @@ export async function generateReceipt(transactionId: string, opts?: { force?: bo
 
   try {
     const r = await issueReceipt(transactionId, {
-      approverName: (session as any)?.member?.name,
       email: true,
       force: opts?.force,
     });

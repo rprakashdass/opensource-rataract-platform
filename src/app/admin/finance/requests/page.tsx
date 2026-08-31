@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader, TableWrap, PortalEmptyState } from "@/components/portal";
 import RequestActions from "./_components/RequestActions";
 import RequestCreateDialog from "./_components/RequestCreateDialog";
+import { PaidMembersDialog } from "./_components/PaidMembersDialog";
 
 export default async function PaymentRequestsPage() {
   const session = await getSession();
@@ -101,7 +102,11 @@ export default async function PaymentRequestsPage() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
                 <span>{row.isGlobal ? "All Members" : `${row.audienceCount} member${row.audienceCount === 1 ? "" : "s"}`}</span>
                 <span>
-                  Paid: <span className="text-emerald-700 font-semibold">{row.paidCount}</span> / {row.audienceCount || "—"}
+                  Paid:{" "}
+                  <PaidMembersDialog requestId={row.id} requestTitle={row.title} paidCount={row.paidCount}>
+                    <span className="text-emerald-700 font-semibold underline decoration-dashed underline-offset-2 cursor-pointer hover:text-emerald-800">{row.paidCount}</span>
+                  </PaidMembersDialog>
+                  {" "}/ {row.audienceCount || "—"}
                 </span>
                 <span>Dismissed: {row.dismissedCount}</span>
                 {row.dueDate && <span>Due: {row.dueDate}</span>}
@@ -136,7 +141,9 @@ export default async function PaymentRequestsPage() {
                   </td>
                   <td className="px-6 py-4 font-bold text-slate-900">₹{row.amount.toLocaleString()}</td>
                   <td className="px-6 py-4">
-                    <span className="text-emerald-700 font-semibold">{row.paidCount}</span>
+                    <PaidMembersDialog requestId={row.id} requestTitle={row.title} paidCount={row.paidCount}>
+                      <span className="text-emerald-700 font-semibold underline decoration-dashed underline-offset-2 cursor-pointer hover:text-emerald-800">{row.paidCount}</span>
+                    </PaidMembersDialog>
                     <span className="text-slate-400"> / {row.audienceCount || "—"}</span>
                   </td>
                   <td className="px-6 py-4 text-slate-500">{row.dismissedCount}</td>

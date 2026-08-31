@@ -81,7 +81,7 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
     // and never blocks the status change if it fails.
     if (newStatus === "APPROVED" && result?.status === "APPROVED") {
       try {
-        await issueReceipt(transactionId, { approverName: (session as any)?.member?.name, email: true });
+        await issueReceipt(transactionId, { email: true });
       } catch (err) {
         console.error("Failed to issue receipt on approval:", err);
       }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Eye, Link as LinkIcon } from "lucide-react";
+import { Search, Eye, Link as LinkIcon, Receipt, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -14,6 +14,7 @@ import {
 import { TableWrap } from "@/components/portal";
 import { toast } from "sonner";
 import { updateTransactionStatus } from "@/features/finance/actions/updateTransactionStatus";
+import { generateReceipt } from "@/features/finance/actions/generateReceipt";
 
 interface TransactionLedgerProps {
   initialTransactions: any[];
@@ -49,6 +50,7 @@ export default function TransactionLedger({
 
   // Detailed Transaction View dialog state
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
+  const [receiptLoading, setReceiptLoading] = useState(false);
 
   // Client-side filtering logic
   const filtered = initialTransactions.filter(t => {
@@ -87,6 +89,23 @@ export default function TransactionLedger({
     }
   }
 
+  async function handleRegenerateReceipt(id: string) {
+    setReceiptLoading(true);
+    try {
+      const res = await generateReceipt(id, { force: true });
+      if (res.error) throw new Error(res.error);
+      toast.success(
+        `Receipt ${res.receiptNumber} regenerated${res.emailed ? " and emailed to the payer" : ""}.`
+      );
+      setSelectedTx((prev: any) => prev ? { ...prev, receiptDocUrl: res.url, receiptNumber: res.receiptNumber } : prev);
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to regenerate receipt");
+    } finally {
+      setReceiptLoading(false);
+    }
+  }
+
   const statusBadgeClass = (status: string) =>
     status === "APPROVED" || status === "PAID"
       ? "bg-emerald-100 text-emerald-700"
@@ -100,6 +119,9 @@ export default function TransactionLedger({
         <div>
           <div className="font-semibold text-slate-900">{tx.title}</div>
           <div className="text-xs text-slate-400 mt-0.5">{tx.category?.name || "Other"} • <span suppressHydrationWarning>{new Date(tx.date).toLocaleDateString()}</span></div>
+          {(tx.event?.title || tx.project?.title) && (
+            <div className="text-xs text-brand font-medium mt-0.5">{tx.event ? `Event: ${tx.event.title}` : `Project: ${tx.project.title}`}</div>
+          )}
         </div>
         <div className="text-right">
           <div className="font-bold text-slate-900">₹{Number(tx.amount).toLocaleString()}</div>
@@ -269,6 +291,9 @@ export default function TransactionLedger({
                   <td className="px-5 py-3.5">
                     <div className="font-semibold text-slate-900">{tx.title}</div>
                     <div className="text-xs text-slate-400 mt-0.5">{tx.category?.name || "Other"}</div>
+                    {(tx.event?.title || tx.project?.title) && (
+                      <div className="text-xs text-brand font-medium mt-0.5">{tx.event ? `Event: ${tx.event.title}` : `Project: ${tx.project.title}`}</div>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 whitespace-nowrap">
                     <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
@@ -342,6 +367,69 @@ export default function TransactionLedger({
                   <span className="text-xs font-semibold text-slate-400 uppercase">Linked Account</span>
                   <p className="font-medium text-slate-900 mt-0.5">{selectedTx.account?.name || "-"}</p>
                 </div>
+              </div>
+
+              {(selectedTx.event?.title || selectedTx.project?.title) && (
+                <div className="pt-2 border-t border-slate-50">
+                  <span className="text-xs font-semibold text-slate-400 uppercase">
+                    {selectedTx.event ? "Linked Event" : "Linked Project"}
+                  </span>
+                  <p className="font-medium text-brand mt-0.5">{selectedTx.event?.title || selectedTx.project?.title}</p>
+                </div>
+              )}
+
+              {(selectedTx.member || selectedTx.contributor) && (
+                <div className="pt-2 border-t border-slate-50">
+                  <span className="text-xs font-semibold text-slate-400 uppercase">
+                    {selectedTx.type === "INCOME" ? "Paid by" : "Submitted by"}
+                  </span>
+                  <p className="font-medium text-slate-900 mt-0.5">
+                    {selectedTx.member?.name || selectedTx.contributor?.name || "—"}
+                    {(selectedTx.member?.email || selectedTx.contributor?.contact) && (
+                      <span className="text-slate-400 font-normal"> · {selectedTx.member?.email || selectedTx.contributor?.contact}</span>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-50">
+                <div>
+                  <span className="text-xs font-semibold text-slate-400 uppercase">Recorded by</span>
+                  <p className="font-medium text-slate-900 mt-0.5">{selectedTx.creator?.name || selectedTx.creator?.email || "—"}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-slate-400 uppercase">Approved by</span>
+                  <p className="font-medium text-slate-900 mt-0.5">
+                    {selectedTx.approver?.name || selectedTx.approver?.email || (selectedTx.status === "APPROVED" ? "—" : "Pending")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-50 flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-semibold text-slate-400 uppercase">Official Receipt</span>
+                  {selectedTx.receiptDocUrl ? (
+                    <p className="mt-0.5">
+                      <a href={selectedTx.receiptDocUrl} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline font-semibold flex items-center gap-1">
+                        <Receipt className="w-3.5 h-3.5" /> {selectedTx.receiptNumber || "View receipt"}
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="text-slate-400 mt-0.5">Not issued</p>
+                  )}
+                </div>
+                {selectedTx.status === "APPROVED" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1"
+                    disabled={receiptLoading}
+                    onClick={() => handleRegenerateReceipt(selectedTx.id)}
+                  >
+                    {receiptLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Receipt className="w-3.5 h-3.5" />}
+                    {selectedTx.receiptDocUrl ? "Regenerate" : "Generate"}
+                  </Button>
+                )}
               </div>
 
               {selectedTx.receiptUrl && (

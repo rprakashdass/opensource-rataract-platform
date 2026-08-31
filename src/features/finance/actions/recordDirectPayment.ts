@@ -154,7 +154,7 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
     let receiptNumber: string | undefined;
     let url: string | null = null;
     try {
-      const r = await issueReceipt(txn.id, { approverName: (session as any)?.member?.name, email: true });
+      const r = await issueReceipt(txn.id, { email: true });
       receiptNumber = r.receiptNumber;
       url = r.url;
     } catch (err) {
@@ -169,4 +169,33 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
     console.error("recordDirectPayment error:", e);
     return { error: e.message || "Failed to record payment" };
   }
+}
+
+/**
+ * Record several direct payments in one go — e.g. a batch of members who
+ * already paid by cash/UPI/etc. at an event and are being reconciled together.
+ * Each row is processed independently (its own transaction + receipt) so one
+ * bad row doesn't block the rest; failures are reported per payer.
+ */
+export async function recordBulkDirectPayments(inputs: DirectPaymentInput[]) {
+  const session = await getSession();
+  if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
+  if (!inputs.length) return { error: "No payers selected." };
+
+  const results: Array<{ payerName: string; success: boolean; error?: string; receiptNumber?: string }> = [];
+  for (const input of inputs) {
+    const res = await recordDirectPayment(input);
+    if ("error" in res) {
+      results.push({ payerName: input.payerName, success: false, error: res.error });
+    } else {
+      results.push({ payerName: input.payerName, success: true, receiptNumber: res.receiptNumber });
+    }
+  }
+
+  return {
+    success: true,
+    succeeded: results.filter((r) => r.success).length,
+    failed: results.filter((r) => !r.success).length,
+    results,
+  };
 }

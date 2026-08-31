@@ -50,12 +50,23 @@ export default async function AdminFinanceTransactionsPage() {
     include: {
       member: { select: { name: true, email: true } },
       user: { select: { name: true, email: true } },
+      contributor: { select: { name: true, contact: true } },
       category: { select: { name: true } },
       project: { select: { title: true } },
       event: { select: { title: true } },
       account: { select: { name: true } }
     }
   });
+
+  // `createdBy`/`approvedBy` are plain userId strings (no Prisma relation) —
+  // resolve them to display names in one batched lookup for the whole ledger.
+  const actorIds = Array.from(
+    new Set(rawTransactions.flatMap(t => [t.createdBy, t.approvedBy]).filter((v): v is string => !!v))
+  );
+  const actors = actorIds.length
+    ? await prisma.user.findMany({ where: { id: { in: actorIds } }, select: { id: true, name: true, email: true } })
+    : [];
+  const actorsById = new Map(actors.map(a => [a.id, a]));
 
   // Serialize Decimals for Client Component
   const accountsSerialized = rawAccounts.map(a => ({
@@ -65,7 +76,9 @@ export default async function AdminFinanceTransactionsPage() {
 
   const transactionsSerialized = rawTransactions.map(t => ({
     ...t,
-    amount: Number(t.amount)
+    amount: Number(t.amount),
+    creator: t.createdBy ? actorsById.get(t.createdBy) || null : null,
+    approver: t.approvedBy ? actorsById.get(t.approvedBy) || null : null,
   }));
 
   const financialYearsSerialized = financialYears.map(fy => ({

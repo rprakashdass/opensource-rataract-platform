@@ -612,6 +612,7 @@ model User {
   lastLogin DateTime?
 
   /// Metadata
+  readNotifications String[] @default([])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

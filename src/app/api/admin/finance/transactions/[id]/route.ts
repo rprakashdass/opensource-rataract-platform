@@ -42,7 +42,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       // Generate the official receipt (PDF → Supabase Storage) and email it, attached.
       // Wrapped so a receipt/email failure never blocks the approval itself.
       try {
-        await issueReceipt(id, { approverName: (session as any)?.member?.name, email: true });
+        await issueReceipt(id, { email: true });
       } catch (err) {
         console.error("Failed to issue receipt on approval:", err);
       }

@@ -26,7 +26,8 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
       },
       minutes: { select: { content: true } },
       attendance: { select: { id: true, memberId: true } },
-      transactions: { select: { id: true, title: true, amount: true, type: true, status: true } },
+      transactions: { select: { id: true, title: true, amount: true, type: true, status: true, receiptUrl: true } },
+      budget: { select: { id: true, allocatedAmount: true } },
       media: { orderBy: { createdAt: "desc" } },
       members: { select: { memberId: true, role: true } },
       initiative: { select: { id: true, proposedBy: { select: { name: true, avatar: true } } } }
@@ -36,6 +37,12 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
   if (!event) notFound();
 
   const clubMembers = await prisma.member.findMany({
+    where: { clubId: event.clubId },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
+  const accounts = await prisma.account.findMany({
     where: { clubId: event.clubId },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
@@ -95,7 +102,7 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
 
       <EventReadiness event={event} />
 
-      <EventDashboard event={event as any} />
+      <EventDashboard event={event as any} accounts={accounts} />
     </div>
   );
 }

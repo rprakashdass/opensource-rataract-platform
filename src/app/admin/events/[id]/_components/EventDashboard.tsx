@@ -35,10 +35,13 @@ import { transitionEvent } from "@/features/events/actions/transitionEvent";
 import { saveEventMinutes } from "@/features/events/actions/saveEventMinutes";
 import { StatCard, StatGrid, TableWrap, PortalEmptyState } from "@/components/portal";
 import EventMediaModeration from "./EventMediaModeration";
+import { EventBudgetDialog } from "./EventBudgetDialog";
+import { EventTransactionDialog } from "./EventTransactionDialog";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 interface EventDashboardProps {
+  accounts?: { id: string; name: string }[];
   event: {
     id: string;
     title: string;
@@ -79,7 +82,12 @@ interface EventDashboardProps {
       amount: any;
       type: string;
       status: string;
+      receiptUrl: string | null;
     }>;
+    budget: {
+      id: string;
+      allocatedAmount: any;
+    } | null;
     media: Array<{
       id: string;
       url: string;
@@ -600,11 +608,16 @@ function OngoingBody({
   const attendanceHref = chairMode
     ? `/member/events/${event.id}/attendance`
     : `/admin/events/${event.id}/attendance`;
-  const attendedCount = event.registrations.filter((r) => r.status === "ATTENDED").length;
-  const attendanceRatio =
-    event.registrations.length > 0
-      ? `${Math.round((attendedCount / event.registrations.length) * 100)}%`
-      : "0%";
+  // Use the Attendance model (real check-ins via QR / manual) as the source of truth.
+  // Registration.status === "ATTENDED" is only updated via the quick inline table;
+  // QR-scanned check-ins only write to the Attendance table.
+  const attendedCount = event.attendance.length;
+  // Denominator = max(registered, attended) so walk-in events (0 registered, N attended)
+  // still produce a meaningful rate (N/N = 100%) instead of "—".
+  const denominator = Math.max(event.registrations.length, attendedCount);
+  const attendanceRatio = denominator > 0
+    ? `${Math.round((attendedCount / denominator) * 100)}%`
+    : "0%";
 
   return (
     <div className="space-y-6">
@@ -709,11 +722,12 @@ function CompletedBody({
   loading: boolean;
   chairMode?: boolean;
 }) {
-  const attendedCount = event.registrations.filter((r) => r.status === "ATTENDED").length;
-  const attendanceRatio =
-    event.registrations.length > 0
-      ? `${Math.round((attendedCount / event.registrations.length) * 100)}%`
-      : "0%";
+  // Use the Attendance model (real check-ins) as source of truth.
+  const attendedCount = event.attendance.length;
+  const denominator = Math.max(event.registrations.length, attendedCount);
+  const attendanceRatio = denominator > 0
+    ? `${Math.round((attendedCount / denominator) * 100)}%`
+    : "0%";
 
   return (
     <div className="space-y-6">
@@ -760,69 +774,121 @@ function CompletedBody({
       </div>
 
       {/* Media moderation */}
-      {/* Finance summary (always present for completed) */}
-      <SectionToggle title="Finance Summary" defaultOpen={false}>
-        <StatGrid className="lg:grid-cols-2">
-          <StatCard
-            label="Total Income"
-            tone="positive"
-            value={`₹ ${event.transactions
-              .filter((t) => t.type === "INCOME" && t.status === "APPROVED")
-              .reduce((acc, curr) => acc + Number(curr.amount), 0)
-              .toLocaleString()}`}
-          />
-          <StatCard
-            label="Total Expenses"
-            tone="critical"
-            value={`₹ ${event.transactions
-              .filter((t) => t.type === "EXPENSE" && t.status === "APPROVED")
-              .reduce((acc, curr) => acc + Number(curr.amount), 0)
-              .toLocaleString()}`}
-          />
-        </StatGrid>
-        {event.transactions.length > 0 && (
-          <div className="mt-4">
-            <TableWrap
-              mobile={event.transactions.map((t) => (
-                <div key={t.id} className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-900 truncate">{t.title}</p>
-                    <TransactionStatusBadge status={t.status} />
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>{t.type}</span>
-                    <span className="font-semibold text-slate-900">₹ {Number(t.amount).toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
-            >
-              <table className="w-full text-left text-sm text-slate-600">
-                <thead className="bg-slate-50 text-slate-900 border-b border-slate-100 font-semibold">
-                  <tr>
-                    <th className="px-5 py-3">Title</th>
-                    <th className="px-5 py-3">Type</th>
-                    <th className="px-5 py-3">Amount</th>
-                    <th className="px-5 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {event.transactions.map((t) => (
-                    <tr key={t.id}>
-                      <td className="px-5 py-3 font-medium text-slate-900">{t.title}</td>
-                      <td className="px-5 py-3">{t.type}</td>
-                      <td className="px-5 py-3">₹ {Number(t.amount).toLocaleString()}</td>
-                      <td className="px-5 py-3">
-                        <TransactionStatusBadge status={t.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TableWrap>
-          </div>
-        )}
-      </SectionToggle>
     </div>
+  );
+}
+
+// Finance — budget, income & expenses. Shown at every lifecycle stage so
+// spend can be tracked as it happens, not just reviewed after completion.
+function FinanceSection({
+  event,
+  accounts = [],
+  defaultOpen = false,
+}: {
+  event: EventDashboardProps["event"];
+  accounts?: { id: string; name: string }[];
+  defaultOpen?: boolean;
+}) {
+  const approved = event.transactions.filter((t) => t.status === "APPROVED");
+  const income = approved.filter((t) => t.type === "INCOME").reduce((acc, t) => acc + Number(t.amount), 0);
+  const spent = approved.filter((t) => t.type === "EXPENSE").reduce((acc, t) => acc + Number(t.amount), 0);
+  const allocated = event.budget ? Number(event.budget.allocatedAmount) : null;
+  const remaining = allocated !== null ? allocated - spent : null;
+  const isOver = remaining !== null && remaining < 0;
+
+  return (
+    <SectionToggle title="Budget & Finance" defaultOpen={defaultOpen}>
+      <StatGrid className="lg:grid-cols-4">
+        <StatCard
+          label="Budget Allocated"
+          tone="brand"
+          value={allocated !== null ? `₹ ${allocated.toLocaleString()}` : "Not set"}
+        />
+        <StatCard label="Total Income" tone="positive" value={`₹ ${income.toLocaleString()}`} />
+        <StatCard label="Total Spent" tone="critical" value={`₹ ${spent.toLocaleString()}`} />
+        <StatCard
+          label="Remaining"
+          tone={isOver ? "critical" : "positive"}
+          value={remaining !== null ? `₹ ${remaining.toLocaleString()}` : "—"}
+          hint={isOver ? "Over budget" : undefined}
+        />
+      </StatGrid>
+
+      <div className="flex flex-wrap gap-2 mt-4">
+        <EventBudgetDialog
+          eventId={event.id}
+          currentAmount={allocated}
+          trigger={
+            <Button variant="outline" size="sm" className="text-xs h-8 gap-1 border-slate-200">
+              {allocated !== null ? "Update Budget" : "Set Budget"}
+            </Button>
+          }
+        />
+        <EventTransactionDialog eventId={event.id} accounts={accounts} />
+        <Link href="/admin/finance/transactions">
+          <Button variant="ghost" size="sm" className="text-xs h-8 gap-1 text-slate-500">
+            Full ledger <ArrowRight className="w-3 h-3" />
+          </Button>
+        </Link>
+      </div>
+
+      {event.transactions.length > 0 && (
+        <div className="mt-4">
+          <TableWrap
+            mobile={event.transactions.map((t) => (
+              <div key={t.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-medium text-slate-900 truncate">{t.title}</p>
+                  <TransactionStatusBadge status={t.status} />
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>{t.type}</span>
+                  <span className="font-semibold text-slate-900">₹ {Number(t.amount).toLocaleString()}</span>
+                </div>
+                {t.receiptUrl && (
+                  <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-brand hover:underline inline-block">
+                    View invoice/bill
+                  </a>
+                )}
+              </div>
+            ))}
+          >
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50 text-slate-900 border-b border-slate-100 font-semibold">
+                <tr>
+                  <th className="px-5 py-3">Title</th>
+                  <th className="px-5 py-3">Type</th>
+                  <th className="px-5 py-3">Amount</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3">Attachment</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {event.transactions.map((t) => (
+                  <tr key={t.id}>
+                    <td className="px-5 py-3 font-medium text-slate-900">{t.title}</td>
+                    <td className="px-5 py-3">{t.type}</td>
+                    <td className="px-5 py-3">₹ {Number(t.amount).toLocaleString()}</td>
+                    <td className="px-5 py-3">
+                      <TransactionStatusBadge status={t.status} />
+                    </td>
+                    <td className="px-5 py-3">
+                      {t.receiptUrl ? (
+                        <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableWrap>
+        </div>
+      )}
+    </SectionToggle>
   );
 }
 
@@ -844,7 +910,7 @@ function PhotosSection({ event, defaultOpen = false }: { event: EventDashboardPr
   );
 }
 
-export default function EventDashboard({ event, chairMode = false }: EventDashboardProps & { chairMode?: boolean }) {
+export default function EventDashboard({ event, accounts = [], chairMode = false }: EventDashboardProps & { chairMode?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState(event.minutes?.content || "");
@@ -932,6 +998,11 @@ export default function EventDashboard({ event, chairMode = false }: EventDashbo
           chairMode={chairMode}
         />
       )}
+
+      {/* Budget & finance are trackable from the moment an event is planned. */}
+      <div className="mt-6">
+        <FinanceSection event={event} accounts={accounts} defaultOpen={status === "COMPLETED" || status === "CANCELLED"} />
+      </div>
 
       {/* Photos are uploadable at every live stage (for the report + website). */}
       {status !== "CANCELLED" && (

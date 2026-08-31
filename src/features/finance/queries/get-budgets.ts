@@ -31,12 +31,13 @@ export async function getBudgets() {
     }
   });
 
-  // Fetch approved transactions in this financial year to calculate spent amounts
+  // Fetch approved expense transactions in this financial year to calculate spent amounts
   const transactions = await prisma.transaction.findMany({
     where: {
       clubId: club.id,
       financialYearId: activeFinancialYear.id,
-      status: "APPROVED"
+      status: "APPROVED",
+      type: "EXPENSE"
     },
     select: {
       id: true,

@@ -178,6 +178,33 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
                   <p className="text-sm font-medium text-brand mt-1">{transaction.event.title}</p>
                 </div>
               )}
+              {(transaction.member || transaction.contributor) && (
+                <div className="sm:col-span-2 pt-3 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    {transaction.type === "INCOME" ? "Paid by" : "Submitted by"}
+                  </p>
+                  <p className="text-sm font-medium text-slate-900 mt-1">
+                    {transaction.member?.name || transaction.contributor?.name || "—"}
+                    {(transaction.member?.email || transaction.contributor?.contact) && (
+                      <span className="text-slate-400 font-normal"> · {transaction.member?.email || transaction.contributor?.contact}</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              <div className="sm:col-span-2 pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recorded by</p>
+                  <p className="text-sm font-medium text-slate-900 mt-1">
+                    {transaction.creator?.name || transaction.creator?.email || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Approved by</p>
+                  <p className="text-sm font-medium text-slate-900 mt-1">
+                    {transaction.approver?.name || transaction.approver?.email || (transaction.status === "APPROVED" ? "—" : "Pending")}
+                  </p>
+                </div>
+              </div>
               {transaction.description && (
                 <div className="sm:col-span-2 pt-3 border-t border-slate-100">
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Description</p>

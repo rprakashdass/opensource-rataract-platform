@@ -13,8 +13,10 @@ export interface ReceiptData {
   paymentMethod?: string | null; // CASH, UPI, ...
   referenceNumber?: string | null;
   purpose: string; // description / category / "Contribution"
-  approvedBy?: string | null;
+  presName?: string | null;
+  treasName?: string | null;
   treasSignature?: { data: Buffer; format: "png" | "jpg" } | null;
+  presSignature?: { data: Buffer; format: "png" | "jpg" } | null;
 }
 
 // THADAM cranberry + gold, kept inline (react-pdf has no Tailwind).
@@ -48,7 +50,8 @@ const styles = StyleSheet.create({
   sign: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 40 },
   signBlock: { width: 160, alignItems: "center" },
   signImg: { width: 120, height: 40, objectFit: "contain", marginBottom: 4 },
-  signLine: { width: 160, borderTopWidth: 1, borderTopColor: INK, paddingTop: 4, fontSize: 9, color: SOFT, textAlign: "center" },
+  signName: { width: 160, borderTopWidth: 1, borderTopColor: INK, paddingTop: 4, fontSize: 10, fontFamily: "Helvetica-Bold", color: INK, textAlign: "center" },
+  signRole: { fontSize: 8, color: SOFT, textAlign: "center", marginTop: 2 },
   note: { fontSize: 8, color: "#99878F", textAlign: "center", marginTop: 22 },
 });
 
@@ -109,7 +112,16 @@ function ReceiptDoc({ data }: { data: ReceiptData }) {
 
         <View style={styles.footer}>
           <View style={styles.sign}>
-            <Text style={styles.signLine}>{data.approvedBy || "For the Club"}</Text>
+            <View style={styles.signBlock}>
+              {data.presSignature ? (
+                <Image
+                  style={styles.signImg}
+                  src={{ data: data.presSignature.data, format: data.presSignature.format }}
+                />
+              ) : null}
+              <Text style={styles.signName}>{data.presName || "For the Club"}</Text>
+              <Text style={styles.signRole}>President</Text>
+            </View>
             <View style={styles.signBlock}>
               {data.treasSignature ? (
                 <Image
@@ -117,7 +129,8 @@ function ReceiptDoc({ data }: { data: ReceiptData }) {
                   src={{ data: data.treasSignature.data, format: data.treasSignature.format }}
                 />
               ) : null}
-              <Text style={styles.signLine}>Treasurer / Authorised Signatory</Text>
+              <Text style={styles.signName}>{data.treasName || "Authorised Signatory"}</Text>
+              <Text style={styles.signRole}>Treasurer</Text>
             </View>
           </View>
           <Text style={styles.note}>
