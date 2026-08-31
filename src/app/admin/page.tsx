@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader, StatCard, StatGrid } from "@/components/portal";
+import { ThisMonthCard } from "@/components/portal/ThisMonthCard";
+import { getThisMonthHighlights } from "@/features/members/queries/getThisMonthHighlights";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -125,6 +127,7 @@ export default async function AdminPage() {
   }
 
   const attentionSummary = await getAttentionSummary(club?.id || "", session.roles);
+  const { birthdays, events: monthEvents } = club ? await getThisMonthHighlights(club.id) : { birthdays: [], events: [] };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-2">
@@ -336,6 +339,9 @@ export default async function AdminPage() {
               </div>
             </div>
           )}
+
+          {/* This Month: Birthdays & Events */}
+          <ThisMonthCard birthdays={birthdays} events={monthEvents} eventHrefBase="/admin/events" />
 
           {/* Recent Activity */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">

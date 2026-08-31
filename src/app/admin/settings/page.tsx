@@ -31,6 +31,8 @@ export default function SettingsAdmin() {
   const [bannerUrl, setBannerUrl] = useState("");
   const [upiId, setUpiId] = useState("");
   const [paymentQr, setPaymentQr] = useState("");
+  const [treasSignature, setTreasSignature] = useState("");
+  const [speakUpEmail, setSpeakUpEmail] = useState("");
   const [loading, setLoading] = useState(true);
   useLoadingToast(loading, "Loading configurations...");
   const [saving, setSaving] = useState(false);
@@ -75,6 +77,8 @@ export default function SettingsAdmin() {
           setBannerUrl(data.bannerUrl || "");
           setUpiId(data.upiId || "");
           setPaymentQr(data.paymentQr || "");
+          setTreasSignature(data.treasSignature || "");
+          setSpeakUpEmail(data.speakUpEmail || "");
         }
       } catch (err) {
         console.error("Error loading club details:", err);
@@ -116,6 +120,8 @@ export default function SettingsAdmin() {
           bannerUrl,
           upiId,
           paymentQr,
+          treasSignature,
+          speakUpEmail,
         }),
       });
       const data = await res.json();
@@ -288,6 +294,17 @@ export default function SettingsAdmin() {
                       placeholder="e.g. +1 234 567 890"
                     />
                   </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Speak Up Recipient Email</label>
+                    <input
+                      type="email"
+                      value={speakUpEmail}
+                      onChange={(e) => setSpeakUpEmail(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all"
+                      placeholder="president@yourclub.org"
+                    />
+                    <p className="text-xs text-slate-400 mt-2">All anonymous Speak Up complaints will be sent to this email address. If left blank, complaints are just stored in the database.</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -456,6 +473,11 @@ export default function SettingsAdmin() {
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Payment QR Code</label>
                     <FileUpload value={paymentQr} onChange={setPaymentQr} accept="image/*" context={{ kind: "finance" }} onStatusChange={handleStatusChange} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Treasurer Signature</label>
+                    <p className="text-xs text-slate-400 mb-2">Upload the treasurer's signature image — it will appear on all issued receipts.</p>
+                    <FileUpload value={treasSignature} onChange={setTreasSignature} accept="image/*" context={{ kind: "finance" }} onStatusChange={handleStatusChange} />
                   </div>
                 </div>
               </div>

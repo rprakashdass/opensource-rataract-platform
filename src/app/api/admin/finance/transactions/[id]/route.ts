@@ -4,6 +4,7 @@ import { getSession , canManageFinance } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
 import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
+import { handleApiError } from "@/lib/api-error";
 
 function adminOnly(session: any) {
   return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
@@ -57,7 +58,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     return NextResponse.json(transaction);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update transaction status");
   }
 }
 
@@ -83,7 +84,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     return NextResponse.json(transaction);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update transaction details");
   }
 }
 
@@ -101,6 +102,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to delete transaction");
   }
 }

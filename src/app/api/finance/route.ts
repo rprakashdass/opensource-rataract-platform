@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
+import { handleApiError } from "@/lib/api-error";
 
 // Helper to get logged in user
 async function getSessionUser() {
@@ -26,7 +27,7 @@ export async function GET() {
 
     return NextResponse.json(transactions);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to retrieve transactions");
   }
 }
 
@@ -75,6 +76,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(transaction);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to create transaction");
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
+import { handleApiError } from "@/lib/api-error";
 
 function adminOnly(session: any) {
   return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
@@ -30,7 +31,7 @@ export async function GET() {
 
     return NextResponse.json(requests);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to retrieve payment requests");
   }
 }
 
@@ -72,6 +73,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json(request);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to create payment request");
   }
 }

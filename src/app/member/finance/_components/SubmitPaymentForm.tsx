@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Upload, FileType, QrCode, Smartphone, Info } from "lucide-react";
@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { TRANSACTION_CATEGORIES } from "@/lib/constants";
 import { FileUpload } from "@/components/ui/file-upload";
+import { buildUpiUri } from "@/lib/upi-qr";
 
 export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiId: string | null, paymentQr: string | null, clubName: string }) {
   const router = useRouter();
@@ -27,6 +28,32 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
   const [category, setCategory] = useState(searchParams.get("category") || "DUES");
   const [receiptUrl, setReceiptUrl] = useState("");
   const paymentRequestId = searchParams.get("requestId");
+  const [dynamicQr, setDynamicQr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!upiId) {
+      setDynamicQr(null);
+      return;
+    }
+    const parsedAmount = parseFloat(amount);
+    const params = new URLSearchParams();
+    if (parsedAmount > 0) params.set("amount", String(parsedAmount));
+    if (description) params.set("note", description);
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetch(`/api/finance/qr?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!cancelled && data.qrDataUrl) setDynamicQr(data.qrDataUrl);
+        })
+        .catch(() => {});
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [upiId, amount, description]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,38 +108,35 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
 
         {(upiId || paymentQr) ? (
           <div className="bg-white rounded-lg p-4 border border-blue-100 flex flex-col items-center justify-center text-center">
-            {paymentQr ? (
-              <a 
-                href={upiId ? `upi://pay?pa=${upiId}&pn=${encodeURIComponent(clubName)}` : '#'} 
+            {upiId && dynamicQr ? (
+              <a
+                href={buildUpiUri({ upiId, payeeName: clubName, amount: parseFloat(amount) > 0 ? amount : undefined, note: description || undefined })}
                 className="group relative block transition-transform hover:scale-105 active:scale-95"
                 title="Tap to pay with UPI app"
               >
-                <div className="w-32 h-32 relative border-4 border-white shadow-sm rounded-lg overflow-hidden bg-slate-50">
-                  <Image src={paymentQr} alt="Club Payment QR" fill sizes="128px" className="object-contain" />
+                <div className="w-56 h-56 relative border-4 border-white shadow-sm rounded-lg overflow-hidden bg-white p-1 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={dynamicQr} alt={`Club Payment QR${parseFloat(amount) > 0 ? ` for ₹${amount}` : ""}`} className="w-full h-full object-contain" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg group-hover:bg-emerald-600 transition-colors">
                   <Smartphone className="h-4 w-4" />
                 </div>
               </a>
-            ) : upiId ? (
-              <a 
-                href={`upi://pay?pa=${upiId}&pn=${encodeURIComponent(clubName)}`} 
+            ) : paymentQr ? (
+              <a
+                href={upiId ? `upi://pay?pa=${upiId}&pn=${encodeURIComponent(clubName)}` : '#'}
                 className="group relative block transition-transform hover:scale-105 active:scale-95"
                 title="Tap to pay with UPI app"
               >
-                <div className="w-32 h-32 relative border-4 border-white shadow-sm rounded-lg overflow-hidden bg-white p-1 flex items-center justify-center">
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=${encodeURIComponent(clubName)}`)}`}
-                    alt="Club Payment QR"
-                    className="w-full h-full object-contain"
-                  />
+                <div className="w-56 h-56 relative border-4 border-white shadow-sm rounded-lg overflow-hidden bg-slate-50">
+                  <Image src={paymentQr} alt="Club Payment QR" fill sizes="224px" className="object-contain" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg group-hover:bg-emerald-600 transition-colors">
                   <Smartphone className="h-4 w-4" />
                 </div>
               </a>
             ) : null}
-            
+
             {upiId && (
               <div className="mt-4 flex flex-col items-center">
                 <span className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Official UPI ID</span>
@@ -122,7 +146,9 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
               </div>
             )}
             <p className="text-[10px] text-slate-400 mt-3 max-w-[200px]">
-              Tap the QR code on mobile devices to pay directly via installed UPI apps.
+              {parseFloat(amount) > 0
+                ? `QR is pre-filled to pay ₹${amount}. Tap on mobile to open your UPI app.`
+                : "Enter an amount below to generate a QR pre-filled with that amount."}
             </p>
           </div>
         ) : (
@@ -138,7 +164,20 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Amount Paid (₹) *</label>
-        <input required type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:ring-brand focus:border-brand" placeholder="e.g. 500" />
+        <input
+          required
+          type="number"
+          min="0"
+          step="0.01"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          readOnly={!!paymentRequestId}
+          className={`w-full border border-slate-300 rounded px-3 py-2 text-sm focus:ring-brand focus:border-brand ${paymentRequestId ? "bg-slate-50 text-slate-500 cursor-not-allowed" : ""}`}
+          placeholder="e.g. 500"
+        />
+        {paymentRequestId && (
+          <p className="text-xs text-slate-400 mt-1">Amount is fixed by the payment request.</p>
+        )}
       </div>
 
       <div>

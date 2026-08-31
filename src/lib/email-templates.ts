@@ -15,12 +15,15 @@ export function renderHtmlLayout({
   preheader,
   contentHtml,
   cta,
+  audience = "member",
 }: {
   club: any;
   title: string;
   preheader: string;
   contentHtml: string;
   cta?: CtaButton;
+  /** "member" (default): existing member/partner + portal-preferences footer. "external": neutral footer with no portal/membership claim, for mail sent to people outside the club. */
+  audience?: "member" | "external";
 }) {
   const clubName = club?.name || "Rotaract Club";
   const primaryColor = "#D41367"; // THADAM cranberry accent
@@ -112,13 +115,19 @@ export function renderHtmlLayout({
           <!-- Footer Block -->
           <tr>
             <td style="background-color: #FAF8F5; padding: 32px; text-align: center; border-top: 1px solid #E5E7EB; font-size: 12px; color: #6B7280; font-weight: 500;">
-              <p style="margin: 0 0 8px 0;">You are receiving this email because you are a member or partner of <strong>${clubName}</strong>.</p>
+              <p style="margin: 0 0 8px 0;">${audience === "external"
+      ? `This email was sent to you directly by <strong>${clubName}</strong>.`
+      : `You are receiving this email because you are a member or partner of <strong>${clubName}</strong>.`
+    }</p>
               ${clubAddress || clubEmail || clubPhone
       ? `<p style="margin: 0 0 8px 0; color: #9CA3AF;">${[clubAddress, clubPhone, clubEmail].filter(Boolean).join(" · ")}</p>`
       : ""
     }
               <p style="margin: 0; font-size: 11px; color: #9CA3AF;">© ${currentYear} ${clubName}. All rights reserved.</p>
-              <p style="margin: 16px 0 0 0; font-size: 10px; color: #9CA3AF;">If you no longer wish to receive notifications, you can manage your preferences in the member portal.</p>
+              ${audience === "external"
+      ? `<p style="margin: 16px 0 0 0; font-size: 10px; color: #9CA3AF;">If you have questions about this email, please reply directly or contact us using the details above.</p>`
+      : `<p style="margin: 16px 0 0 0; font-size: 10px; color: #9CA3AF;">If you no longer wish to receive notifications, you can manage your preferences in the member portal.</p>`
+    }
             </td>
           </tr>
 
@@ -472,6 +481,27 @@ export function getPartnerReplyEmailHtml(inquiry: any, club: any) {
         <span style="font-size: 10px; font-weight: bold; color: #6B7280; text-transform: uppercase;">Message Content:</span>
         <p style="font-size: 14px; color: #1F2937; line-height: 1.6; margin: 8px 0 0 0; white-space: pre-wrap;">${inquiry.message}</p>
       </div>
+    `,
+  });
+}
+
+/**
+ * External outreach email — a club message sent to a non-member recipient
+ * (sponsor, vendor, guest, etc.), authored via an external mail request.
+ */
+export function getExternalMailHtml(recipientName: string, body: string, club: any) {
+  const paragraphs = body
+    .split(/\n{2,}/)
+    .map((p) => `<p style="font-size: 15px; color: #1F2937; line-height: 1.7; margin: 0 0 16px 0; white-space: pre-wrap;">${p}</p>`)
+    .join("");
+  return renderHtmlLayout({
+    club,
+    title: club?.name || "Rotaract Club",
+    preheader: body.slice(0, 120),
+    audience: "external",
+    contentHtml: `
+      <p style="font-size: 15px; margin-top: 0; margin-bottom: 20px; color: #1F2937;">Dear ${recipientName},</p>
+      ${paragraphs}
     `,
   });
 }

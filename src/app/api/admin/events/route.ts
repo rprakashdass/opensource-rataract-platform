@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { handleApiError } from "@/lib/api-error";
 
 export async function PUT(req: Request) {
   try {
@@ -90,8 +91,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({ success: true, event });
   } catch (error: any) {
-    console.error("Update event error:", error);
-    return NextResponse.json({ error: error.message || "Failed to update event" }, { status: 500 });
+    return handleApiError(error, "Failed to update event");
   }
 }
 
@@ -115,7 +115,6 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Delete event error:", error);
-    return NextResponse.json({ error: error.message || "Failed to delete event" }, { status: 500 });
+    return handleApiError(error, "Failed to delete event");
   }
 }

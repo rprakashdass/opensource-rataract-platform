@@ -14,6 +14,7 @@ export interface ReceiptData {
   referenceNumber?: string | null;
   purpose: string; // description / category / "Contribution"
   approvedBy?: string | null;
+  treasSignature?: { data: Buffer; format: "png" | "jpg" } | null;
 }
 
 // THADAM cranberry + gold, kept inline (react-pdf has no Tailwind).
@@ -45,6 +46,8 @@ const styles = StyleSheet.create({
   amountWords: { fontSize: 10, color: SOFT, marginTop: 4 },
   footer: { position: "absolute", bottom: 44, left: 44, right: 44 },
   sign: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 40 },
+  signBlock: { width: 160, alignItems: "center" },
+  signImg: { width: 120, height: 40, objectFit: "contain", marginBottom: 4 },
   signLine: { width: 160, borderTopWidth: 1, borderTopColor: INK, paddingTop: 4, fontSize: 9, color: SOFT, textAlign: "center" },
   note: { fontSize: 8, color: "#99878F", textAlign: "center", marginTop: 22 },
 });
@@ -107,7 +110,15 @@ function ReceiptDoc({ data }: { data: ReceiptData }) {
         <View style={styles.footer}>
           <View style={styles.sign}>
             <Text style={styles.signLine}>{data.approvedBy || "For the Club"}</Text>
-            <Text style={styles.signLine}>Treasurer / Authorised Signatory</Text>
+            <View style={styles.signBlock}>
+              {data.treasSignature ? (
+                <Image
+                  style={styles.signImg}
+                  src={{ data: data.treasSignature.data, format: data.treasSignature.format }}
+                />
+              ) : null}
+              <Text style={styles.signLine}>Treasurer / Authorised Signatory</Text>
+            </View>
           </View>
           <Text style={styles.note}>
             This is a computer-generated receipt and does not require a physical signature. Not a tax document.

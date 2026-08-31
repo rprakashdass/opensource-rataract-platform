@@ -77,7 +77,7 @@ model Club {
 
   /// Google Drive Integration
   googleDriveEmail         String?
-  googleDriveRefreshToken  String?  @db.Text
+  googleDriveRefreshToken  String?   @db.Text
   googleDriveRootFolderId  String?
   googleDriveConnectedAt   DateTime?
   googleDriveConnectedById String?
@@ -114,6 +114,7 @@ model Club {
   projectUpdates          ProjectUpdate[]
   memberCommunications    MemberCommunication[]
   anonComplaints          AnonComplaint[]
+  externalMailRequests    ExternalMailRequest[]
 }
 
 // ============================================================================
@@ -127,127 +128,130 @@ model WebsiteSettings {
 
   // Public Launch Gate (admin-controlled from /admin/website/launch)
   // Until the site is live, all public pages are hidden behind /coming-soon.
-  siteLive          Boolean  @default(false) // hard "we are live" switch
-  launchAt          DateTime?                 // scheduled reveal; site auto-goes-live once passed
+  siteLive Boolean   @default(false) // hard "we are live" switch
+  launchAt DateTime? // scheduled reveal; site auto-goes-live once passed
 
   // SEO & General Branding
-  seoTitle          String?
-  seoDescription    String?
-  primaryColor      String?  @default("#8B5CF6")
-  secondaryColor    String?  @default("#EC4899")
-  accentColor       String?  @default("#F4F5F7")
-  darkColor         String?  @default("#0B132B")
-  lightColor        String?  @default("#FAF9F6")
+  seoTitle       String?
+  seoDescription String?
+  primaryColor   String? @default("#8B5CF6")
+  secondaryColor String? @default("#EC4899")
+  accentColor    String? @default("#F4F5F7")
+  darkColor      String? @default("#0B132B")
+  lightColor     String? @default("#FAF9F6")
 
   // Homepage Settings
-  heroHeadline      String?
-  heroSubtitle      String?
-  heroCTA           String?
-  heroCTALink       String?
+  heroHeadline         String?
+  heroSubtitle         String?
+  heroCTA              String?
+  heroCTALink          String?
   heroSecondaryCTA     String?
   heroSecondaryCTALink String?
-  heroImages        Json?    // Array of string URLs
-  heroScrollAuto    Boolean  @default(true)
-  heroScrollInterval Int     @default(5) // Auto scroll time in seconds
-  
+  heroImages           Json? // Array of string URLs
+  heroScrollAuto       Boolean @default(true)
+  heroScrollInterval   Int     @default(5) // Auto scroll time in seconds
 
   // Finance Settings
   upiId             String?
+  treasSignature    String?  // Treasurer signature image URL (Google Drive) for receipts
+
+  // Communication Settings
+  speakUpEmail      String?  // Email address to receive Speak Up complaints
 
   // President Section
-  presName          String?
-  presMessage       String?  @db.Text
-  presSignature     String?
-  presQuote         String?
-  presPhoto         String?
+  presName      String?
+  presMessage   String? @db.Text
+  presSignature String?
+  presQuote     String?
+  presPhoto     String?
 
   // Homepage Composition & Section Order
   // Stored as JSON: [ { id: "hero", enabled: true, order: 0 }, ... ]
-  homepageSections  Json?
+  homepageSections Json?
 
   // Gallery Section
-  galleryTitle      String?
-  gallerySubtitle   String?
-  galleryCTA        String?
-  galleryCTALink    String?
-  galleryLayout     String?  @default("masonry") // masonry, grid, filmstrip
-  galleryShowLatest Boolean  @default(true)
+  galleryTitle        String?
+  gallerySubtitle     String?
+  galleryCTA          String?
+  galleryCTALink      String?
+  galleryLayout       String? @default("masonry") // masonry, grid, filmstrip
+  galleryShowLatest   Boolean @default(true)
   galleryShowFeatured Boolean @default(false)
-  galleryAlbumId    String?
-  galleryLimit      Int      @default(3)
+  galleryAlbumId      String?
+  galleryLimit        Int     @default(3)
 
   // About Section/Page Content
-  aboutEyebrow      String?
-  aboutStory        String?  @db.Text
-  aboutPhoto        String?
-  missionQuote      String?
-  visionQuote       String?
-  valuesQuote       String?
+  aboutEyebrow       String?
+  aboutStory         String? @db.Text
+  aboutPhoto         String?
+  missionQuote       String?
+  visionQuote        String?
+  valuesQuote        String?
   noticeboardEyebrow String?
   noticeboardTitle   String?
 
   // Team Section/Page Content
-  teamEyebrow       String?
-  teamTitle         String?
-  teamSubtitle      String?
+  teamEyebrow         String?
+  teamTitle           String?
+  teamSubtitle        String?
   teamLeadershipTitle String?
-  teamMembersTitle  String?
-  teamJoinCTA       String?
-  teamJoinCTALink   String?
+  teamMembersTitle    String?
+  teamJoinCTA         String?
+  teamJoinCTALink     String?
 
   // Projects Section/Page Content
-  projectsEyebrow   String?
-  projectsTitle     String?
-  projectsSubtitle  String?
-  projectsActiveTitle String?
+  projectsEyebrow        String?
+  projectsTitle          String?
+  projectsSubtitle       String?
+  projectsActiveTitle    String?
   projectsCompletedTitle String?
-  projectsEmptyTitle String?
-  projectsEmptyDesc String?
-  projectsCTA       String?
-  projectsCTALink   String?
+  projectsEmptyTitle     String?
+  projectsEmptyDesc      String?
+  projectsCTA            String?
+  projectsCTALink        String?
 
   // Events Section/Page Content
-  eventsEyebrow     String?
-  eventsTitle       String?
-  eventsSubtitle    String?
-  eventsUpcomingTitle String?
+  eventsEyebrow        String?
+  eventsTitle          String?
+  eventsSubtitle       String?
+  eventsUpcomingTitle  String?
   eventsCompletedTitle String?
-  eventsEmptyTitle  String?
-  eventsEmptyDesc   String?
-  eventsRegisterCTA String?
-  eventsCompletedCTA String?
+  eventsEmptyTitle     String?
+  eventsEmptyDesc      String?
+  eventsRegisterCTA    String?
+  eventsCompletedCTA   String?
 
   // Footer Config
   footerDescription String?
-  footerSocials     Json?    // { twitter, instagram, facebook, linkedin }
-  footerQuickLinks  Json?    // Array of { label, url }
+  footerSocials     Json? // { twitter, instagram, facebook, linkedin }
+  footerQuickLinks  Json? // Array of { label, url }
 
   // Sponsors Page Config
-  sponsorsTitle      String?
-  sponsorsSubtitle   String?
-  sponsorsMission    String?
-  sponsorsCTA        String?
-  sponsorsCTALink    String?
-  sponsorsImageUrl   String?
+  sponsorsTitle    String?
+  sponsorsSubtitle String?
+  sponsorsMission  String?
+  sponsorsCTA      String?
+  sponsorsCTALink  String?
+  sponsorsImageUrl String?
 
   // Join Page Config
-  joinTitle          String?
-  joinSubtitle       String?
-  joinSuccessTitle   String?
-  joinSuccessDesc    String?
+  joinTitle        String?
+  joinSubtitle     String?
+  joinSuccessTitle String?
+  joinSuccessDesc  String?
 
   // Archive Page Config
-  archiveTitle       String?
-  archiveSubtitle    String?
+  archiveTitle    String?
+  archiveSubtitle String?
 
   // Visibilities and statuses for other public pages
-  enableJoin         Boolean @default(true)
-  enablePartner      Boolean @default(true)
-  enableArchive      Boolean @default(true)
+  enableJoin    Boolean @default(true)
+  enablePartner Boolean @default(true)
+  enableArchive Boolean @default(true)
 
-  enableEvents           Boolean @default(true)
-  enableAnnouncements    Boolean @default(true)
-  enablePortfolios       Boolean @default(true)
+  enableEvents        Boolean @default(true)
+  enableAnnouncements Boolean @default(true)
+  enablePortfolios    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -623,6 +627,9 @@ model User {
 
   reviewedInitiatives Initiative[]        @relation("InitiativeReviewer")
   initiativeComments  InitiativeComment[]
+
+  reviewedExternalMail ExternalMailRequest[] @relation("ExternalMailReviewer")
+  sentExternalMail     ExternalMailRequest[] @relation("ExternalMailSender")
 }
 
 model Session {
@@ -674,23 +681,23 @@ model Member {
   companyName      String?
   location         String?
   bio              String?
-  websiteQuote     String?  @db.Text
+  websiteQuote     String?   @db.Text
   emergencyContact String?
   skills           String[]
-  membershipStatus String   @default("ACTIVE") // ACTIVE, ALUMNI, HONORARY, SUSPENDED
+  membershipStatus String    @default("ACTIVE") // ACTIVE, ALUMNI, HONORARY, SUSPENDED
 
   // Blood Donation (for future)
   bloodGroup   String?
   canDonate    Boolean   @default(false)
   lastDonation DateTime?
 
-  isActive      Boolean  @default(true)
-  showOnWebsite Boolean  @default(false)
+  isActive      Boolean @default(true)
+  showOnWebsite Boolean @default(false)
 
   // Relations
   communications MemberCommunication[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 
   // Relations
   boardMemberships     BoardMember[]
@@ -703,6 +710,7 @@ model Member {
   portfolioAssignments MemberPortfolioAssignment[]
   initiatives          Initiative[]
   projectUpdates       ProjectUpdateParticipant[]
+  externalMailRequests ExternalMailRequest[]
 }
 
 model BoardMember {
@@ -770,14 +778,14 @@ model ProjectUpdate {
   body        String?  @db.Text
   isFeatured  Boolean  @default(false)
   isPublished Boolean  @default(true)
-  
+
   beneficiaries  Int?
   volunteerHours Float?
   impactNote     String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   media        Media[]
   participants ProjectUpdateParticipant[]
 
@@ -786,11 +794,11 @@ model ProjectUpdate {
 }
 
 model ProjectUpdateParticipant {
-  id              String         @id @default(cuid())
+  id              String        @id @default(cuid())
   projectUpdateId String
-  projectUpdate   ProjectUpdate  @relation(fields: [projectUpdateId], references: [id], onDelete: Cascade)
+  projectUpdate   ProjectUpdate @relation(fields: [projectUpdateId], references: [id], onDelete: Cascade)
   memberId        String
-  member          Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member          Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@unique([projectUpdateId, memberId])
   @@index([memberId])
@@ -883,12 +891,12 @@ model Event {
   sponsorshipGoal    Float?
   sponsorshipPitch   String? @db.Text
 
-  visibility    Visibility    @default(PUBLIC)
-  publishStatus PublishStatus @default(DRAFT)
-  publishAt     DateTime?
-  publishedAt   DateTime?
+  visibility           Visibility    @default(PUBLIC)
+  publishStatus        PublishStatus @default(DRAFT)
+  publishAt            DateTime?
+  publishedAt          DateTime?
   submittedForReviewAt DateTime? // chair requested publish approval
-  isFeatured    Boolean       @default(false)
+  isFeatured           Boolean       @default(false)
 
   status             EventStatus @default(UPCOMING)
   isAttendanceLocked Boolean     @default(false)
@@ -957,17 +965,17 @@ model PartnerInquiry {
   clubId String
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  name         String
-  email        String
-  phone        String?
-  company      String?
-  subject      String?
-  message      String @db.Text
+  name    String
+  email   String
+  phone   String?
+  company String?
+  subject String?
+  message String  @db.Text
 
-  causeType    CauseType?
-  causeId      String?
+  causeType CauseType?
+  causeId   String?
 
-  status       InquiryStatus @default(PENDING)
+  status InquiryStatus @default(PENDING)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1072,7 +1080,7 @@ model Media {
   event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+
   projectUpdateId String?
   projectUpdate   ProjectUpdate? @relation(fields: [projectUpdateId], references: [id], onDelete: SetNull)
 
@@ -1102,6 +1110,7 @@ model Media {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@index([clubId, albumId])
 }
 
@@ -1223,7 +1232,7 @@ model PaymentRequest {
 
   title       String
   description String?
-  amount      Decimal @db.Decimal(10, 2)
+  amount      Decimal             @db.Decimal(10, 2)
   category    TransactionCategory @default(OTHER)
   isGlobal    Boolean             @default(false)
   dueDate     DateTime?
@@ -1364,10 +1373,10 @@ model Announcement {
   attachments String[] // List of URLs
 
   // Integrations & Status
-  calendarEventId String?
-  type            AnnouncementType   @default(GENERAL)
-  status          AnnouncementStatus @default(DRAFT)
-  visibility      Visibility         @default(PUBLIC)
+  calendarEventId      String?
+  type                 AnnouncementType   @default(GENERAL)
+  status               AnnouncementStatus @default(DRAFT)
+  visibility           Visibility         @default(PUBLIC)
   specificRecipientIds String[]
 
   // Delivery Tracking
@@ -1378,7 +1387,54 @@ model Announcement {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@index([clubId, status, visibility])
+}
+
+enum ExternalMailStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SENT
+}
+
+enum ExternalMailDeliveryMode {
+  BCC
+  CC
+  SEPARATE
+}
+
+model ExternalMailRequest {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  requestedById String?
+  requestedBy   Member? @relation(fields: [requestedById], references: [id], onDelete: SetNull)
+
+  // Array of { name: string, email: string } — name is a best-effort guess
+  // derived from the email's local-part, editable by whoever drafted it.
+  recipients   Json
+  deliveryMode ExternalMailDeliveryMode @default(BCC)
+  subject      String
+  body         String                  @db.Text
+
+  status          ExternalMailStatus @default(PENDING_APPROVAL)
+  rejectionReason String?            @db.Text
+
+  reviewedById String?
+  reviewedBy   User?     @relation("ExternalMailReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?
+
+  sentById String?
+  sentBy   User?     @relation("ExternalMailSender", fields: [sentById], references: [id], onDelete: SetNull)
+  sentAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clubId, status])
+  @@index([requestedById])
 }
 
 model Sponsor {
@@ -1520,16 +1576,16 @@ model Contributor {
 }
 
 model SponsorshipPackage {
-  id           String   @id @default(cuid())
-  clubId       String
-  club         Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  title        String
-  amount       Int
-  impactText   String
-  description  String?  @db.Text
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  clubId      String
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  title       String
+  amount      Int
+  impactText  String
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model VerificationCode {
@@ -1541,7 +1597,6 @@ model VerificationCode {
 
   @@unique([email, code])
 }
-
 
 // ============================================================================
 // COMPLAINTS
@@ -1568,26 +1623,26 @@ enum MailboxType {
 }
 
 model MemberCommunication {
-  id            String               @id @default(cuid())
-  clubId        String
-  club          Club                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  memberId      String
-  member        Member               @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  
-  type          MailboxType          @default(COMPLAINT)
-  subject       String
-  description   String               @db.Text
-  status        MailboxStatus        @default(OPEN)
-  priority      MailboxPriority      @default(MEDIUM)
-  
-  adminNotes    String?              @db.Text
-  attachmentUrl String?              @db.Text
-  statusUpdatedAt DateTime? 
-  resolvedAt    DateTime?
-  resolvedById  String?              // The ID of the admin who resolved it
+  id       String @id @default(cuid())
+  clubId   String
+  club     Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  type        MailboxType     @default(COMPLAINT)
+  subject     String
+  description String          @db.Text
+  status      MailboxStatus   @default(OPEN)
+  priority    MailboxPriority @default(MEDIUM)
+
+  adminNotes      String?   @db.Text
+  attachmentUrl   String?   @db.Text
+  statusUpdatedAt DateTime?
+  resolvedAt      DateTime?
+  resolvedById    String? // The ID of the admin who resolved it
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clubId, status])
   @@index([memberId])
@@ -1601,17 +1656,17 @@ model MemberCommunication {
 /// Anonymous complaint / feedback submitted by any logged-in member.
 /// No user identity is stored — submission is intentionally anonymous.
 model AnonComplaint {
-  id      String @id @default(cuid())
-  clubId  String
-  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   /// "COMPLAINT" | "FEEDBACK" | "SUGGESTION" | "OTHER"
   category String @default("COMPLAINT")
 
-  message   String @db.Text
+  message String @db.Text
 
   /// "OPEN" | "REVIEWING" | "RESOLVED" | "DISMISSED"
-  status    String @default("OPEN")
+  status String @default("OPEN")
 
   /// Optional admin note visible only to admins
   adminNote String? @db.Text

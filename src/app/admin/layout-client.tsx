@@ -74,6 +74,7 @@ export default function AdminLayoutClient({ children, club, user, notifications,
       items: [
         { label: "Announcements", href: `${ROUTES.ADMIN}/announcements`, icon: Bell },
         { label: "Emails", href: `${ROUTES.ADMIN}/communications`, icon: Mail },
+        { label: "Mail Requests", href: `${ROUTES.ADMIN}/mail-requests`, icon: MessageSquarePlus },
       ]
     });
   }

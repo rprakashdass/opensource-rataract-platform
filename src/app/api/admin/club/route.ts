@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
+import { handleApiError } from "@/lib/api-error";
 
 export async function getOrCreateDefaultClub() {
   try {
@@ -42,10 +43,14 @@ export async function getOrCreateDefaultClub() {
 export async function GET() {
   try {
     const club = await getOrCreateDefaultClub();
-    return NextResponse.json(club);
+    const settings = await prisma.websiteSettings.findUnique({ where: { clubId: club.id } });
+    return NextResponse.json({ 
+      ...club, 
+      treasSignature: settings?.treasSignature ?? null,
+      speakUpEmail: settings?.speakUpEmail ?? null
+    });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown errors";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "Failed to load club configuration");
   }
 }
 
@@ -86,6 +91,22 @@ export async function POST(req: Request) {
         paymentQr: typeof data.paymentQr === "string" ? data.paymentQr.trim() : null,
       },
     });
+
+    // Persist treasurer signature & speakUp email to WebsiteSettings
+    if (typeof data.treasSignature === "string" || data.treasSignature === null || typeof data.speakUpEmail === "string" || data.speakUpEmail === null) {
+      await prisma.websiteSettings.upsert({
+        where: { clubId: club.id },
+        create: { 
+          clubId: club.id, 
+          treasSignature: data.treasSignature?.trim() || null,
+          speakUpEmail: data.speakUpEmail?.trim() || null
+        },
+        update: { 
+          treasSignature: data.treasSignature !== undefined ? (data.treasSignature?.trim() || null) : undefined,
+          speakUpEmail: data.speakUpEmail !== undefined ? (data.speakUpEmail?.trim() || null) : undefined
+        },
+      });
+    }
     // Bust every cache that reads club data: getCurrentClub ("club") AND the
     // public layout/header, which caches under "layout"/"settings" — without
     // these the header keeps serving the old logo until the 1h revalidate.
@@ -94,7 +115,6 @@ export async function POST(req: Request) {
     revalidateTag("settings", "max");
     return NextResponse.json(updated);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "Failed to update club configuration");
   }
 }

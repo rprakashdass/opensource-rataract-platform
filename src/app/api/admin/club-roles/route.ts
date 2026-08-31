@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { getCurrentClub } from "@/lib/club";
+import { handleApiError } from "@/lib/api-error";
 
 export async function GET() {
   try {
@@ -23,7 +24,7 @@ export async function GET() {
 
     return NextResponse.json(roles);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to retrieve roles");
   }
 }
 
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(role);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to create role");
   }
 }
 
@@ -93,7 +94,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(role);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update role");
   }
 }
 
@@ -118,6 +119,6 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to delete role");
   }
 }

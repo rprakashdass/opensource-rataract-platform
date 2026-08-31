@@ -32,7 +32,7 @@ export default function RequestCreateDialog({
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("DUES");
-  const [isGlobal, setIsGlobal] = useState(true);
+  const [audience, setAudience] = useState<"ALL" | "BOARD" | "SPECIFIC">("ALL");
   const [dueDate, setDueDate] = useState("");
   const [assignees, setAssignees] = useState<string[]>([]);
 
@@ -54,8 +54,8 @@ export default function RequestCreateDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isGlobal && assignees.length === 0) {
-      toast.error("Please select at least one member or choose Global");
+    if (audience !== "ALL" && assignees.length === 0) {
+      toast.error("Please select at least one member or choose All Members");
       return;
     }
 
@@ -71,7 +71,7 @@ export default function RequestCreateDialog({
           description,
           amount,
           category,
-          isGlobal,
+          isGlobal: audience === "ALL",
           dueDate: dueDate || null,
           assignees
         }),
@@ -85,7 +85,7 @@ export default function RequestCreateDialog({
       setDescription("");
       setAmount("");
       setCategory("DUES");
-      setIsGlobal(true);
+      setAudience("ALL");
       setDueDate("");
       setAssignees([]);
       router.refresh();
@@ -97,11 +97,13 @@ export default function RequestCreateDialog({
   };
 
   const toggleMember = (memberId: string) => {
-    setAssignees(prev =>
-      prev.includes(memberId)
+    setAssignees(prev => {
+      const newAssignees = prev.includes(memberId)
         ? prev.filter(id => id !== memberId)
-        : [...prev, memberId]
-    );
+        : [...prev, memberId];
+      if (audience === "BOARD") setAudience("SPECIFIC");
+      return newAssignees;
+    });
   };
 
   return (
@@ -185,20 +187,28 @@ export default function RequestCreateDialog({
 
             <div className="pt-2 border-t border-slate-100">
               <label className="block text-sm font-medium text-slate-700 mb-2">Target Audience *</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                <label className={`cursor-pointer p-3 rounded-lg border-2 transition ${isGlobal ? 'border-brand bg-pink-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
-                  <input type="radio" name="audience" className="sr-only" checked={isGlobal} onChange={() => setIsGlobal(true)} />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                <label className={`cursor-pointer p-3 rounded-lg border-2 transition ${audience === 'ALL' ? 'border-brand bg-pink-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+                  <input type="radio" name="audience" className="sr-only" checked={audience === 'ALL'} onChange={() => { setAudience('ALL'); setAssignees([]); }} />
                   <div className="font-semibold text-sm text-slate-900">All Members</div>
-                  <div className="text-xs text-slate-500 mt-1">Request applies to everyone in the club</div>
+                  <div className="text-xs text-slate-500 mt-1">Request applies to everyone</div>
                 </label>
-                <label className={`cursor-pointer p-3 rounded-lg border-2 transition ${!isGlobal ? 'border-brand bg-pink-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
-                  <input type="radio" name="audience" className="sr-only" checked={!isGlobal} onChange={() => setIsGlobal(false)} />
-                  <div className="font-semibold text-sm text-slate-900">Specific Members</div>
-                  <div className="text-xs text-slate-500 mt-1">Select exactly who owes this amount</div>
+                <label className={`cursor-pointer p-3 rounded-lg border-2 transition ${audience === 'BOARD' ? 'border-brand bg-pink-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+                  <input type="radio" name="audience" className="sr-only" checked={audience === 'BOARD'} onChange={() => { 
+                    setAudience('BOARD'); 
+                    setAssignees(members.filter(m => m.boardMemberships && m.boardMemberships.length > 0).map(m => m.id)); 
+                  }} />
+                  <div className="font-semibold text-sm text-slate-900">Board Only</div>
+                  <div className="text-xs text-slate-500 mt-1">Applies to board members</div>
+                </label>
+                <label className={`cursor-pointer p-3 rounded-lg border-2 transition ${audience === 'SPECIFIC' ? 'border-brand bg-pink-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+                  <input type="radio" name="audience" className="sr-only" checked={audience === 'SPECIFIC'} onChange={() => { setAudience('SPECIFIC'); setAssignees([]); }} />
+                  <div className="font-semibold text-sm text-slate-900">Specific Users</div>
+                  <div className="text-xs text-slate-500 mt-1">Select exactly who owes this</div>
                 </label>
               </div>
 
-              {!isGlobal && (
+              {audience !== 'ALL' && (
                 <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 max-h-52 overflow-y-auto">
                   <div className="text-xs font-semibold text-slate-500 mb-2">Select Members ({assignees.length} selected)</div>
                   {members.length === 0 ? (

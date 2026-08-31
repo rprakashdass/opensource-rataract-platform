@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api-error";
 
 function financeAdminOnly(session: any) {
   return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
@@ -32,6 +33,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to delete account");
   }
 }

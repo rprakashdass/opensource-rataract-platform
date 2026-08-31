@@ -176,24 +176,11 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                       variants={motionVariants.dropdown}
                       className="absolute right-0 mt-2 w-[calc(100vw-32px)] max-w-sm sm:w-80 md:w-96 bg-white rounded-xl shadow-lg border border-hairline overflow-hidden z-50 origin-top-right"
                     >
-                      {/* Tab Bar */}
-                      <div className="flex border-b border-hairline">
-                        <button
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-semibold transition-colors text-brand border-b-2 border-brand bg-brand/5"
-                        >
-                          <Bell className="w-3.5 h-3.5" />
-                          Updates
-                          {hasUnread && (
-                            <span className="ml-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                              {unreadCount}
-                            </span>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Updates Tab */}
                       {hasUnread && (
-                        <div className="px-4 py-2 flex justify-end border-b border-hairline bg-wash/50">
+                        <div className="px-4 py-2.5 flex items-center justify-between border-b border-hairline bg-wash/50">
+                          <span className="text-xs font-semibold text-ink-soft">
+                            {unreadCount} unread
+                          </span>
                           <button
                             onClick={markAllAsRead}
                             className="text-xs text-brand hover:text-brand-deep font-medium bg-pink-50 hover:bg-pink-100 px-2.5 py-1 rounded-md transition-colors"

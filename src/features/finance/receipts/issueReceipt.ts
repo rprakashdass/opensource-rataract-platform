@@ -68,7 +68,9 @@ export async function issueReceipt(
   const tx = await prisma.transaction.findUnique({
     where: { id: transactionId },
     include: {
-      club: true,
+      club: {
+        include: { websiteSettings: { select: { treasSignature: true } } },
+      },
       member: { select: { name: true, email: true } },
       user: { select: { name: true, email: true } },
       contributor: { select: { name: true, contact: true } },
@@ -162,18 +164,23 @@ async function buildData(
   approverName?: string
 ): Promise<ReceiptData> {
   const contact = [tx.club.email, tx.club.phone].filter(Boolean).join(" · ") || null;
+  const [logo, treasSignature] = await Promise.all([
+    loadLogo(tx.club.logoUrl),
+    loadLogo(tx.club.websiteSettings?.treasSignature),
+  ]);
   return {
     receiptNumber,
     date: tx.approvedAt || tx.date || new Date(),
     clubName: tx.club.name,
     clubAddress: tx.club.address || null,
     clubContact: contact,
-    logo: await loadLogo(tx.club.logoUrl),
+    logo,
     payerName,
     amount,
     paymentMethod: tx.paymentMethod || null,
     referenceNumber: tx.referenceNumber || null,
     purpose: tx.description || tx.category?.name || tx.title || "Contribution",
     approvedBy: approverName || null,
+    treasSignature,
   };
 }

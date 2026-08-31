@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageSystem } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api-error";
 
 function adminOnly(session: any) {
   return session && ((session.roles?.includes('SUPER_ADMIN') || session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')));
@@ -20,7 +21,7 @@ export async function GET() {
 
     return NextResponse.json(users);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to retrieve accounts");
   }
 }
 
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to create account");
   }
 }
 
@@ -78,7 +79,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update account");
   }
 }
 
@@ -97,6 +98,6 @@ export async function DELETE(req: Request) {
     await prisma.user.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to delete account");
   }
 }

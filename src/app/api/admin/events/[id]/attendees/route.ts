@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api-error";
 
 function adminOnly(session: any) {
   return session && ((session.roles?.includes('SUPER_ADMIN') || session.roles?.includes('ADMIN') || session.roles?.includes('CLUB_ADMIN')));
@@ -29,6 +30,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     return NextResponse.json(updatedAttendee);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update attendee status");
   }
 }

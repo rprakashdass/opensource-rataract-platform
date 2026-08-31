@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import { TransactionStatus, TransactionType } from "@prisma/client";
+import { handleApiError } from "@/lib/api-error";
 
 async function verifyAdmin() {
   const session = await getSession();
@@ -36,7 +37,7 @@ export async function GET() {
 
     return NextResponse.json(transactions);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to fetch transactions");
   }
 }
 
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(transaction);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to create transaction");
   }
 }
 
@@ -101,6 +102,6 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(updated);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update transaction status");
   }
 }

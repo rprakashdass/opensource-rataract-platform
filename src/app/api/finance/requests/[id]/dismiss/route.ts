@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api-error";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -38,6 +39,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     return NextResponse.json(updatedRequest);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to dismiss payment request");
   }
 }

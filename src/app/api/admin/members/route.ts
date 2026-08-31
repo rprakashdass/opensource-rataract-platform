@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateDefaultClub } from "../club/route";
 import { getSession , canManageMembers } from "@/lib/auth/session";
+import { handleApiError } from "@/lib/api-error";
 
 function validateMemberPayload(data: any) {
   if (typeof data.name !== "string" || !data.name.trim()) {
@@ -88,8 +89,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json(member);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const message = error instanceof Error ? error.message : "";
+    if (message && (message.includes("required") || message.includes("when the member is"))) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+    return handleApiError(error, "Failed to create member");
   }
 }
 
@@ -108,8 +112,7 @@ export async function GET() {
     });
     return NextResponse.json(members);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "Failed to fetch members");
   }
 }
 
@@ -135,8 +138,7 @@ export async function DELETE(req: Request) {
     }
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "Failed to delete member");
   }
 }
 
@@ -218,7 +220,6 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(result);
   } catch (error: any) {
-    console.error("Prisma error in admin members PUT API:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Failed to update member");
   }
 }

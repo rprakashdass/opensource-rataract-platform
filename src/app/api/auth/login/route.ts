@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { setSession } from "@/lib/auth/session";
 import { sendEmail } from "@/lib/email";
 import { getOtpEmailHtml } from "@/lib/email-templates";
+import { handleApiError } from "@/lib/api-error";
 
 export async function POST(req: Request) {
   try {
@@ -69,7 +70,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, roles });
   } catch (error: any) {
-    console.error("Login API error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "Authentication failed due to an unexpected error");
   }
 }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Image as ImageIcon, Trash2, Loader2, Video, FileText, MoreVertical, FolderInput, Pencil, Check } from "lucide-react";
 import { deleteMedia } from "@/features/media/actions/deleteMedia";
 import { updateMediaTitle } from "@/features/media/actions/updateMediaTitle";
@@ -141,28 +142,31 @@ export function MediaThumbnail({
         
         {availableAlbums && availableAlbums.length > 0 && (
           <div className="absolute top-2 right-12 z-20 sm:opacity-0 group-hover:opacity-100 transition-all duration-200">
-             <div className="bg-white/95 rounded-full shadow-md flex items-center h-8 px-2 group/menu relative cursor-pointer hover:bg-white text-slate-600 hover:text-brand">
-                <FolderInput className="w-4 h-4" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} />
-                
-                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-1 hidden group-hover/menu:block z-30">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase px-2 py-1.5">Move to Album</div>
-                  <div 
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMove(null); }}
-                    className="px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer truncate"
-                  >
-                    Uncategorized
-                  </div>
-                  {availableAlbums.map(a => (
-                    <div 
-                      key={a.id}
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMove(a.id); }}
-                      className="px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer truncate"
-                    >
-                      {a.title}
-                    </div>
-                  ))}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="bg-white/95 rounded-full shadow-md flex items-center h-8 px-2 cursor-pointer hover:bg-white text-slate-600 hover:text-brand">
+                  <FolderInput className="w-4 h-4" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} />
                 </div>
-             </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-1 z-30">
+                <DropdownMenuLabel className="text-[10px] font-bold text-slate-400 uppercase px-2 py-1.5">Move to Album</DropdownMenuLabel>
+                <DropdownMenuItem 
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMove(null); }}
+                  className="px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer truncate focus:bg-slate-50 focus:text-slate-900"
+                >
+                  Uncategorized
+                </DropdownMenuItem>
+                {availableAlbums.map(a => (
+                  <DropdownMenuItem 
+                    key={a.id}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMove(a.id); }}
+                    className="px-2 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg cursor-pointer truncate focus:bg-slate-50 focus:text-slate-900"
+                  >
+                    {a.title}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>

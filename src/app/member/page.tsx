@@ -19,10 +19,29 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { PageHeader, StatCard, StatGrid, PortalEmptyState } from "@/components/portal";
+import { ThisMonthCard } from "@/components/portal/ThisMonthCard";
 import DashboardCheckInCard from "./_components/DashboardCheckInCard";
+import { buildUpiUri, generateUpiQrDataUrl } from "@/lib/upi-qr";
+import { getThisMonthHighlights } from "@/features/members/queries/getThisMonthHighlights";
 
 export default async function MemberDashboardPage() {
   const { member, profileCompletion, stats, upcomingEvents, checkInEvents, pendingPaymentRequests, timeline, error } = await getMemberDashboard();
+
+  const { birthdays, events: monthEvents } = member?.clubId
+    ? await getThisMonthHighlights(member.clubId)
+    : { birthdays: [], events: [] };
+
+  const upiId = member?.club?.upiId;
+  const clubName = member?.club?.name || "Club";
+  const paymentRequestQrs = upiId && pendingPaymentRequests
+    ? await Promise.all(
+        pendingPaymentRequests.map(async (pr: any) => {
+          const categoryLabel = pr.category.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());
+          const uri = buildUpiUri({ upiId, payeeName: clubName, amount: pr.amount.toString(), note: categoryLabel });
+          return [pr.id, await generateUpiQrDataUrl(uri)] as const;
+        })
+      ).then((entries) => Object.fromEntries(entries) as Record<string, string>)
+    : {};
 
   if (error || !member) {
       if (error === "Unauthorized") redirect("/auth/login");
@@ -90,19 +109,20 @@ export default async function MemberDashboardPage() {
           )}
       </section>
 
+      {/* This Month: Birthdays & Events */}
+      <ThisMonthCard birthdays={birthdays} events={monthEvents} eventHrefBase="/member/events" variant="portal" />
+
       {/* Pending Payments Section */}
       {pendingPaymentRequests && pendingPaymentRequests.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-ink px-1">Payment Requests</h2>
           <div className="space-y-3">
             {pendingPaymentRequests.map((pr: any) => {
-              // Generate UPI link
-              const upiId = member.club?.upiId;
-              const clubName = member.club?.name || "Club";
               const amount = pr.amount.toString();
               // Format category label, e.g. EVENT_FEE -> Event Fee
               const categoryLabel = pr.category.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());
-              const upiLink = upiId ? `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${categoryLabel}` : "";
+              const upiLink = upiId ? buildUpiUri({ upiId, payeeName: clubName, amount, note: categoryLabel }) : "";
+              const qrDataUrl = paymentRequestQrs[pr.id];
 
               return (
                 <div key={pr.id} className="bg-wash border border-hairline rounded-2xl p-5 shadow-sm flex flex-col gap-3 animate-in fade-in duration-300 motion-card">
@@ -124,6 +144,15 @@ export default async function MemberDashboardPage() {
                       )}
                     </div>
                   </div>
+                  {qrDataUrl && (
+                    <div className="flex items-center gap-3 bg-white border border-hairline rounded-xl p-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={qrDataUrl} alt={`Scan to pay ₹${amount}`} className="w-20 h-20 shrink-0 rounded-lg border border-hairline" />
+                      <p className="text-xs text-ink-soft leading-relaxed">
+                        Scan with any UPI app to pay <span className="font-bold text-ink">₹{amount}</span> directly — the amount is pre-filled.
+                      </p>
+                    </div>
+                  )}
                   <div className="flex gap-2 mt-1">
                     {upiId ? (
                       <>
