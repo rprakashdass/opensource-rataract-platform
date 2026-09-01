@@ -11,7 +11,7 @@ interface DashboardLayoutClientProps {
   children: React.ReactNode;
   roles: string[];
   club: { name: string; logoUrl?: string | null; tenureYear: string; };
-  user: { name: string; email: string; roles: string[]; };
+  user: { name: string; email: string; roles: string[]; readNotifications?: string[]; };
   notifications: NotificationItem[];
 }
 

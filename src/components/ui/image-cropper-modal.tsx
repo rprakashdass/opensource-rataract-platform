@@ -49,7 +49,11 @@ export function ImageCropperModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      {/* Profile editing (and other pages) can open this cropper from inside their
+          own custom AnimatedDialog, which portals to document.body at z-[100].
+          Push both layers above that so the cropper isn't rendered invisibly
+          underneath it. */}
+      <DialogContent className="sm:max-w-md z-[200]" overlayClassName="z-[200]">
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
           <DialogDescription>

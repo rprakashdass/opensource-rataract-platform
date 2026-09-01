@@ -14,7 +14,7 @@ import {
 interface AdminLayoutClientProps {
   children: React.ReactNode;
   club: { name: string; logoUrl?: string | null; tenureYear: string; };
-  user: { name: string; email: string; roles: string[]; };
+  user: { name: string; email: string; roles: string[]; readNotifications?: string[]; };
   notifications: NotificationItem[];
   attentionSummary: {
     memberships: { count: number; href: string };
