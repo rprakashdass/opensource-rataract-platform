@@ -17,7 +17,10 @@ import { ROUTES } from "@/lib/constants";
 export async function GET(req: NextRequest) {
   const clientId = process.env.CLIENT_ID;
   const clientSecret = process.env.CLIENT_SECRET;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  // Prefer the actual incoming request's origin over NEXT_PUBLIC_APP_URL —
+  // NEXT_PUBLIC_ vars are inlined at build time, so a stale/uncached build can
+  // silently keep serving an old value (e.g. localhost) forever in production.
+  const baseUrl = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   const code = req.nextUrl.searchParams.get("code");
