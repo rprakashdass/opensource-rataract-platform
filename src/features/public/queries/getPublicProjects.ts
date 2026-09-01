@@ -25,8 +25,25 @@ const fetchPublicProjectsData = unstable_cache(
                 category: true,
                 status: true,
                 endDate: true,
-                events: { select: { id: true } },
-                media: { where: { isFeatured: true }, take: 1, select: { id: true, url: true } }
+                events: {
+                    select: {
+                        id: true,
+                        media: {
+                            where: { type: "IMAGE" },
+                            orderBy: [{ isCover: "desc" }, { isFeatured: "desc" }, { createdAt: "desc" }],
+                            take: 1,
+                            select: { url: true },
+                        },
+                    },
+                },
+                // Most uploads are never explicitly flagged "featured" — take any
+                // photo, preferring one marked as cover/featured if present.
+                media: {
+                    where: { type: "IMAGE" },
+                    orderBy: [{ isCover: "desc" }, { isFeatured: "desc" }, { createdAt: "desc" }],
+                    take: 1,
+                    select: { id: true, url: true },
+                },
             }
         });
 
@@ -39,10 +56,16 @@ const fetchPublicProjectsData = unstable_cache(
             },
         });
 
-        const formattedProjects = projects.map(p => ({
-            ...p,
-            media: p.media.map(m => ({ url: m.url || "" }))
-        }));
+        // Fall back to a linked event's photo when the project has none of its own.
+        const formattedProjects = projects.map(p => {
+            const ownPhoto = p.media[0]?.url;
+            const eventPhoto = p.events.find(e => e.media[0]?.url)?.media[0]?.url;
+            return {
+                ...p,
+                events: p.events.map(e => ({ id: e.id })),
+                media: [{ url: ownPhoto || eventPhoto || "" }],
+            };
+        });
 
         const activeProjects = formattedProjects.filter(p => p.status === "ACTIVE" || p.status === "PLANNING" || p.status === "ON_HOLD");
         const completedProjects = formattedProjects.filter(p => p.status === "COMPLETED");

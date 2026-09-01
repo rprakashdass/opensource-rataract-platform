@@ -42,7 +42,19 @@ export async function getMemberEvents() {
         const attended: any[] = [];
         const completed: any[] = []; 
 
-        allEvents.forEach(event => {
+        // Prisma Decimal fields (fundsRaised, attendance.volunteerHours) are class
+        // instances, not plain objects — the RSC boundary rejects them, so they
+        // need converting to plain numbers before this ever reaches a client component.
+        const serializedEvents = allEvents.map(event => ({
+            ...event,
+            fundsRaised: event.fundsRaised != null ? Number(event.fundsRaised) : null,
+            attendance: event.attendance.map(a => ({
+                ...a,
+                volunteerHours: a.volunteerHours != null ? Number(a.volunteerHours) : null,
+            })),
+        }));
+
+        serializedEvents.forEach(event => {
             const isRegistered = event.registrations.length > 0;
             const hasAttended = event.attendance.length > 0;
             const eventEndTime = event.endTime 

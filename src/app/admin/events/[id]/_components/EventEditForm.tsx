@@ -162,8 +162,8 @@ export default function EventEditForm({ eventId, initialData, members = [], onSu
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Volunteer hrs / attendee</label>
-            <input type="number" min="0" step="1" value={volunteerHours} onChange={(e) => setVolunteerHours(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none" placeholder="e.g. 2" />
-            <p className="mt-1 text-xs text-slate-400">Awarded to each attendee marked present.</p>
+            <input type="number" min="0" step="0.25" value={volunteerHours} onChange={(e) => setVolunteerHours(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand outline-none" placeholder="e.g. 1.5" />
+            <p className="mt-1 text-xs text-slate-400">Awarded to each attendee marked present. Use decimals for minutes — 1.5 = 1 hr 30 min.</p>
           </div>
         </div>
 

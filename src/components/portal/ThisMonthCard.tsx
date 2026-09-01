@@ -61,7 +61,7 @@ export function ThisMonthCard({
           </p>
           <div className="space-y-2">
             {events.map((e) => (
-              <Link key={e.id} href={`${eventHrefBase}/${e.slug || e.id}`} className="flex items-center justify-between gap-2 hover:text-brand transition-colors group">
+              <Link key={e.id} href={`${eventHrefBase}/${e.id}`} className="flex items-center justify-between gap-2 hover:text-brand transition-colors group">
                 <p className={`text-sm group-hover:text-brand truncate flex-1 ${rowTextClass}`}>{e.title}</p>
                 <span className={`text-xs font-semibold shrink-0 ${labelClass}`}>
                   {new Date(e.startTime).toLocaleDateString("en-US", { month: "short", day: "numeric" })}

@@ -28,12 +28,25 @@ export async function getPublicProject(slug: string) {
               endDate: true,
               events: {
                   orderBy: { startDate: "asc" },
-                  select: { id: true, title: true, slug: true, startDate: true, media: { where: { isFeatured: true }, take: 1, select: { url: true } } }
+                  select: {
+                      id: true, title: true, slug: true, startDate: true, description: true, volunteerHours: true,
+                      media: {
+                          where: { type: "IMAGE" },
+                          orderBy: [{ isCover: "desc" }, { isFeatured: "desc" }, { createdAt: "desc" }],
+                          take: 1,
+                          select: { url: true },
+                      },
+                  }
               },
               members: {
                   select: { role: true, member: { select: { name: true, avatar: true } } }
               },
-              media: { where: { isFeatured: true }, select: { url: true, type: true } }
+              // Most uploads are never explicitly flagged "featured" — take any photo.
+              media: {
+                  where: { type: "IMAGE" },
+                  orderBy: [{ isCover: "desc" }, { isFeatured: "desc" }, { createdAt: "desc" }],
+                  select: { url: true, type: true },
+              }
           }
       });
 

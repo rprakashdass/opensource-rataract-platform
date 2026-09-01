@@ -13,7 +13,6 @@ export interface MonthEvent {
   id: string;
   title: string;
   startTime: Date;
-  slug: string;
 }
 
 /**
@@ -39,7 +38,7 @@ export async function getThisMonthHighlights(clubId: string) {
         status: { not: "CANCELLED" },
       },
       orderBy: { startTime: "asc" },
-      select: { id: true, title: true, startTime: true, slug: true },
+      select: { id: true, title: true, startTime: true },
     }),
   ]);
 

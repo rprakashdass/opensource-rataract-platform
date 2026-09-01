@@ -43,8 +43,8 @@ export const eventSchema = z.object({
   // Report-reused event attributes
   beneficiaries: z.string().optional().nullable(),
   objectives: z.array(z.string()).optional().default([]),
-  // Volunteer hours awarded to each attendee marked present.
-  volunteerHours: z.number().int().min(0).optional().nullable(),
+  // Volunteer hours awarded to each attendee marked present — decimal (e.g. 1.5 = 1hr 30min).
+  volunteerHours: z.number().min(0).optional().nullable(),
   
   team: z.array(
     z.object({

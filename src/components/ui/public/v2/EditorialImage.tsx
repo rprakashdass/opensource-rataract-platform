@@ -2,9 +2,29 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { PawPrint } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 import { THADAM_EASE } from "./reveal";
+
+/** Designed placeholder for a slot with no photo yet — a soft brand-tinted
+ * gradient with a faint paw-print watermark (the club mark), never a flat
+ * empty box. Shares the exact same `absolute inset-0` footprint as the real
+ * image it stands in for, so no layout ever depends on this rendering. */
+function NoPhotoFill({ text }: { text: string }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-wash via-paper to-wash p-8">
+      <PawPrint
+        className="absolute h-[70%] w-[70%] text-brand/[0.07] rotate-[-14deg]"
+        strokeWidth={1}
+        aria-hidden
+      />
+      <span className="relative font-display font-medium italic text-ink-faint text-xl md:text-2xl text-center text-balance">
+        {text}
+      </span>
+    </div>
+  );
+}
 
 type Ratio = "4/5" | "3/2" | "16/9" | "21/9" | "square" | "natural";
 
@@ -73,10 +93,8 @@ export function EditorialImage({
               onError={() => setError(true)}
             />
           ) : (
-            <div className="aspect-[4/5] flex items-center justify-center bg-wash p-8">
-              <span className="font-display font-medium italic text-ink-faint text-xl md:text-2xl text-center text-balance">
-                {fallbackText || alt}
-              </span>
+            <div className="relative aspect-[4/5]">
+              <NoPhotoFill text={fallbackText || alt} />
             </div>
           )}
         </motion.div>
@@ -117,11 +135,7 @@ export function EditorialImage({
             />
           </motion.div>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-wash p-8">
-            <span className="font-display font-medium italic text-ink-faint text-xl md:text-2xl text-center text-balance">
-              {fallbackText || alt}
-            </span>
-          </div>
+          <NoPhotoFill text={fallbackText || alt} />
         )}
       </motion.div>
       {caption && (

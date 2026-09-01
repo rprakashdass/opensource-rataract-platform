@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { PawPrint } from "lucide-react";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 
 /**
@@ -51,8 +52,13 @@ export function StoryCard({
             onError={() => setError(true)}
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <span className="font-display font-medium italic text-ink-faint text-xl text-center text-balance">
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-wash via-paper to-wash p-6">
+            <PawPrint
+              className="absolute h-[70%] w-[70%] text-brand/[0.07] rotate-[-14deg]"
+              strokeWidth={1}
+              aria-hidden
+            />
+            <span className="relative font-display font-medium italic text-ink-faint text-xl text-center text-balance">
               {title}
             </span>
           </div>

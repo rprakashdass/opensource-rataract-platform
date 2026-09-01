@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = `${project.title} | ${club?.name || "Rotaract Club"}`;
   const description = project.description ? project.description.substring(0, 160) : `Check out ${project.title}`;
   const projectAny = project as any;
-  const imageUrl = projectAny.media?.[0]?.url;
+  const imageUrl = projectAny.media?.[0]?.url || projectAny.events?.find((e: any) => e.media?.[0]?.url)?.media?.[0]?.url;
 
   return {
     title,
@@ -65,7 +65,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   const { project } = data;
   const projectAny = project as any;
-  const coverImage = projectAny.media?.[0]?.url || null;
+  const eventPhoto = projectAny.events?.find((e: any) => e.media?.[0]?.url)?.media?.[0]?.url;
+  const coverImage = projectAny.media?.[0]?.url || eventPhoto || null;
   const gallery = projectAny.media || [];
   const moments = gallery.slice(1, 4);
 

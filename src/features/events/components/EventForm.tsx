@@ -207,8 +207,8 @@ export default function EventForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="volunteerHours">Volunteer hours / attendee</Label>
-              <Input id="volunteerHours" name="volunteerHours" type="number" min="0" step="1" placeholder="e.g. 2" />
-              <p className="text-xs text-gray-500">Awarded to each attendee marked present.</p>
+              <Input id="volunteerHours" name="volunteerHours" type="number" min="0" step="0.25" placeholder="e.g. 1.5" />
+              <p className="text-xs text-gray-500">Awarded to each attendee marked present. Use decimals for minutes — 1.5 = 1 hr 30 min.</p>
             </div>
           </div>
 
