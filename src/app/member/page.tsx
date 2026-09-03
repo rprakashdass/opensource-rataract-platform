@@ -19,7 +19,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { PageHeader, StatCard, StatGrid, PortalEmptyState } from "@/components/portal";
-import { ThisMonthCard } from "@/components/portal/ThisMonthCard";
+import { MonthShoutoutRow } from "@/components/portal/MonthShoutoutRow";
 import DashboardCheckInCard from "./_components/DashboardCheckInCard";
 import { buildUpiUri, generateUpiQrDataUrl } from "@/lib/upi-qr";
 import { getThisMonthHighlights } from "@/features/members/queries/getThisMonthHighlights";
@@ -110,7 +110,7 @@ export default async function MemberDashboardPage() {
       </section>
 
       {/* This Month: Birthdays & Events */}
-      <ThisMonthCard birthdays={birthdays} events={monthEvents} eventHrefBase="/member/events" variant="portal" />
+      <MonthShoutoutRow birthdays={birthdays} events={monthEvents} eventHrefBase="/member/events" />
 
       {/* Pending Payments Section */}
       {pendingPaymentRequests && pendingPaymentRequests.length > 0 && (
