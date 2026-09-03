@@ -481,6 +481,7 @@ enum EventType {
   FUNDRAISER
   MEETING
   FELLOWSHIP
+  DISTRICT_PRIORITY_PROJECT
 }
 
 enum EventStatus {
@@ -685,6 +686,8 @@ model Member {
   websiteQuote     String?   @db.Text
   emergencyContact String?
   skills           String[]
+  linkedin         String?
+  instagram        String?
   membershipStatus String    @default("ACTIVE") // ACTIVE, ALUMNI, HONORARY, SUSPENDED
 
   // Blood Donation (for future)
@@ -1101,6 +1104,9 @@ model Media {
   displayOrder Int     @default(0)
   isCover      Boolean @default(false)
   isFeatured   Boolean @default(false)
+  // Curated for the official event report (src/app/reports/events/[id]) —
+  // independent of isFeatured (public event page gallery).
+  includeInReport Boolean @default(false)
 
   // Memories / Homepage curation
   showOnHomepage Boolean @default(false)
@@ -1480,6 +1486,23 @@ model CommunicationLog {
   announcementId String?
 
   createdAt DateTime @default(now())
+}
+
+// Every sendEmail() call logs one row here, regardless of caller (receipts,
+// payment-request notify, event invites, announcements, OTP, password
+// reset, external mail...) — this is the one place that sees ALL outgoing
+// mail, unlike CommunicationLog/ScheduledCommunication which only cover the
+// announcement/event-invite flows.
+model EmailLog {
+  id             String   @id @default(cuid())
+  subject        String
+  recipientCount Int      @default(1)
+  provider       String? // "brevo" | "gmail" | null (nothing configured / both failed)
+  status         String // SUCCESS, FAILED, SKIPPED
+  error          String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ============================================================================

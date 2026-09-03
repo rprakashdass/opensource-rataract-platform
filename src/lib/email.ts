@@ -22,10 +22,17 @@ export async function sendEmail({ to, subject, html, text, from, cc, bcc, attach
   const gmailUser = process.env.GMAIL_USER;
   const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
+  const recipientCount = Array.isArray(to) ? to.length : 1;
+  const logSend = (status: "SUCCESS" | "FAILED" | "SKIPPED", provider: string | null, error?: string) =>
+    prisma.emailLog.create({ data: { subject, recipientCount, provider, status, error } }).catch((e) =>
+      console.error("[sendEmail] failed to write EmailLog:", e)
+    );
+
   if ((!brevoUser || !brevoPass) && (!gmailUser || !gmailPass)) {
     console.warn("⚠️ Neither BREVO_SMTP_USER nor GMAIL_USER is set. Email not sent:");
     console.warn(`To: ${to}`);
     console.warn(`Subject: ${subject}`);
+    await logSend("SKIPPED", null, "No email provider configured");
     return { success: true, dummy: true };
   }
 
@@ -61,7 +68,8 @@ export async function sendEmail({ to, subject, html, text, from, cc, bcc, attach
         auth: { user: brevoUser, pass: brevoPass },
       });
       const info = await transporter.sendMail(mailOptions);
-      console.log(`Email sent via Brevo: ${info.messageId}`);
+      console.log(`Email sent via Brevo: ${info.messageId} to ${Array.isArray(to) ? to.join(", ") : to}`);
+      await logSend("SUCCESS", "brevo");
       return { success: true, messageId: info.messageId, provider: "brevo" };
     } catch (error) {
       console.warn("⚠️ Brevo SMTP failed, falling back to Gmail:", error);
@@ -77,7 +85,8 @@ export async function sendEmail({ to, subject, html, text, from, cc, bcc, attach
         auth: { user: gmailUser, pass: gmailPass },
       });
       const info = await transporter.sendMail(mailOptions);
-      console.log(`Email sent via Gmail: ${info.messageId}`);
+      console.log(`Email sent via Gmail: ${info.messageId} to ${Array.isArray(to) ? to.join(", ") : to}`);
+      await logSend("SUCCESS", "gmail");
       return { success: true, messageId: info.messageId, provider: "gmail" };
     } catch (error) {
       console.error("❌ Gmail SMTP also failed:", error);
@@ -85,6 +94,7 @@ export async function sendEmail({ to, subject, html, text, from, cc, bcc, attach
     }
   }
 
+  await logSend("FAILED", null, lastError?.message || String(lastError));
   return { success: false, error: lastError };
 }
 

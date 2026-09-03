@@ -37,6 +37,7 @@ import { StatCard, StatGrid, TableWrap, PortalEmptyState } from "@/components/po
 import EventMediaModeration from "./EventMediaModeration";
 import { EventBudgetDialog } from "./EventBudgetDialog";
 import { EventTransactionDialog } from "./EventTransactionDialog";
+import { formatIST } from "@/lib/date-utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,7 @@ interface EventDashboardProps {
       url: string;
       title: string | null;
       isFeatured: boolean;
+      includeInReport: boolean;
       driveFileId: string | null;
     }>;
     driveFolderId: string | null;
@@ -208,7 +210,7 @@ function DetailsCard({ event }: { event: EventDashboardProps["event"] }) {
             <Clock className="w-3 h-3" /> Start
           </dt>
           <dd className="text-sm font-semibold text-slate-900" suppressHydrationWarning>
-            {new Date(event.startTime).toLocaleString()}
+            {formatIST(event.startTime, "MMM d, yyyy, h:mm a")}
           </dd>
         </div>
         <div>
@@ -216,7 +218,7 @@ function DetailsCard({ event }: { event: EventDashboardProps["event"] }) {
             <Clock className="w-3 h-3" /> End
           </dt>
           <dd className="text-sm font-semibold text-slate-900" suppressHydrationWarning>
-            {event.endTime ? new Date(event.endTime).toLocaleString() : "TBD"}
+            {event.endTime ? formatIST(event.endTime, "MMM d, yyyy, h:mm a") : "TBD"}
           </dd>
         </div>
         <div className="sm:col-span-2">
@@ -557,7 +559,7 @@ function PublishedBody({
                 <RegistrationStatusBadge status={reg.status} />
               </div>
               <p className="text-xs text-slate-400">
-                Registered {new Date(reg.registeredAt).toLocaleDateString()}
+                Registered {formatIST(reg.registeredAt, "MMM d, yyyy")}
               </p>
             </div>
           ))}
@@ -576,7 +578,7 @@ function PublishedBody({
                 <tr key={reg.id} className="hover:bg-slate-50/50 transition">
                   <td className="px-5 py-3.5 font-medium text-slate-900">{reg.member.name || "Unnamed"}</td>
                   <td className="px-5 py-3.5">{reg.member.email || "-"}</td>
-                  <td className="px-5 py-3.5">{new Date(reg.registeredAt).toLocaleDateString()}</td>
+                  <td className="px-5 py-3.5">{formatIST(reg.registeredAt, "MMM d, yyyy")}</td>
                   <td className="px-5 py-3.5">
                     <RegistrationStatusBadge status={reg.status} />
                   </td>

@@ -9,7 +9,26 @@ import { TRANSACTION_CATEGORIES } from "@/lib/constants";
 import { FileUpload } from "@/components/ui/file-upload";
 import { buildUpiUri } from "@/lib/upi-qr";
 
-export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiId: string | null, paymentQr: string | null, clubName: string }) {
+export default function SubmitPaymentForm({
+  upiId,
+  paymentQr,
+  clubName,
+  paymentRequestId: propRequestId,
+  initialAmount,
+  initialDescription,
+  initialCategory,
+}: {
+  upiId: string | null;
+  paymentQr: string | null;
+  clubName: string;
+  // A dedicated request page (src/app/member/finance/requests/[id]) passes
+  // these directly; the generic /member/finance/submit entry point still
+  // relies on the ?requestId=/&amount=/&desc=/&category= query string.
+  paymentRequestId?: string;
+  initialAmount?: string;
+  initialDescription?: string;
+  initialCategory?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
@@ -23,11 +42,11 @@ export default function SubmitPaymentForm({ upiId, paymentQr, clubName }: { upiI
     }
   };
 
-  const [amount, setAmount] = useState(searchParams.get("amount") || "");
-  const [description, setDescription] = useState(searchParams.get("desc") || "");
-  const [category, setCategory] = useState(searchParams.get("category") || "DUES");
+  const [amount, setAmount] = useState(initialAmount || searchParams.get("amount") || "");
+  const [description, setDescription] = useState(initialDescription || searchParams.get("desc") || "");
+  const [category, setCategory] = useState(initialCategory || searchParams.get("category") || "DUES");
   const [receiptUrl, setReceiptUrl] = useState("");
-  const paymentRequestId = searchParams.get("requestId");
+  const paymentRequestId = propRequestId || searchParams.get("requestId");
   const [dynamicQr, setDynamicQr] = useState<string | null>(null);
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentClub } from "@/lib/club";
+import { formatIST } from "@/lib/date-utils";
 import {
   Calendar,
   Users,
@@ -42,14 +43,13 @@ function StatusPill({ status }: { status: string }) {
 // ─── Date block ──────────────────────────────────────────────────────────────
 
 function DateBlock({ date }: { date: Date }) {
-  const d = new Date(date);
   return (
     <div className="flex-none w-12 text-center">
       <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-        {d.toLocaleDateString(undefined, { month: "short" })}
+        {formatIST(date, "MMM")}
       </div>
       <div className="text-xl font-black text-slate-900 leading-none">
-        {d.getDate()}
+        {formatIST(date, "d")}
       </div>
     </div>
   );
@@ -121,8 +121,7 @@ function SectionLabel({
 // ─── Month Separator ──────────────────────────────────────────────────────────
 
 function MonthSeparator({ date }: { date: Date }) {
-  const d = new Date(date);
-  const monthYear = d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const monthYear = formatIST(date, "MMMM yyyy");
   return (
     <div className="px-4 py-2 mt-2 bg-slate-50 border-y border-slate-100 text-xs font-semibold text-slate-500 sticky top-0 z-10">
       {monthYear}
@@ -144,6 +143,7 @@ function CategoryFilters({ currentCategory }: { currentCategory: string }) {
     { label: "International", value: "INTERNATIONAL_SERVICE" },
     { label: "Fundraiser", value: "FUNDRAISER" },
     { label: "Fellowship", value: "FELLOWSHIP" },
+    { label: "DPP", value: "DISTRICT_PRIORITY_PROJECT" },
   ];
 
   return (
@@ -253,8 +253,7 @@ export default async function EventsAdmin(props: {
   const renderListWithMonths = (list: any[]) => {
     let currentMonth = "";
     return list.map((event) => {
-      const d = new Date(event.startTime);
-      const m = d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      const m = formatIST(event.startTime, "MMMM yyyy");
       const isNewMonth = m !== currentMonth;
       if (isNewMonth) currentMonth = m;
       

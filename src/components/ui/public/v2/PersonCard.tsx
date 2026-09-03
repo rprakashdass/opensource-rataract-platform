@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { Linkedin, Instagram } from "lucide-react";
 import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
 
 /** Portrait 4:5, name, role, and the human line. No pastel backgrounds. */
@@ -10,6 +11,8 @@ export function PersonCard({
   role,
   photoUrl,
   humanLine,
+  linkedin,
+  instagram,
   compact = false,
   className,
 }: {
@@ -17,6 +20,8 @@ export function PersonCard({
   role?: string | null;
   photoUrl?: string | null;
   humanLine?: string | null;
+  linkedin?: string | null;
+  instagram?: string | null;
   compact?: boolean;
   className?: string;
 }) {
@@ -51,6 +56,32 @@ export function PersonCard({
         )}
         {humanLine && !compact && (
           <p className="text-sm text-ink-soft mt-2 leading-relaxed italic">&ldquo;{humanLine}&rdquo;</p>
+        )}
+        {(linkedin || instagram) && (
+          <div className="flex items-center gap-2.5 mt-2">
+            {linkedin && (
+              <a
+                href={linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${name} on LinkedIn`}
+                className="text-ink-faint hover:text-brand-deep transition-colors"
+              >
+                <Linkedin className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {instagram && (
+              <a
+                href={instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${name} on Instagram`}
+                className="text-ink-faint hover:text-brand-deep transition-colors"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>

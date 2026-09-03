@@ -160,12 +160,12 @@ export default async function MemberDashboardPage() {
                           <a href={upiLink}>Pay via UPI App</a>
                         </Button>
                         <Button variant="outline" className="w-full border-hairline text-ink hover:text-brand hover:bg-wash rounded-xl font-bold bg-white flex-1 motion-button" asChild>
-                          <Link href={`/member/finance/submit?amount=${pr.amount}&desc=${encodeURIComponent(pr.title)}&requestId=${pr.id}`}>Submit Receipt</Link>
+                          <Link href={`/member/finance/requests/${pr.id}`}>Submit Receipt</Link>
                         </Button>
                       </>
                     ) : (
                       <Button className="w-full bg-brand hover:bg-brand-deep font-bold rounded-xl shadow-sm motion-button" asChild>
-                        <Link href={`/member/finance/submit?amount=${pr.amount}&desc=${encodeURIComponent(pr.title)}&requestId=${pr.id}`}>Submit Receipt</Link>
+                        <Link href={`/member/finance/requests/${pr.id}`}>Submit Receipt</Link>
                       </Button>
                     )}
                   </div>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import EventReportView, { type ReportData } from "./EventReportView";
 import ReportEditor from "./ReportEditor";
 import type { EventReportDetails } from "@/features/events/actions/saveReportDetails";
+import { formatIST } from "@/lib/date-utils";
 
 function humanize(s?: string | null) {
   if (!s) return undefined;
@@ -49,7 +50,7 @@ export default async function EventReportPage({
       members: { include: { member: { select: { name: true } } } },
       attendance: { where: { status: "PRESENT" }, select: { id: true } },
       transactions: { where: { status: "APPROVED" } },
-      media: { where: { type: "IMAGE" }, orderBy: { createdAt: "asc" } },
+      media: { where: { type: "IMAGE" }, orderBy: [{ includeInReport: "desc" }, { createdAt: "asc" }] },
     },
   });
   if (!event) notFound();
@@ -72,10 +73,10 @@ export default async function EventReportPage({
     clubName: event.club.name,
     eventTitle: event.title,
     avenue: rd.avenue || humanize(event.type) || event.category || undefined,
-    date: new Date(event.startTime).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }),
+    date: formatIST(event.startTime, "dd MMMM yyyy"),
     time:
-      new Date(event.startTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) +
-      (event.endTime ? ` – ${new Date(event.endTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}` : ""),
+      formatIST(event.startTime, "hh:mm a") +
+      (event.endTime ? ` – ${formatIST(event.endTime, "hh:mm a")}` : ""),
     venue: event.location || undefined,
     chair: chair,
     secretary: rd.secretary || undefined,
@@ -96,9 +97,13 @@ export default async function EventReportPage({
     photographer: rd.photographer || undefined,
     designer: rd.designer || undefined,
     emcee: rd.emcee || undefined,
-    photos: event.media.map((m) => ({ id: m.id, url: m.url, title: m.title })),
+    // Only the photos an admin explicitly curated ("Add to report") if any
+    // were picked; otherwise fall back to every photo (existing behavior)
+    // so events nobody has curated yet aren't left with an empty report.
+    photos: (event.media.some((m) => m.includeInReport) ? event.media.filter((m) => m.includeInReport) : event.media)
+      .map((m) => ({ id: m.id, url: m.url, title: m.title })),
     preparedBy,
-    generatedOn: new Date().toLocaleDateString("en-IN"),
+    generatedOn: formatIST(new Date(), "dd MMMM yyyy"),
   };
 
   // Edit mode — split-screen live editor (admins + this event's chair/co-chair).

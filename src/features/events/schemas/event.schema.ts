@@ -11,7 +11,8 @@ export const eventSchema = z.object({
     "INTERNATIONAL_SERVICE",
     "FUNDRAISER",
     "MEETING",
-    "FELLOWSHIP"
+    "FELLOWSHIP",
+    "DISTRICT_PRIORITY_PROJECT"
   ]),
   status: z.enum(["DRAFT", "UPCOMING", "ONGOING", "COMPLETED", "CANCELLED"]).default("DRAFT"),
   publishStatus: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),

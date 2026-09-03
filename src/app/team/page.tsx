@@ -20,7 +20,6 @@ export default async function TeamPage() {
   }
 
   const board = data.board || [];
-  const members = data.members || [];
   const portfolios = data.portfolios || [];
   const settings = (data as any).settings || {};
 
@@ -37,7 +36,6 @@ export default async function TeamPage() {
 
       <TeamClient
         board={board}
-        members={members}
         portfolios={portfolios}
         settings={settings}
       />

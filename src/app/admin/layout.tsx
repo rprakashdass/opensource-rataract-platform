@@ -35,20 +35,8 @@ export default async function AdminLayout({
   const club = await getCurrentClub();
 
   if (!club) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-md text-center space-y-3">
-          <h1 className="text-xl font-bold text-slate-900">Couldn't load club data</h1>
-          <p className="text-sm text-slate-500">
-            Your session is valid, but the database didn't return a club record. This is usually a
-            transient connection issue — try refreshing. If it persists, check your database connection.
-          </p>
-        </div>
-      </div>
-    );
+    throw new Error("No club is configured for this site.");
   }
-
-
 
   const notifications = await getRecentNotifications(club.id);
   const attentionSummary = await getAttentionSummary(club.id, session.roles);
@@ -64,7 +52,8 @@ export default async function AdminLayout({
         name: session.name,
         email: session.email,
         roles: session.roles,
-        readNotifications: session.readNotifications
+        readNotifications: session.readNotifications,
+        avatar: session.member?.avatar
       }}
       notifications={notifications}
       attentionSummary={attentionSummary}

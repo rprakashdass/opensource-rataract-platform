@@ -5,6 +5,7 @@ import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { formatIST } from "@/lib/date-utils";
 import PublicEventRegister from "../_components/PublicEventRegister";
 import {
   RevealBlock,
@@ -108,16 +109,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   }
   const isFull = !!eventAny.capacity && eventAny.registeredCount >= eventAny.capacity;
 
-  const longDate = eventDate.toLocaleDateString(undefined, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  const monthYear = eventDate.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-  const startTime = event.startTime
-    ? new Date(event.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : null;
+  const longDate = formatIST(eventAny.startDate, "EEEE, MMMM d, yyyy");
+  const monthYear = formatIST(eventAny.startDate, "MMMM yyyy");
+  const startTime = event.startTime ? formatIST(event.startTime, "h:mm a") : null;
 
   const team: any[] = eventAny.members || [];
 
@@ -203,10 +197,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               <div className="lg:col-span-7">
                 <RevealBlock>
                   <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
-                    {eventDate.toLocaleDateString(undefined, { weekday: "long" })}
+                    {formatIST(eventAny.startDate, "EEEE")}
                   </span>
                   <span className="block font-display font-medium text-ink leading-none tabular-nums text-[clamp(3.5rem,8vw,6rem)] mt-2">
-                    {eventDate.getDate()}
+                    {formatIST(eventAny.startDate, "d")}
                   </span>
                   <span className="block font-display font-medium italic text-2xl text-ink-soft mt-2">
                     {monthYear}

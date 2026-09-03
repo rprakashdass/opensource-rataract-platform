@@ -26,7 +26,9 @@ const fetchPublicEventsData = unstable_cache(
                 id: true,
                 title: true,
                 slug: true,
-                // description is excluded to reduce egress on list views
+                // Upcoming list is short (near-term events only) — full
+                // description is cheap here, unlike the completed list below.
+                description: true,
                 startDate: true,
                 startTime: true,
                 location: true,
@@ -34,10 +36,11 @@ const fetchPublicEventsData = unstable_cache(
                 capacity: true,
                 registeredCount: true,
                 bannerMediaId: true,
+                posterMediaId: true,
                 media: { orderBy: { createdAt: "desc" }, take: 1, select: { id: true, url: true } }
             },
         });
-        
+
         const completedEvents = await prisma.event.findMany({
             where: {
                 clubId: club.id,

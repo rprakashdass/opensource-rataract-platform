@@ -15,6 +15,7 @@ import { exportAttendanceCsv } from "@/features/attendance/actions/exportAttenda
 import { useRouter } from "next/navigation";
 import { AttendanceStatus } from "@prisma/client";
 import { StatCard, TableWrap, PortalEmptyState } from "@/components/portal";
+import { formatIST } from "@/lib/date-utils";
 
 export default function AttendanceTracker({ event, members = [], activeSession }: { event: any, members?: any[], activeSession?: any }) {
     const router = useRouter();
@@ -324,7 +325,7 @@ export default function AttendanceTracker({ event, members = [], activeSession }
                             <div className="flex flex-wrap justify-between items-center gap-2 pt-2">
                                 <div className="flex flex-wrap gap-2 items-center">
                                     {statusBadge(member.attendanceStatus)}
-                                    <span className="text-xs text-slate-500">{member.checkedInAt ? new Date(member.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
+                                    <span className="text-xs text-slate-500">{member.checkedInAt ? formatIST(member.checkedInAt, "h:mm a") : ""}</span>
                                 </div>
                                 <div className="flex gap-1">
                                     <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" disabled={loading || isLocked} onClick={() => handleMark(member.id, "PRESENT")}>
@@ -367,7 +368,7 @@ export default function AttendanceTracker({ event, members = [], activeSession }
                                     </td>
                                     <td className="p-4">{statusBadge(member.attendanceStatus)}</td>
                                     <td className="p-4 text-slate-500">
-                                        {member.checkedInAt ? new Date(member.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                                        {member.checkedInAt ? formatIST(member.checkedInAt, "h:mm a") : "-"}
                                     </td>
                                     <td className="p-4">
                                         <div className="flex items-center justify-end gap-2">

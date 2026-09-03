@@ -8,6 +8,7 @@ import { Calendar, MapPin, CheckCircle2, Clock, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { registerForEvent } from "@/features/events/actions/registerForEvent";
 import { memberPinCheckIn } from "@/features/attendance/actions/attendanceSession";
+import { formatIST } from "@/lib/date-utils";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -129,7 +130,7 @@ export default function DashboardEventsClient({
                                     <div className="space-y-2 mt-4">
                                         <div className="flex items-center text-sm text-slate-500">
                                             <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                                            <span suppressHydrationWarning>{new Date(event.startDate).toLocaleDateString()}</span>
+                                            <span suppressHydrationWarning>{formatIST(event.startDate, "MMM d, yyyy")}</span>
                                         </div>
                                         <div className="flex items-center text-sm text-slate-500">
                                             <MapPin className="w-4 h-4 mr-2 text-slate-400" />

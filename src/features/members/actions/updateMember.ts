@@ -35,6 +35,8 @@ export async function updateMember(id: string, data: any) {
         profession: data.profession,
         location: data.location,
         avatar: data.avatar,
+        linkedin: data.linkedin,
+        instagram: data.instagram,
         joinedAt: new Date(data.joinedAt),
       }
     });

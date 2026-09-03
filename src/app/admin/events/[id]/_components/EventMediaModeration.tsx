@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2, Loader2, Play, Image as ImageIcon, FileImage, Upload, MoreVertical } from "lucide-react";
-import { toggleMediaFeature, deleteEventMedia, setEventMediaRole } from "@/features/events/actions/manageEventMedia";
+import { Star, Trash2, Loader2, Play, Image as ImageIcon, FileImage, Upload, MoreVertical, FileText } from "lucide-react";
+import { toggleMediaFeature, deleteEventMedia, setEventMediaRole, toggleMediaReportInclusion } from "@/features/events/actions/manageEventMedia";
 import { uploadMedia } from "@/features/media/actions/uploadMedia";
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ interface MediaItem {
   url: string;
   title: string | null;
   isFeatured: boolean;
+  includeInReport: boolean;
 }
 
 interface Props {
@@ -67,6 +68,14 @@ export default function EventMediaModeration({ eventId, eventTitle, media, banne
     const res = await toggleMediaFeature(id, !currentStatus, eventId);
     if (res.error) toast.error(res.error);
     else toast.success(currentStatus ? "Removed from featured" : "Marked as featured");
+    setLoadingId(null);
+  };
+
+  const handleToggleReportInclusion = async (id: string, currentStatus: boolean) => {
+    setLoadingId(id);
+    const res = await toggleMediaReportInclusion(id, !currentStatus, eventId);
+    if (res.error) toast.error(res.error);
+    else toast.success(currentStatus ? "Removed from report" : "Added to report");
     setLoadingId(null);
   };
 
@@ -139,6 +148,10 @@ export default function EventMediaModeration({ eventId, eventTitle, media, banne
                       <Star className={`w-4 h-4 mr-2 ${item.isFeatured ? "fill-current" : ""}`} />
                       {item.isFeatured ? "Remove from featured" : "Feature on website"}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleToggleReportInclusion(item.id, item.includeInReport)}>
+                      <FileText className={`w-4 h-4 mr-2 ${item.includeInReport ? "fill-current" : ""}`} />
+                      {item.includeInReport ? "Remove from report" : "Add to report"}
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleDelete(item.id)}
                       className="text-rose-600 focus:text-rose-600"
@@ -163,6 +176,11 @@ export default function EventMediaModeration({ eventId, eventTitle, media, banne
                 {isPoster && (
                   <div className="bg-brand text-white p-1 rounded-full shadow-sm">
                     <FileImage className="w-3 h-3" />
+                  </div>
+                )}
+                {item.includeInReport && (
+                  <div className="bg-slate-700 text-white p-1 rounded-full shadow-sm">
+                    <FileText className="w-3 h-3" />
                   </div>
                 )}
               </div>

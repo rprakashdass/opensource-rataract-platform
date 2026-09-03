@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { cn, getGoogleDriveDirectLink } from "@/lib/utils";
+import { formatIST } from "@/lib/date-utils";
 
 /**
  * Ruled row for events/announcements: date block, title, meta, arrow.
@@ -15,6 +17,7 @@ export function ListRow({
   meta,
   tag,
   description,
+  imageUrl,
   className,
 }: {
   href?: string;
@@ -23,22 +26,25 @@ export function ListRow({
   meta?: string | null;
   tag?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   className?: string;
 }) {
-  const d = date ? new Date(date) : null;
-  const month = d?.toLocaleString("default", { month: "short" });
-  const day = d?.getDate();
+  const month = date ? formatIST(date, "MMM") : null;
+  const day = date ? formatIST(date, "d") : null;
+  const [imgError, setImgError] = useState(false);
+  const resolvedImageUrl = imageUrl ? getGoogleDriveDirectLink(imageUrl) : null;
 
   const inner = (
     <div
       className={cn(
-        "group grid grid-cols-[64px_1fr_auto] items-baseline gap-x-5 md:gap-x-8 py-6 border-b border-hairline transition-colors",
+        "group grid items-baseline gap-x-5 md:gap-x-8 py-6 border-b border-hairline transition-colors",
+        imageUrl ? "grid-cols-[64px_56px_1fr_auto]" : "grid-cols-[64px_1fr_auto]",
         href && "hover:bg-wash/60 -mx-4 px-4 rounded-lg border-transparent [&+*]:border-t",
         className
       )}
     >
       <div className="text-center">
-        {d ? (
+        {date ? (
           <>
             <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-deep">
               {month}
@@ -51,6 +57,20 @@ export function ListRow({
           <span className="block w-2 h-2 rounded-full bg-brand mx-auto" aria-hidden="true" />
         )}
       </div>
+      {imageUrl && (
+        <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-wash self-center">
+          {resolvedImageUrl && !imgError ? (
+            <Image
+              src={resolvedImageUrl}
+              alt={title}
+              fill
+              sizes="56px"
+              className="object-cover thadam-grade"
+              onError={() => setImgError(true)}
+            />
+          ) : null}
+        </div>
+      )}
       <div className="min-w-0">
         {tag && (
           <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint mb-1">

@@ -38,6 +38,11 @@ export async function convertInitiativeToEvent(id: string) {
         startDate: startTime,
         startTime,
         initiativeId: initiative.id,
+        // Default the idea's proposer in as Chair — editable later from the
+        // event's team section.
+        members: {
+          create: [{ memberId: initiative.proposedById, role: "CHAIR" }],
+        },
       },
     });
 

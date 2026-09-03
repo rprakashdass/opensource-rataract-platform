@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import EventActions from "./_components/EventActions";
 import EventMemories from "./_components/EventMemories";
 import { PageHeader } from "@/components/portal";
+import { formatIST } from "@/lib/date-utils";
 
 export default async function MemberEventPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -89,7 +90,7 @@ export default async function MemberEventPage({ params }: { params: Promise<{ id
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-slate-600 font-medium mb-6">
                         <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-slate-400" />
-                            {new Date(event.startDate).toLocaleDateString()} {event.startTime ? `- ${new Date(event.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : ''}
+                            {formatIST(event.startDate, "MMM d, yyyy")} {event.startTime ? `- ${formatIST(event.startTime, "h:mm a")}` : ''}
                         </div>
                         <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4 text-slate-400" />

@@ -4,6 +4,16 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CalendarDays, Cake, Briefcase, Users, Sparkles } from "lucide-react";
 import type { CalendarEntry } from "@/features/members/queries/getNexusCalendarData";
+import { formatIST } from "@/lib/date-utils";
+
+// Calendar entries carry a plain "YYYY-MM-DD" calendar date (no time-of-day
+// meaning). Anchoring at UTC midnight then formatting in Asia/Kolkata keeps
+// the displayed day stable regardless of the viewer's/server's local zone
+// (UTC midnight is 05:30 IST the same date, never a day early/late).
+function dateKeyToDate(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -36,8 +46,7 @@ function toDateKey(year: number, month: number, day: number) {
 }
 
 function formatDateLabel(dateStr: string) {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return formatIST(dateKeyToDate(dateStr), "EEEE, d MMMM yyyy");
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -300,16 +309,16 @@ export default function NexusCalendar({ entries }: Props) {
               {upcomingEntries.map(e => {
                 const meta = TYPE_META[e.type];
                 const Icon = meta.icon;
-                const dateObj = new Date(e.date + "T00:00:00");
-                const dateLabel = dateObj.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+                const dateObj = dateKeyToDate(e.date);
+                const dateLabel = formatIST(dateObj, "d MMM");
                 const inner = (
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-wash transition-colors">
                     <div className="flex-shrink-0 text-center w-10">
                       <p className="text-[10px] font-bold text-ink-faint uppercase">
-                        {dateObj.toLocaleDateString("en-IN", { month: "short" })}
+                        {formatIST(dateObj, "MMM")}
                       </p>
                       <p className="text-lg font-black text-ink leading-none">
-                        {dateObj.getDate()}
+                        {formatIST(dateObj, "d")}
                       </p>
                     </div>
                     <span

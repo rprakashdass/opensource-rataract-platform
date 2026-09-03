@@ -7,7 +7,9 @@ const getCachedPublicTeam = unstable_cache(
         const club = await getCurrentClub();
         if (!club) return null;
 
-        const [board, members, portfolios, websiteSettings] = await Promise.all([
+        // Public /team only ever shows the board — general members aren't
+        // listed publicly, so they're not fetched here.
+        const [board, portfolios, websiteSettings] = await Promise.all([
             prisma.boardMember.findMany({
                 where: { clubId: club.id },
                 select: {
@@ -21,26 +23,13 @@ const getCachedPublicTeam = unstable_cache(
                             profession: true,
                             joinedAt: true,
                             websiteQuote: true,
+                            linkedin: true,
+                            instagram: true,
                             portfolioAssignments: { select: { portfolio: { select: { id: true, name: true } } } }
                         }
                     }
                 },
                 orderBy: { order: "asc" }
-            }),
-            prisma.member.findMany({
-                where: {
-                    clubId: club.id,
-                    isActive: true
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    joinedAt: true,
-                    profession: true,
-                    boardMemberships: { select: { position: true, financialYear: { select: { status: true } }, leftAt: true } },
-                    portfolioAssignments: { select: { portfolio: { select: { id: true, name: true } } } }
-                },
-                orderBy: { name: "asc" }
             }),
             prisma.portfolio.findMany({
                 where: { clubId: club.id, isActive: true },
@@ -54,7 +43,6 @@ const getCachedPublicTeam = unstable_cache(
 
         return {
             board,
-            members,
             portfolios,
             settings: websiteSettings
         };
@@ -68,10 +56,7 @@ export async function getPublicTeam() {
       const base = await getCachedPublicTeam();
       if (!base) return { error: "Club not initialized" };
 
-      const memberIds = [
-          ...base.board.map(bm => bm.member.id),
-          ...base.members.map(m => m.id)
-      ];
+      const memberIds = base.board.map(bm => bm.member.id);
 
       const avatars = memberIds.length > 0
           ? await prisma.member.findMany({
@@ -102,14 +87,8 @@ export async function getPublicTeam() {
           }
       }
 
-      const members = base.members.map(m => ({
-          ...m,
-          avatar: avatarMap.get(m.id) || null
-      }));
-
       return {
           board,
-          members,
           portfolios: base.portfolios,
           settings: base.settings
       };

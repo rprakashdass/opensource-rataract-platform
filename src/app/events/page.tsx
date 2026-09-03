@@ -6,6 +6,7 @@ import MaxWidthWrapper from "@/components/wrappers/MaxWidthWrapper";
 import React, { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getGoogleDriveDirectLink } from "@/lib/utils";
+import { formatIST } from "@/lib/date-utils";
 import { CmsText } from "@/components/cms/CmsText";
 import { draftMode } from "next/headers";
 import {
@@ -18,7 +19,13 @@ import {
   StoryCard,
   ListRow,
   EmptyState,
+  EditorialImage,
 } from "@/components/ui/public/v2";
+
+function eventPoster(event: any): string | null {
+  const poster = event.media?.find((m: any) => m.id === event.posterMediaId || m.id === event.bannerMediaId) || event.media?.[0];
+  return poster?.url || null;
+}
 
 interface EventsCopy {
   eventsEyebrow?: string | null;
@@ -87,9 +94,7 @@ export default async function EventsPage() {
 }
 
 function formatTime(startTime?: string | Date | null) {
-  return startTime
-    ? new Date(startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : null;
+  return startTime ? formatIST(startTime, "h:mm a") : null;
 }
 
 async function EventsGrid({ isPreview }: { isPreview: boolean }) {
@@ -117,7 +122,8 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
 
   return (
     <>
-      {/* NEXT UP + upcoming list */}
+      {/* NEXT UP + upcoming list — hidden entirely when there's nothing scheduled */}
+      {upcomingEvents.length > 0 && (
       <section className="py-20 md:py-28 bg-paper">
         <MaxWidthWrapper>
           <RevealBlock>
@@ -128,27 +134,33 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
             <RevealBlock>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-8 items-start border-y border-hairline py-10 md:py-14">
                 {/* Serif date block */}
-                <div className="lg:col-span-3">
-                  {(() => {
-                    const d = new Date(nextEvent.startDate);
-                    return (
-                      <div>
-                        <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
-                          {d.toLocaleDateString(undefined, { weekday: "long" })}
-                        </span>
-                        <span className="block font-display font-medium text-ink leading-none tabular-nums text-[clamp(3.5rem,8vw,6rem)] mt-2">
-                          {d.getDate()}
-                        </span>
-                        <span className="block font-display font-medium italic text-2xl text-ink-soft mt-2">
-                          {d.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-                        </span>
-                      </div>
-                    );
-                  })()}
+                <div className="lg:col-span-2">
+                  <div>
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
+                      {formatIST(nextEvent.startDate, "EEEE")}
+                    </span>
+                    <span className="block font-display font-medium text-ink leading-none tabular-nums text-[clamp(3.5rem,8vw,6rem)] mt-2">
+                      {formatIST(nextEvent.startDate, "d")}
+                    </span>
+                    <span className="block font-display font-medium italic text-2xl text-ink-soft mt-2">
+                      {formatIST(nextEvent.startDate, "MMMM yyyy")}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Poster / banner */}
+                <div className="lg:col-span-4">
+                  <EditorialImage
+                    src={eventPoster(nextEvent)}
+                    alt={nextEvent.title}
+                    ratio="4/5"
+                    fallbackText={nextEvent.title}
+                    priority
+                  />
                 </div>
 
                 {/* Title + logistics + description */}
-                <div className="lg:col-span-6">
+                <div className="lg:col-span-4">
                   <h3 className="font-display font-medium text-ink tracking-[-0.01em] leading-[1.15] text-[clamp(1.6rem,3.5vw,2.4rem)] text-balance">
                     {nextEvent.title}
                   </h3>
@@ -162,22 +174,15 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
                       {nextEvent.description}
                     </p>
                   )}
-                </div>
-
-                {/* CTA */}
-                <div className="lg:col-span-3 flex lg:justify-end lg:pt-2">
-                  <PillLink href={`/events/${nextEvent.slug}`}>
-                    {nextEvent.capacity ? "RSVP" : "View event"}
-                  </PillLink>
+                  <div className="mt-6">
+                    <PillLink href={`/events/${nextEvent.slug}`}>
+                      {nextEvent.capacity ? "RSVP" : "View event"}
+                    </PillLink>
+                  </div>
                 </div>
               </div>
             </RevealBlock>
-          ) : (
-            <EmptyState
-              title="Nothing on the calendar just yet."
-              detail="We're between gatherings — check back soon, or follow along until the next one is announced."
-            />
-          )}
+          ) : null}
 
           {laterEvents.length > 0 && (
             <RevealBlock className="mt-14 md:mt-20">
@@ -191,6 +196,7 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
                     title={event.title}
                     meta={[formatTime(event.startTime), event.location].filter(Boolean).join(" · ") || null}
                     description={event.description}
+                    imageUrl={eventPoster(event)}
                   />
                 ))}
               </div>
@@ -198,6 +204,7 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
           )}
         </MaxWidthWrapper>
       </section>
+      )}
 
       <MaxWidthWrapper>
         <TrailRule />
@@ -218,7 +225,6 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
                 const poster =
                   event.media?.find((m: any) => m.id === event.bannerMediaId) || event.media?.[0];
                 const imageUrl = poster?.url ? getGoogleDriveDirectLink(poster.url) : null;
-                const eventDate = new Date(event.startDate);
                 const metaParts = [
                   event.registeredCount ? `${event.registeredCount} attended` : null,
                   event.volunteerHours ? `${event.volunteerHours} hours` : null,
@@ -229,7 +235,7 @@ async function EventsGrid({ isPreview }: { isPreview: boolean }) {
                     <StoryCard
                       href={`/events/${event.slug}`}
                       imageUrl={imageUrl}
-                      eyebrow={eventDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                      eyebrow={formatIST(event.startDate, "MMMM yyyy")}
                       title={event.title}
                       outcome={event.description}
                       caption={metaParts.length > 0 ? metaParts.join(" · ") : event.location}

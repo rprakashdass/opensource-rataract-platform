@@ -10,6 +10,7 @@ import EventReadiness from "./_components/EventReadiness";
 import EventPublishButton from "./_components/EventPublishButton";
 import DeleteEventButton from "./_components/DeleteEventButton";
 import { getTemplate, renderTemplate } from "@/features/communication/services/templateService";
+import { formatIST } from "@/lib/date-utils";
 
 export default async function EventManagementPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -52,14 +53,14 @@ export default async function EventManagementPage(props: { params: Promise<{ id:
   const renderedSubject = renderTemplate(templateObj.subjectTemplate, {
     clubName: event.club.name,
     eventName: event.title,
-    eventDate: event.startDate ? new Date(event.startDate).toLocaleDateString() : "",
+    eventDate: event.startDate ? formatIST(event.startDate, "MMM d, yyyy") : "",
     venue: event.location || "TBA",
     link: `https://yourdomain.com/events/${event.id}` // Ideally dynamic
   });
   const renderedBody = renderTemplate(templateObj.bodyTemplate, {
     clubName: event.club.name,
     eventName: event.title,
-    eventDate: event.startDate ? new Date(event.startDate).toLocaleDateString() : "",
+    eventDate: event.startDate ? formatIST(event.startDate, "MMM d, yyyy") : "",
     venue: event.location || "TBA",
     link: `https://yourdomain.com/events/${event.id}`
   });

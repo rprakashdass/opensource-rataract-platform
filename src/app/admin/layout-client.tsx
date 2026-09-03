@@ -14,7 +14,7 @@ import {
 interface AdminLayoutClientProps {
   children: React.ReactNode;
   club: { name: string; logoUrl?: string | null; tenureYear: string; };
-  user: { name: string; email: string; roles: string[]; readNotifications?: string[]; };
+  user: { name: string; email: string; roles: string[]; readNotifications?: string[]; avatar?: string | null; };
   notifications: NotificationItem[];
   attentionSummary: {
     memberships: { count: number; href: string };
@@ -50,6 +50,7 @@ export default function AdminLayoutClient({ children, club, user, notifications,
         { label: "Members", href: `${ROUTES.ADMIN}/members`, icon: Users, badgeCount: attentionSummary.memberships.count },
         { label: "Projects", href: `${ROUTES.ADMIN}/projects`, icon: Briefcase },
         { label: "Events", href: `${ROUTES.ADMIN}/events`, icon: Calendar },
+        { label: "Event Reports", href: `${ROUTES.ADMIN}/events/reports`, icon: FileSpreadsheet },
         { label: "Ideas", href: `${ROUTES.ADMIN}/proposals`, icon: Lightbulb, badgeCount: attentionSummary.ideas.count },
         { label: "Attendance", href: `${ROUTES.ADMIN}/attendance`, icon: ClipboardCheck },
       ]

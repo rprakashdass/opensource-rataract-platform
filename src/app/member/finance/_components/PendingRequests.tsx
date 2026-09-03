@@ -50,8 +50,8 @@ export default function PendingRequests({ requests }: { requests: any[] }) {
               >
                 <X className="h-3 w-3" /> Ignore
               </button>
-              <Link 
-                href={`/member/finance/submit?requestId=${req.id}&amount=${req.amount}&category=${req.category}&desc=${encodeURIComponent(req.title)}`}
+              <Link
+                href={`/member/finance/requests/${req.id}`}
                 className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-3 rounded-lg flex items-center gap-1 transition"
               >
                 Pay Now <ArrowRight className="h-3 w-3" />

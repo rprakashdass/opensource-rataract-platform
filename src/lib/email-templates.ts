@@ -1,4 +1,5 @@
 import { MediaType, AnnouncementType } from "@prisma/client";
+import { getGoogleDriveDirectLink } from "@/lib/utils";
 
 interface CtaButton {
   label: string;
@@ -33,12 +34,15 @@ export function renderHtmlLayout({
   const clubAddress = club?.address || "";
   const currentYear = new Date().getFullYear();
 
-  // Email clients can't resolve relative image paths — make the logo URL absolute.
+  // Email clients can't resolve relative image paths, and can't render a
+  // Google Drive "view" page as an image — it needs Drive's direct-serve
+  // CDN URL, same conversion every other image in the app goes through.
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-  const absoluteLogoUrl = logoUrl
-    ? logoUrl.startsWith("http")
-      ? logoUrl
-      : `${appUrl}${logoUrl.startsWith("/") ? "" : "/"}${logoUrl}`
+  const directLogoUrl = logoUrl ? getGoogleDriveDirectLink(logoUrl) : null;
+  const absoluteLogoUrl = directLogoUrl
+    ? directLogoUrl.startsWith("http")
+      ? directLogoUrl
+      : `${appUrl}${directLogoUrl.startsWith("/") ? "" : "/"}${directLogoUrl}`
     : null;
 
   // When a logo exists, show it. With no logo we render nothing here — the

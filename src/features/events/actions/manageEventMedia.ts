@@ -36,6 +36,26 @@ export async function toggleMediaFeature(mediaId: string, isFeatured: boolean, e
   }
 }
 
+export async function toggleMediaReportInclusion(mediaId: string, includeInReport: boolean, eventId: string) {
+  try {
+    const session = await getSession();
+    if (!session || !(await canManageEvent(session, eventId))) { return { error: "Unauthorized" }; }
+
+    await prisma.media.update({
+      where: { id: mediaId },
+      data: { includeInReport }
+    });
+
+    revalidatePath(`/admin/events/${eventId}`);
+    revalidatePath(`/reports/events/${eventId}`);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Toggle media report inclusion error:", error);
+    return { error: error.message || "Failed to update media" };
+  }
+}
+
 // Assigns mediaId as the event's banner/poster, or clears that role if the
 // same media already holds it (so an admin can undo a wrong pick).
 export async function setEventMediaRole(mediaId: string, eventId: string, role: "banner" | "poster") {

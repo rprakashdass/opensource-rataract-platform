@@ -24,6 +24,8 @@ export default function EditMemberForm({ member }: { member: any }) {
     profession: member.profession || "",
     location: member.location || "",
     avatar: member.avatar || "",
+    linkedin: member.linkedin || "",
+    instagram: member.instagram || "",
     joinedAt: member.joinedAt ? new Date(member.joinedAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]
   });
   const [activeUploads, setActiveUploads] = useState(0);
@@ -167,6 +169,26 @@ export default function EditMemberForm({ member }: { member: any }) {
                   onChange={e => setFormData({...formData, location: e.target.value})}
                   className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
                   placeholder="e.g. Mumbai, India"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">LinkedIn</label>
+                <input
+                  type="url"
+                  value={formData.linkedin}
+                  onChange={e => setFormData({...formData, linkedin: e.target.value})}
+                  className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
+                  placeholder="https://linkedin.com/in/username"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Instagram</label>
+                <input
+                  type="url"
+                  value={formData.instagram}
+                  onChange={e => setFormData({...formData, instagram: e.target.value})}
+                  className="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
+                  placeholder="https://instagram.com/username"
                 />
               </div>
             </CardContent>

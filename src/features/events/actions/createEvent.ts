@@ -27,9 +27,20 @@ export async function createEvent(data: EventFormData) {
     }
 
     // Guard: SCHEDULED requires a publishAt date
-    const { team, bannerMediaId, posterMediaId, sendEmailNotification, sendEmailToBoard, attachCalendarInvite, ...eventData } = parsed;
+    const { team: rawTeam, bannerMediaId, posterMediaId, sendEmailNotification, sendEmailToBoard, attachCalendarInvite, ...eventData } = parsed;
     if (eventData.publishStatus === "SCHEDULED" && !eventData.publishAt) {
       return { error: "A schedule date & time is required when scheduling an event." };
+    }
+
+    // Default the creator in as Chair when nobody was explicitly assigned one —
+    // editable later from the event's team section.
+    let team = rawTeam;
+    const creatorMemberId = session.member?.id;
+    if (creatorMemberId && !team?.some((t) => t.role === "CHAIR")) {
+      const alreadyOnTeam = team?.some((t) => t.memberId === creatorMemberId);
+      team = alreadyOnTeam
+        ? team!.map((t) => (t.memberId === creatorMemberId ? { ...t, role: "CHAIR" } : t))
+        : [{ memberId: creatorMemberId, role: "CHAIR" }, ...(team || [])];
     }
 
 

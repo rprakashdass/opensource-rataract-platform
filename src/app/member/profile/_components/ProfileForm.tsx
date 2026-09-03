@@ -16,6 +16,8 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
     bio: member.bio || "",
     websiteQuote: member.websiteQuote || "",
     avatar: member.avatar || "",
+    linkedin: member.linkedin || "",
+    instagram: member.instagram || "",
   });
   const [activeUploads, setActiveUploads] = useState(0);
 
@@ -153,6 +155,32 @@ export default function ProfileForm({ member, onSuccess }: { member: any; onSucc
           className="w-full border border-hairline rounded-md px-3 py-2 text-sm motion-input"
           placeholder="Tell us a little bit about yourself..."
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-ink-soft mb-1">LinkedIn</label>
+          <input
+            type="url"
+            name="linkedin"
+            value={formData.linkedin}
+            onChange={handleChange}
+            className="w-full border border-hairline rounded-md px-3 py-2 text-sm motion-input"
+            placeholder="https://linkedin.com/in/yourname"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ink-soft mb-1">Instagram</label>
+          <input
+            type="url"
+            name="instagram"
+            value={formData.instagram}
+            onChange={handleChange}
+            className="w-full border border-hairline rounded-md px-3 py-2 text-sm motion-input"
+            placeholder="https://instagram.com/yourname"
+          />
+        </div>
       </div>
 
       <div>

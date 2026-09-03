@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageClub } from "@/lib/auth/session";
 import { PublishStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { getNotificationEmailHtml } from "@/lib/email-templates";
 
@@ -99,49 +100,59 @@ export async function publishContent(input: PublishActionInput) {
       });
 
       if (sendAt <= new Date()) {
-        try {
-          const rules = typeof comm.recipientRules === 'string' ? JSON.parse(comm.recipientRules as string) : comm.recipientRules as any;
-          const recipientType = rules?.type || "ALL";
+        // Sending is deferred to run after this response is sent — for a
+        // few hundred members that's a few hundred sequential SMTP round
+        // trips, which is far too slow (and DB-connection-hungry) to do
+        // inline in the publish request.
+        after(async () => {
+          try {
+            const rules = typeof comm.recipientRules === 'string' ? JSON.parse(comm.recipientRules as string) : comm.recipientRules as any;
+            const recipientType = rules?.type || "ALL";
 
-          let whereClause: any = { member: { isNot: null } };
-          if (recipientType === "BOARD") {
-             whereClause = { member: { boardMemberships: { some: {} } } };
-          }
-
-          const users = await prisma.user.findMany({
-            where: whereClause,
-            select: { email: true, name: true }
-          });
-
-          const club = await prisma.club.findFirst();
-
-          // Send individually so we can replace {{memberName}}
-          for (const u of users) {
-            if (!u.email) continue;
-            let personalBody = comm.body;
-            if (personalBody) {
-              personalBody = personalBody.replace(/{{memberName}}/g, u.name || "Member");
+            let whereClause: any = { member: { isNot: null } };
+            if (recipientType === "BOARD") {
+               whereClause = { member: { boardMemberships: { some: {} } } };
             }
-            
-            const plainText = personalBody.replace(/<[^>]*>/g, ""); // Strip HTML tags
-            await sendEmail({
-              to: u.email,
-              subject: comm.subject,
-              text: plainText,
-              html: getNotificationEmailHtml(comm.subject, personalBody, u.name || "Member", club),
+
+            const users = await prisma.user.findMany({
+              where: whereClause,
+              select: { email: true, name: true }
+            });
+
+            const club = await prisma.club.findFirst();
+
+            // Send individually (in small batches) so we can replace {{memberName}}.
+            const CONCURRENCY = 5;
+            const recipients = users.filter((u) => u.email);
+            for (let i = 0; i < recipients.length; i += CONCURRENCY) {
+              await Promise.all(
+                recipients.slice(i, i + CONCURRENCY).map((u) => {
+                  let personalBody = comm.body;
+                  if (personalBody) {
+                    personalBody = personalBody.replace(/{{memberName}}/g, u.name || "Member");
+                  }
+                  const plainText = personalBody.replace(/<[^>]*>/g, ""); // Strip HTML tags
+                  return sendEmail({
+                    to: u.email!,
+                    subject: comm.subject,
+                    text: plainText,
+                    html: getNotificationEmailHtml(comm.subject, personalBody, u.name || "Member", club),
+                  });
+                })
+              );
+            }
+
+            await prisma.scheduledCommunication.update({
+              where: { id: comm.id },
+              data: { status: "SENT" }
+            });
+          } catch (err: any) {
+            await prisma.scheduledCommunication.update({
+              where: { id: comm.id },
+              data: { status: "FAILED", errorLog: err.message }
             });
           }
-
-          await prisma.scheduledCommunication.update({
-            where: { id: comm.id },
-            data: { status: "SENT" }
-          });
-        } catch (err: any) {
-          await prisma.scheduledCommunication.update({
-            where: { id: comm.id },
-            data: { status: "FAILED", errorLog: err.message }
-          });
-        }
+        });
       }
     }
 

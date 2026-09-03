@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
+import { revalidatePublicRoutes } from "@/lib/revalidate";
 
 export async function PUT(req: Request) {
   try {
@@ -32,8 +33,12 @@ export async function PUT(req: Request) {
         websiteQuote: data.websiteQuote,
         avatar: data.avatar,
         skills: data.skills,
+        linkedin: data.linkedin,
+        instagram: data.instagram,
       },
     });
+
+    revalidatePublicRoutes();
 
     return NextResponse.json(updatedMember);
   } catch (error: any) {

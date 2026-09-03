@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader, StatCard, StatGrid } from "@/components/portal";
 import { ThisMonthCard } from "@/components/portal/ThisMonthCard";
 import { getThisMonthHighlights } from "@/features/members/queries/getThisMonthHighlights";
+import { formatIST } from "@/lib/date-utils";
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -260,7 +261,7 @@ export default async function AdminPage() {
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
-                          {new Date(event.startTime).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          {formatIST(event.startTime, "MMM d")}
                         </span>
                         {event.project && (
                           <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-medium">

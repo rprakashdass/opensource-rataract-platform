@@ -32,6 +32,7 @@ interface PortalHeaderProps {
     email: string;
     roles: string[];
     readNotifications?: string[];
+    avatar?: string | null;
   };
   notifications: NotificationItem[];
   onMobileMenuToggle: () => void;
@@ -253,9 +254,15 @@ export function PortalHeader({ club, user, notifications, onMobileMenuToggle, is
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 p-1 md:pr-2 md:pl-1 min-h-[44px] bg-wash hover:bg-parchment rounded-full border border-hairline transition-colors"
               >
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-tr from-brand to-gold text-white flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
-                  {getInitials(user.name)}
-                </div>
+                {user.avatar ? (
+                  <div className="relative w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden border border-hairline flex-shrink-0">
+                    <Image src={user.avatar} alt={user.name} fill className="object-cover" sizes="32px" />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-tr from-brand to-gold text-white flex items-center justify-center font-bold text-xs md:text-sm shadow-sm">
+                    {getInitials(user.name)}
+                  </div>
+                )}
                 <div className="hidden md:flex flex-col items-start pr-1">
                   <span className="text-sm font-semibold text-ink leading-none">{user.name.split(" ")[0]}</span>
                 </div>

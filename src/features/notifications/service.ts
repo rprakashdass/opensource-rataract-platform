@@ -1,5 +1,6 @@
 import { NotificationTrigger } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { after } from "next/server";
 import { sendEmail } from "@/lib/email";
 import * as ics from "ics";
 import { getAnnouncementHtml, getEventInviteEmailHtml, getNotificationEmailHtml } from "@/lib/email-templates";
@@ -208,11 +209,15 @@ export async function dispatchNotification(opts: DispatchOptions) {
   if (!subject) subject = "Club Notification";
   if (!body) body = "<p>You have a new notification.</p>";
 
-  // 2. Send Emails
-  let status = "FAILED";
-  let errorMsg = null;
-  
-if (sendEmailFlag || attachCalendarFlag) {
+  // 2. Send Emails — deferred until after the response is sent, and batched.
+  // For N recipients this is N sequential SMTP round-trips; doing that inline
+  // inside the request that triggered it (event create, announcement send,
+  // registration) is exactly the pattern that timed out/starved the DB pool
+  // elsewhere in this app (see publishContent.ts, recordDirectPayment.ts).
+  if (sendEmailFlag || attachCalendarFlag) {
+    after(async () => {
+     let status = "FAILED";
+     let errorMsg = null;
      try {
        const users = await prisma.user.findMany({
          where: { email: { in: recipients } },
@@ -267,53 +272,49 @@ if (sendEmailFlag || attachCalendarFlag) {
           return { html, text };
         };
 
-        for (const u of users) {
-          if (!u.email) continue;
-          const { html: emailHtml, text: emailText } = await getEmailParts(u.email, u.name || "Member");
+        const CONCURRENCY = 5;
+        const sendTo = async (email: string, name: string) => {
+          const { html: emailHtml, text: emailText } = await getEmailParts(email, name);
           await sendEmail({
-            to: u.email,
+            to: email,
             subject,
             text: emailText,
             html: emailHtml,
             attachments: attachments.length > 0 ? attachments : undefined
           });
+        };
+
+        for (let i = 0; i < users.length; i += CONCURRENCY) {
+          await Promise.all(users.slice(i, i + CONCURRENCY).filter(u => u.email).map(u => sendTo(u.email!, u.name || "Member")));
         }
-        
+
         // Handle any recipients that weren't found in the DB (fallback)
         const foundEmails = new Set(users.map(u => u.email));
         const missingRecipients = recipients.filter(r => !foundEmails.has(r));
-        if (missingRecipients.length > 0) {
-          for (const email of missingRecipients) {
-             const { html: emailHtml, text: emailText } = await getEmailParts(email, "Member");
-             await sendEmail({
-                to: email,
-                subject,
-                text: emailText,
-                html: emailHtml,
-                attachments: attachments.length > 0 ? attachments : undefined
-             });
-          }
+        for (let i = 0; i < missingRecipients.length; i += CONCURRENCY) {
+          await Promise.all(missingRecipients.slice(i, i + CONCURRENCY).map(email => sendTo(email, "Member")));
         }
         status = "SUCCESS";
      } catch (e: any) {
        errorMsg = e.message;
        console.error("Notification email failed:", e);
      }
-  }
 
-  // 3. Log
-  await prisma.communicationLog.create({
-    data: {
-      trigger,
-      subject,
-      body,
-      recipientsCount: recipients.length,
-      status,
-      error: errorMsg,
-      eventId,
-      announcementId
-    }
-  });
+     // 3. Log
+     await prisma.communicationLog.create({
+       data: {
+         trigger,
+         subject,
+         body,
+         recipientsCount: recipients.length,
+         status,
+         error: errorMsg,
+         eventId,
+         announcementId
+       }
+     });
+    });
+  }
 }
 
 function generateIcs(event: any) {

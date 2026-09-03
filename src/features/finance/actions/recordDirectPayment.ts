@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession, canManageFinance } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
 
 export interface DirectPaymentInput {
@@ -25,7 +26,7 @@ export interface DirectPaymentInput {
  * External payers are recorded as (or matched to) a Contributor so their giving
  * accumulates over time.
  */
-export async function recordDirectPayment(input: DirectPaymentInput) {
+export async function recordDirectPayment(input: DirectPaymentInput, opts?: { issueReceiptNow?: boolean }) {
   const session = await getSession();
   if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
 
@@ -65,12 +66,14 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
     // Resolve the payer: either an existing member, or an external contributor
     // (matched/created so their giving accumulates over time).
     let memberId: string | null = null;
+    let payerUserId: string | null = null;
     let contributorId: string | null = null;
 
     if (input.memberId) {
-      const m = await prisma.member.findUnique({ where: { id: input.memberId }, select: { id: true } });
+      const m = await prisma.member.findUnique({ where: { id: input.memberId }, select: { id: true, userId: true } });
       if (!m) return { error: "Selected member not found." };
       memberId = m.id;
+      payerUserId = m.userId;
 
       if (input.paymentRequestId) {
         const duplicate = await prisma.transaction.findFirst({
@@ -115,6 +118,7 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
           paymentMethod: input.paymentMethod || "CASH",
           referenceNumber: input.referenceNumber?.trim() || null,
           memberId,
+          userId: payerUserId,
           contributorId,
           paymentRequestId: input.paymentRequestId || null,
           createdBy: session.id,
@@ -151,20 +155,24 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
     });
 
     // Issue the official receipt (PDF → Drive) and email it if we have an address.
+    // Skipped here (and deferred by the caller) for bulk recording — PDF
+    // render + upload + SMTP send per row is too slow to do N times inline.
     let receiptNumber: string | undefined;
     let url: string | null = null;
-    try {
-      const r = await issueReceipt(txn.id, { email: true });
-      receiptNumber = r.receiptNumber;
-      url = r.url;
-    } catch (err) {
-      console.error("recordDirectPayment: receipt generation failed:", err);
+    if (opts?.issueReceiptNow !== false) {
+      try {
+        const r = await issueReceipt(txn.id, { email: true });
+        receiptNumber = r.receiptNumber;
+        url = r.url;
+      } catch (err) {
+        console.error("recordDirectPayment: receipt generation failed:", err);
+      }
     }
 
     revalidatePath("/admin/finance");
     revalidatePath("/admin/finance/transactions");
     revalidatePath("/admin/finance/requests");
-    return { success: true, transactionId: txn.id, receiptNumber, url, emailed: !!input.payerEmail?.trim() };
+    return { success: true, transactionId: txn.id, receiptNumber, url, emailed: opts?.issueReceiptNow !== false && !!input.payerEmail?.trim() };
   } catch (e: any) {
     console.error("recordDirectPayment error:", e);
     return { error: e.message || "Failed to record payment" };
@@ -174,22 +182,46 @@ export async function recordDirectPayment(input: DirectPaymentInput) {
 /**
  * Record several direct payments in one go — e.g. a batch of members who
  * already paid by cash/UPI/etc. at an event and are being reconciled together.
- * Each row is processed independently (its own transaction + receipt) so one
- * bad row doesn't block the rest; failures are reported per payer.
+ * Each row is processed independently (its own transaction) so one bad row
+ * doesn't block the rest; failures are reported per payer.
+ *
+ * Receipts (PDF render + Drive upload + email) are deliberately NOT issued
+ * inline here — for N payers that's N sequential renders/uploads/SMTP sends
+ * in one request, which is slow enough to blow past the serverless timeout
+ * and, along the way, hold DB connections open long enough to starve
+ * unrelated requests. They're issued after this response is sent instead,
+ * a few at a time.
  */
 export async function recordBulkDirectPayments(inputs: DirectPaymentInput[]) {
   const session = await getSession();
   if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
   if (!inputs.length) return { error: "No payers selected." };
 
-  const results: Array<{ payerName: string; success: boolean; error?: string; receiptNumber?: string }> = [];
+  const results: Array<{ payerName: string; success: boolean; error?: string }> = [];
+  const issuedTxnIds: string[] = [];
   for (const input of inputs) {
-    const res = await recordDirectPayment(input);
+    const res = await recordDirectPayment(input, { issueReceiptNow: false });
     if ("error" in res) {
       results.push({ payerName: input.payerName, success: false, error: res.error });
     } else {
-      results.push({ payerName: input.payerName, success: true, receiptNumber: res.receiptNumber });
+      results.push({ payerName: input.payerName, success: true });
+      issuedTxnIds.push(res.transactionId);
     }
+  }
+
+  if (issuedTxnIds.length) {
+    after(async () => {
+      const CONCURRENCY = 3;
+      for (let i = 0; i < issuedTxnIds.length; i += CONCURRENCY) {
+        await Promise.all(
+          issuedTxnIds.slice(i, i + CONCURRENCY).map((id) =>
+            issueReceipt(id, { email: true }).catch((err) =>
+              console.error(`[recordBulkDirectPayments] receipt failed for transaction ${id}:`, err)
+            )
+          )
+        );
+      }
+    });
   }
 
   return {

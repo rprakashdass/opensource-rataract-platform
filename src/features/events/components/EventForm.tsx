@@ -244,6 +244,7 @@ export default function EventForm() {
                   <SelectItem value="FUNDRAISER">Fundraiser</SelectItem>
                   <SelectItem value="MEETING">Meeting</SelectItem>
                   <SelectItem value="FELLOWSHIP">Fellowship</SelectItem>
+                  <SelectItem value="DISTRICT_PRIORITY_PROJECT">District Priority Projects (DPP)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

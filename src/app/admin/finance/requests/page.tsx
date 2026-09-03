@@ -3,6 +3,7 @@ import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Receipt } from "lucide-react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, TableWrap, PortalEmptyState } from "@/components/portal";
 import RequestActions from "./_components/RequestActions";
@@ -94,8 +95,8 @@ export default async function PaymentRequestsPage() {
             <div key={row.id} className="p-4 space-y-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="font-semibold text-slate-900">{row.title}</div>
-                  <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wide">{row.category.replace(/_/g, " ")}</Badge>
+                  <Link href={`/admin/finance/requests/${row.id}`} className="font-semibold text-slate-900 hover:text-brand hover:underline">{row.title}</Link>
+                  <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wide block w-fit">{row.category.replace(/_/g, " ")}</Badge>
                 </div>
                 <div className="font-bold text-slate-900 whitespace-nowrap">₹{row.amount.toLocaleString()}</div>
               </div>
@@ -133,8 +134,8 @@ export default async function PaymentRequestsPage() {
               {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">{row.title}</div>
-                    <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wide">{row.category.replace(/_/g, " ")}</Badge>
+                    <Link href={`/admin/finance/requests/${row.id}`} className="font-bold text-slate-900 hover:text-brand hover:underline">{row.title}</Link>
+                    <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wide block w-fit">{row.category.replace(/_/g, " ")}</Badge>
                   </td>
                   <td className="px-6 py-4 text-slate-600">
                     {row.isGlobal ? "All Members" : `${row.audienceCount} member${row.audienceCount === 1 ? "" : "s"}`}
