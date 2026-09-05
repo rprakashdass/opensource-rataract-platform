@@ -272,6 +272,12 @@ export async function dispatchNotification(opts: DispatchOptions) {
           return { html, text };
         };
 
+        // Meeting notices read as "important" (official from-address, replies
+        // reach the club inbox); event invites and everything else stay
+        // transactional (noreply — no reply expected).
+        const emailCategory: "transactional" | "official" =
+          ann?.type === "BOARD_MEETING" || ann?.type === "CLUB_MEETING" ? "official" : "transactional";
+
         const CONCURRENCY = 5;
         const sendTo = async (email: string, name: string) => {
           const { html: emailHtml, text: emailText } = await getEmailParts(email, name);
@@ -280,6 +286,7 @@ export async function dispatchNotification(opts: DispatchOptions) {
             subject,
             text: emailText,
             html: emailHtml,
+            category: emailCategory,
             attachments: attachments.length > 0 ? attachments : undefined
           });
         };

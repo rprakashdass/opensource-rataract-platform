@@ -58,8 +58,8 @@ export async function notifyPaymentRequest(requestId: string) {
           `;
           return sendEmail({
             to: m.email!,
-            subject: `Payment Request: ${request.title}`,
-            html: getNotificationEmailHtml(`Payment Request: ${request.title}`, body, m.name || "Member", request.club),
+            subject: request.title,
+            html: getNotificationEmailHtml(request.title, body, m.name || "Member", request.club),
             text: `A payment request is waiting for you: ${request.title} — ₹${Number(request.amount).toLocaleString("en-IN")}. Pay here: ${payLink}`,
           }).catch((err) => console.error(`[notifyPaymentRequest] send failed for ${m.email}:`, err));
         })

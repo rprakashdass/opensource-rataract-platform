@@ -15,6 +15,7 @@ import { TableWrap } from "@/components/portal";
 import { toast } from "sonner";
 import { updateTransactionStatus } from "@/features/finance/actions/updateTransactionStatus";
 import { generateReceipt } from "@/features/finance/actions/generateReceipt";
+import { formatIST } from "@/lib/date-utils";
 
 interface TransactionLedgerProps {
   initialTransactions: any[];
@@ -106,6 +107,8 @@ export default function TransactionLedger({
     }
   }
 
+  const payerName = (tx: any) => tx.member?.name || tx.contributor?.name || tx.user?.name || "—";
+
   const statusBadgeClass = (status: string) =>
     status === "APPROVED" || status === "PAID"
       ? "bg-emerald-100 text-emerald-700"
@@ -118,7 +121,8 @@ export default function TransactionLedger({
       <div className="flex justify-between items-start gap-4">
         <div>
           <div className="font-semibold text-slate-900">{tx.title}</div>
-          <div className="text-xs text-slate-400 mt-0.5">{tx.category?.name || "Other"} • <span suppressHydrationWarning>{new Date(tx.date).toLocaleDateString()}</span></div>
+          <div className="text-xs text-slate-400 mt-0.5">{tx.category?.name || "Other"} • <span suppressHydrationWarning>{formatIST(tx.date, "MMM d, yyyy")}</span></div>
+          <div className="text-xs text-slate-500 mt-0.5">Paid by {payerName(tx)}</div>
           {(tx.event?.title || tx.project?.title) && (
             <div className="text-xs text-brand font-medium mt-0.5">{tx.event ? `Event: ${tx.event.title}` : `Project: ${tx.project.title}`}</div>
           )}
@@ -277,6 +281,7 @@ export default function TransactionLedger({
               <tr>
                 <th className="px-5 py-3">Date</th>
                 <th className="px-5 py-3">Title</th>
+                <th className="px-5 py-3">Paid By</th>
                 <th className="px-5 py-3">Type</th>
                 <th className="px-5 py-3">Account</th>
                 <th className="px-5 py-3">Amount</th>
@@ -287,7 +292,7 @@ export default function TransactionLedger({
             <tbody className="divide-y divide-slate-100 bg-white">
               {filtered.map(tx => (
                 <tr key={tx.id} className="hover:bg-slate-50/50 transition">
-                  <td className="px-5 py-3.5 whitespace-nowrap" suppressHydrationWarning>{new Date(tx.date).toLocaleDateString()}</td>
+                  <td className="px-5 py-3.5 whitespace-nowrap" suppressHydrationWarning>{formatIST(tx.date, "MMM d, yyyy")}</td>
                   <td className="px-5 py-3.5">
                     <div className="font-semibold text-slate-900">{tx.title}</div>
                     <div className="text-xs text-slate-400 mt-0.5">{tx.category?.name || "Other"}</div>
@@ -295,6 +300,7 @@ export default function TransactionLedger({
                       <div className="text-xs text-brand font-medium mt-0.5">{tx.event ? `Event: ${tx.event.title}` : `Project: ${tx.project.title}`}</div>
                     )}
                   </td>
+                  <td className="px-5 py-3.5 whitespace-nowrap text-slate-700">{payerName(tx)}</td>
                   <td className="px-5 py-3.5 whitespace-nowrap">
                     <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
                       tx.type === "INCOME" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"

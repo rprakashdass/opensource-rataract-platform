@@ -67,7 +67,9 @@ export default async function AdminFinancePage() {
       toCreate.push({ clubId: activeClubId, name: "Cash Account", type: "CASH", currentBalance: 0 });
     }
     if (!hasBank) {
-      toCreate.push({ clubId: activeClubId, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0 });
+      // Members always pay into this one official account — default target
+      // for crediting self-submitted payments once approved.
+      toCreate.push({ clubId: activeClubId, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0, isDefault: true });
     }
     await prisma.account.createMany({
       data: toCreate

@@ -39,7 +39,7 @@ export default async function MemberFinancePage() {
       },
       include: {
         transactions: {
-          where: { userId: session.id }
+          where: { OR: [{ userId: session.id }, { memberId: member.id }] }
         }
       },
       orderBy: { createdAt: "desc" }

@@ -96,8 +96,31 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
-    await prisma.transaction.delete({
-      where: { id }
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.transaction.findUnique({ where: { id } });
+      if (!existing) throw new Error("Transaction not found");
+
+      // If it was approved and already credited to an account/contributor,
+      // deleting it must reverse that credit — otherwise the balance stays
+      // permanently inflated by an amount that no longer has a transaction
+      // backing it.
+      if (existing.status === "APPROVED") {
+        if (existing.accountId) {
+          const adjustment = existing.type === "INCOME" ? -existing.amount.toNumber() : existing.amount.toNumber();
+          await tx.account.update({
+            where: { id: existing.accountId },
+            data: { currentBalance: { increment: adjustment } },
+          });
+        }
+        if (existing.contributorId) {
+          await tx.contributor.update({
+            where: { id: existing.contributorId },
+            data: { totalContributed: { decrement: existing.amount } },
+          });
+        }
+      }
+
+      await tx.transaction.delete({ where: { id } });
     });
 
     return NextResponse.json({ success: true });

@@ -1563,6 +1563,10 @@ model Account {
   name           String // Cash, Bank Account, UPI Wallet
   type           String // CASH, BANK, UPI, OTHER
   currentBalance Decimal       @default(0) @db.Decimal(10, 2)
+  // The account self-submitted member payments get credited to on approval
+  // (members always pay into the one official UPI/bank account — there's no
+  // per-payment account choice on their end, unlike admin-recorded ones).
+  isDefault      Boolean       @default(false)
   transactions   Transaction[]
   transfersFrom  Transfer[]    @relation("TransfersFrom")
   transfersTo    Transfer[]    @relation("TransfersTo")

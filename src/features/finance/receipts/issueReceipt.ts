@@ -59,6 +59,7 @@ async function emailReceipt(tx: any, r: IssuedReceipt): Promise<void> {
     subject: "Payment Approved — Official Receipt Attached",
     text: `Hi ${r.payerName},\n\nYour payment of Rs. ${Number(tx.amount)} has been approved. Your official receipt (${r.receiptNumber}) is attached${r.url ? ` and saved here: ${r.url}` : ""}.`,
     html: getTransactionReceiptEmailHtml(emailTx, tx.club),
+    category: "official",
     attachments: [
       {
         filename: `Receipt-${r.receiptNumber.replace(/[\/\\]/g, "-")}.pdf`,
@@ -204,11 +205,14 @@ async function buildData(
     clubName: tx.club.name,
     clubAddress: tx.club.address || null,
     clubContact: contact,
+    district: tx.club.district || null,
+    financialYearLabel: tx.financialYear?.name || null,
     logo,
     payerName,
     amount,
     paymentMethod: tx.paymentMethod || null,
     referenceNumber: tx.referenceNumber || null,
+    category: tx.category?.name || null,
     purpose: tx.description || tx.category?.name || tx.title || "Contribution",
     presName: presName || tx.club.websiteSettings?.presName || null,
     treasName,

@@ -7,11 +7,14 @@ export interface ReceiptData {
   clubName: string;
   clubAddress?: string | null;
   clubContact?: string | null; // "email · phone"
+  district?: string | null; // RI District
+  financialYearLabel?: string | null; // e.g. "2026-27"
   logo?: { data: Buffer; format: "png" | "jpg" } | null;
   payerName: string;
   amount: number;
   paymentMethod?: string | null; // CASH, UPI, ...
   referenceNumber?: string | null;
+  category?: string | null; // Dues, Event Fee, Donation, ...
   purpose: string; // description / category / "Contribution"
   presName?: string | null;
   treasName?: string | null;
@@ -76,6 +79,7 @@ function ReceiptDoc({ data }: { data: ReceiptData }) {
             <Text style={styles.clubName}>{data.clubName}</Text>
             {data.clubAddress ? <Text style={styles.clubMeta}>{data.clubAddress}</Text> : null}
             {data.clubContact ? <Text style={styles.clubMeta}>{data.clubContact}</Text> : null}
+            {data.district ? <Text style={styles.clubMeta}>RI District {data.district}</Text> : null}
           </View>
         </View>
 
@@ -87,6 +91,7 @@ function ReceiptDoc({ data }: { data: ReceiptData }) {
             <Text>Receipt No.</Text>
             <Text style={styles.metaValue}>{data.receiptNumber}</Text>
             <Text style={{ marginTop: 4 }}>Date: {fmtDate(data.date)}</Text>
+            {data.financialYearLabel ? <Text style={{ marginTop: 4 }}>Rotary Year: {data.financialYearLabel}</Text> : null}
           </View>
         </View>
 
@@ -94,6 +99,12 @@ function ReceiptDoc({ data }: { data: ReceiptData }) {
           <Text style={styles.label}>Received with thanks from</Text>
           <Text style={styles.value}>{data.payerName}</Text>
         </View>
+        {data.category ? (
+          <View style={styles.row}>
+            <Text style={styles.label}>Category</Text>
+            <Text style={styles.value}>{data.category}</Text>
+          </View>
+        ) : null}
         <View style={styles.row}>
           <Text style={styles.label}>Towards</Text>
           <Text style={styles.value}>{data.purpose}</Text>

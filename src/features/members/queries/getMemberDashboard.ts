@@ -43,13 +43,6 @@ export async function getMemberDashboard() {
         boardMemberships: {
             include: { financialYear: true },
             orderBy: { joinedAt: 'desc' }
-        },
-        paymentRequests: {
-            include: { 
-                paymentRequest: {
-                    include: { transactions: { where: { memberId: basicMember.id } } }
-                }
-            }
         }
       }
     });
@@ -150,7 +143,7 @@ export async function getMemberDashboard() {
         },
         include: {
             transactions: {
-                where: { memberId: member.id }
+                where: { OR: [{ memberId: member.id }, { userId: session.id }] }
             }
         },
         orderBy: { createdAt: "desc" }

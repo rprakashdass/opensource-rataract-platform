@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import { handleApiError } from "@/lib/api-error";
+import { sendEmail } from "@/lib/email";
 
 // Helper to get logged in user
 async function getSessionUser() {
@@ -72,6 +73,41 @@ export async function POST(req: Request) {
         eventId: eventId || null,
         paymentRequestId: paymentRequestId || null,
       },
+    });
+
+    // Notify the Treasurer (board position) so a submission -> approval
+    // doesn't just sit unnoticed until someone happens to check the panel.
+    after(async () => {
+      try {
+        const treasurer = await prisma.boardMember.findFirst({
+          where: { clubId: transaction.clubId, position: { equals: "Treasurer", mode: "insensitive" }, leftAt: null },
+          include: { member: { select: { email: true, name: true } } },
+        });
+
+        const recipients = new Map<string, string>();
+        if (treasurer?.member?.email) recipients.set(treasurer.member.email, treasurer.member.name || "Treasurer");
+
+        const payerName = user.member?.name || user.name || "A member";
+        const amountStr = `₹${Number(transaction.amount).toLocaleString("en-IN")}`;
+
+        for (const [email, name] of recipients) {
+          await sendEmail({
+            to: email,
+            subject: `Payment awaiting approval — ${amountStr} from ${payerName}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <p>Hi ${name},</p>
+                <p><strong>${payerName}</strong> submitted a payment of <strong>${amountStr}</strong> for approval.</p>
+                <p><strong>Description:</strong> ${description}</p>
+                <p><a href="${process.env.NEXT_PUBLIC_APP_URL || ""}/admin/finance/transactions/${transaction.id}">Review and approve</a></p>
+              </div>
+            `,
+            text: `${payerName} submitted a payment of ${amountStr} for approval. ${description}`,
+          }).catch((err) => console.error("[finance/route] treasurer notify failed:", err));
+        }
+      } catch (err) {
+        console.error("[finance/route] failed to notify approvers:", err);
+      }
     });
 
     return NextResponse.json(transaction);

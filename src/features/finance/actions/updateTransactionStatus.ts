@@ -25,8 +25,19 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
 
       if (existing.status === newStatus) return existing;
 
+      // Self-submitted payments never have an account picked (members just
+      // pay into the club's one official account) — default it in on
+      // approval instead of silently crediting nothing.
+      let accountId = existing.accountId;
+      if (!accountId && newStatus === "APPROVED") {
+        const defaultAccount = await tx.account.findFirst({
+          where: { clubId: existing.clubId, isDefault: true },
+        });
+        if (defaultAccount) accountId = defaultAccount.id;
+      }
+
       // Handle Account balance updates
-      if (existing.accountId) {
+      if (accountId) {
         const isCurrentlyCredited = existing.status === "APPROVED";
         const shouldBeCredited = newStatus === "APPROVED";
 
@@ -34,14 +45,14 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
           // Add to account balance
           const adjustment = existing.type === "INCOME" ? existing.amount : -existing.amount;
           await tx.account.update({
-            where: { id: existing.accountId },
+            where: { id: accountId },
             data: { currentBalance: { increment: adjustment } }
           });
         } else if (isCurrentlyCredited && !shouldBeCredited) {
           // Reverse account balance adjustment
           const adjustment = existing.type === "INCOME" ? -existing.amount : existing.amount;
           await tx.account.update({
-            where: { id: existing.accountId },
+            where: { id: accountId },
             data: { currentBalance: { increment: adjustment } }
           });
         }
@@ -52,6 +63,7 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
         where: { id: transactionId },
         data: {
           status: newStatus,
+          accountId,
           approvedBy: session.id,
           approvedAt: new Date()
         }

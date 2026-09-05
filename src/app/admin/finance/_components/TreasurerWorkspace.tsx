@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { updateTransactionStatus } from "@/features/finance/actions/updateTransactionStatus";
 import { createTransfer } from "@/features/finance/actions/createTransfer";
+import { setDefaultAccount } from "@/features/finance/actions/setDefaultAccount";
 import { TransactionCreateDialog } from "./TransactionCreateDialog";
 
 interface TreasurerWorkspaceProps {
@@ -203,12 +204,33 @@ export default function TreasurerWorkspace({
                 <div className="flex items-center gap-2">
                   <Banknote className="w-4 h-4 text-slate-400" />
                   <div>
-                    <p className="text-xs font-semibold text-slate-700">{a.name}</p>
+                    <p className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      {a.name}
+                      {a.isDefault && (
+                        <span className="text-[9px] bg-brand/10 text-brand px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">Default</span>
+                      )}
+                    </p>
                     <p className="text-[10px] text-slate-400 uppercase font-bold">{a.type}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-slate-900">₹{Number(a.currentBalance).toLocaleString()}</span>
+                  {!a.isDefault && (
+                    <button
+                      onClick={async () => {
+                        const res = await setDefaultAccount(a.id);
+                        if (res.error) toast.error(res.error);
+                        else {
+                          toast.success(`${a.name} is now the default for member payments`);
+                          router.refresh();
+                        }
+                      }}
+                      className="text-[10px] font-semibold text-slate-500 hover:text-brand hover:bg-pink-50 px-2 py-1 rounded transition cursor-pointer"
+                      title="Set as the account member self-submitted payments are credited to"
+                    >
+                      Set default
+                    </button>
+                  )}
                   <button
                     onClick={async () => {
                       if (!confirm(`Are you sure you want to delete ${a.name}?`)) return;
