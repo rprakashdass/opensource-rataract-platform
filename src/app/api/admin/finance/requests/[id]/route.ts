@@ -17,13 +17,27 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const { title, description, amount, dueDate, category, isGlobal } = await req.json();
 
+    // categoryId is the real (FinanceCategory-backed) system now; `category`
+    // (the legacy enum) is kept in sync alongside it — see POST /requests.
+    const categoryValue = category || "OTHER";
+    let categoryId: string | null = null;
+    if (categoryValue !== "OTHER") {
+      await prisma.financeCategory.upsert({
+        where: { id: categoryValue },
+        update: {},
+        create: { id: categoryValue, name: categoryValue.replace(/_/g, " "), type: "INCOME" },
+      });
+      categoryId = categoryValue;
+    }
+
     const request = await prisma.paymentRequest.update({
       where: { id },
       data: {
         title,
         description,
         amount: parseFloat(amount),
-        category,
+        category: categoryValue,
+        categoryId,
         isGlobal,
         dueDate: dueDate ? new Date(dueDate) : null,
       }

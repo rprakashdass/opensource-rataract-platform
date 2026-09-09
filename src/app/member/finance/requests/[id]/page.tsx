@@ -18,7 +18,7 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
   const request = await prisma.paymentRequest.findUnique({
     where: { id },
     include: {
-      transactions: { where: { userId: session.id } },
+      transactions: { where: { OR: [{ userId: session.id }, { memberId: member.id }] } },
     },
   });
 
@@ -31,6 +31,7 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
   if (!isAssigned) notFound();
 
   const paidTransaction = request.transactions.find((t) => t.status === "APPROVED");
+  const pendingTransaction = request.transactions.find((t) => t.status === "PENDING_APPROVAL");
   const club = await getOrCreateDefaultClub();
 
   return (
@@ -81,6 +82,15 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
                   Download receipt{paidTransaction.receiptNumber ? ` · ${paidTransaction.receiptNumber}` : ""}
                 </a>
               )}
+            </div>
+          ) : pendingTransaction ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center space-y-2">
+              <Clock className="h-8 w-8 text-amber-600 mx-auto" />
+              <p className="text-sm font-semibold text-amber-800">Payment submitted — awaiting approval</p>
+              <p className="text-xs text-amber-700">
+                ₹{Number(pendingTransaction.amount).toLocaleString("en-IN")} · submitted {formatIST(pendingTransaction.date, "MMM d, yyyy")}
+              </p>
+              <p className="text-xs text-amber-700">You'll be notified once the treasurer reviews it — no need to submit again.</p>
             </div>
           ) : (
             <SubmitPaymentForm

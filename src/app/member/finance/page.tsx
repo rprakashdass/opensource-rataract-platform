@@ -45,11 +45,13 @@ export default async function MemberFinancePage() {
       orderBy: { createdAt: "desc" }
     });
 
-    // Filter out requests that have an APPROVED transaction by this user
-    // or requests that the user has explicitly dismissed
-    pendingRequests = allRequests.filter(req => 
+    // Filter out requests already paid (APPROVED) or already submitted and
+    // awaiting review (PENDING_APPROVAL) — a member who's submitted proof
+    // shouldn't see "Pay Now" again until it's actually rejected. Also drop
+    // requests the member has explicitly dismissed.
+    pendingRequests = allRequests.filter(req =>
       !req.dismissedBy.includes(member.id) &&
-      !req.transactions.some((t: any) => t.status === "APPROVED")
+      !req.transactions.some((t: any) => t.status === "APPROVED" || t.status === "PENDING_APPROVAL")
     );
   }
 

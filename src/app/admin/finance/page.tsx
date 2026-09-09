@@ -4,6 +4,7 @@ import TreasurerWorkspace from "./_components/TreasurerWorkspace";
 import { getSession, canViewFinance } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/portal";
+import { getOrCreateActiveFinancialYear } from "@/lib/finance/financialYear";
 
 export default async function AdminFinancePage() {
   const session = await getSession();
@@ -32,49 +33,11 @@ export default async function AdminFinancePage() {
   const activeClubId = club.id;
 
   // 1. Seed default active Financial Year if none exists
-  let fy = await prisma.financialYear.findFirst({
-    where: { clubId: activeClubId, status: "ACTIVE" }
-  });
-  if (!fy) {
-    fy = await prisma.financialYear.upsert({
-      where: { name: "RY 2026-27" },
-      update: { status: "ACTIVE" },
-      create: {
-        clubId: activeClubId,
-        name: "RY 2026-27",
-        startDate: new Date("2026-07-01"),
-        endDate: new Date("2027-06-30"),
-        openingBalance: 0,
-        status: "ACTIVE"
-      }
-    });
-  }
+  const fy = await getOrCreateActiveFinancialYear(activeClubId);
 
-  // 2. Seed default Accounts if none exist
-  const existingAccounts = await prisma.account.findMany({
-    where: {
-      clubId: activeClubId,
-      name: { in: ["Cash Account", "Rotaract Bank Account"] }
-    }
-  });
-
-  const hasCash = existingAccounts.some(a => a.name === "Cash Account");
-  const hasBank = existingAccounts.some(a => a.name === "Rotaract Bank Account");
-
-  if (!hasCash || !hasBank) {
-    const toCreate = [];
-    if (!hasCash) {
-      toCreate.push({ clubId: activeClubId, name: "Cash Account", type: "CASH", currentBalance: 0 });
-    }
-    if (!hasBank) {
-      // Members always pay into this one official account — default target
-      // for crediting self-submitted payments once approved.
-      toCreate.push({ clubId: activeClubId, name: "Rotaract Bank Account", type: "BANK", currentBalance: 0, isDefault: true });
-    }
-    await prisma.account.createMany({
-      data: toCreate
-    });
-  }
+  // Accounts are no longer auto-seeded here — create them via the real
+  // Accounts CRUD (POST /api/admin/finance/accounts). TreasurerWorkspace
+  // renders an empty state if a club genuinely has zero accounts yet.
 
   // Fetch Accounts, Transactions, Budgets, Contributors, Transfers, Audit Logs concurrently —
   // none of these depend on each other's results.

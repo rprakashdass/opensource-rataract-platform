@@ -1192,6 +1192,7 @@ model FinanceCategory {
   name         String
   type         TransactionType
   transactions Transaction[]
+  paymentRequests PaymentRequest[]
 }
 
 model Budget {
@@ -1240,7 +1241,13 @@ model PaymentRequest {
   title       String
   description String?
   amount      Decimal             @db.Decimal(10, 2)
+  // Legacy enum — superseded by categoryId (same FinanceCategory system
+  // Transaction already uses). Kept temporarily so nothing reads a dropped
+  // column mid-migration; dropped in a later, separate migration once
+  // confirmed unused.
   category    TransactionCategory @default(OTHER)
+  categoryId  String?
+  financeCategory FinanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isGlobal    Boolean             @default(false)
   dueDate     DateTime?
 

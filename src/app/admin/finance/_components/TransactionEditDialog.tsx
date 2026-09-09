@@ -26,7 +26,7 @@ export default function TransactionEditDialog({
 }) {
   const [amount, setAmount] = useState(transaction.amount);
   const [description, setDescription] = useState(transaction.description);
-  const [category, setCategory] = useState(transaction.category);
+  const [categoryId, setCategoryId] = useState(transaction.categoryId || "");
   const [date, setDate] = useState(transaction.date ? new Date(transaction.date).toISOString().split('T')[0] : '');
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +42,7 @@ export default function TransactionEditDialog({
         body: JSON.stringify({
           amount,
           description,
-          category,
+          categoryId,
           date
         })
       });
@@ -94,8 +94,8 @@ export default function TransactionEditDialog({
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
               <select
-                value={category}
-                onChange={e => setCategory(e.target.value)}
+                value={categoryId}
+                onChange={e => setCategoryId(e.target.value)}
                 className={inputClass}
               >
                 <option value="DUES">Dues</option>

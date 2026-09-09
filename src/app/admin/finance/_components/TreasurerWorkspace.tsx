@@ -10,7 +10,8 @@ import {
   Banknote,
   AlertCircle,
   Download,
-  Receipt
+  Receipt,
+  Plus
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,33 @@ export default function TreasurerWorkspace({
     toAccountId: "",
     amount: ""
   });
+
+  // Add Account Dialog Form State
+  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [accountForm, setAccountForm] = useState({ name: "", type: "BANK", currentBalance: "" });
+  const [addingAccount, setAddingAccount] = useState(false);
+
+  const handleAddAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingAccount(true);
+    try {
+      const res = await fetch("/api/admin/finance/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(accountForm),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      toast.success(`${accountForm.name} added`);
+      setShowAddAccountModal(false);
+      setAccountForm({ name: "", type: "BANK", currentBalance: "" });
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add account");
+    } finally {
+      setAddingAccount(false);
+    }
+  };
 
   // Calculate Overview Card metrics
   const totalBalance = accounts.reduce((acc, curr) => acc + Number(curr.currentBalance), 0);
@@ -195,10 +223,16 @@ export default function TreasurerWorkspace({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard label="Current Balance" value={`₹${Number(totalBalance).toLocaleString()}`} icon={Wallet} tone="brand" />
         <Card className="md:col-span-2">
-          <CardHeader className="py-4">
+          <CardHeader className="py-4 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-bold">Managed Accounts</CardTitle>
+            <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" onClick={() => setShowAddAccountModal(true)}>
+              <Plus className="w-3.5 h-3.5" /> Add
+            </Button>
           </CardHeader>
           <CardContent className="py-2 space-y-3">
+            {accounts.length === 0 && (
+              <p className="text-xs text-slate-400 py-4 text-center">No accounts yet — add your first one to start recording payments.</p>
+            )}
             {accounts.map(a => (
               <div key={a.id} className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
                 <div className="flex items-center gap-2">
@@ -472,6 +506,59 @@ export default function TreasurerWorkspace({
               </Button>
               <Button type="submit" disabled={loading} className="bg-brand hover:bg-brand-deep text-white">
                 Execute Transfer
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAddAccountModal} onOpenChange={setShowAddAccountModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Account</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddAccount} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Name</label>
+              <input
+                required
+                type="text"
+                value={accountForm.name}
+                onChange={e => setAccountForm({ ...accountForm, name: e.target.value })}
+                className={selectClass}
+                placeholder="e.g. Petty Cash"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Type</label>
+              <select
+                value={accountForm.type}
+                onChange={e => setAccountForm({ ...accountForm, type: e.target.value })}
+                className={selectClass}
+              >
+                <option value="CASH">Cash</option>
+                <option value="BANK">Bank</option>
+                <option value="UPI">UPI</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Opening Balance (₹)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={accountForm.currentBalance}
+                onChange={e => setAccountForm({ ...accountForm, currentBalance: e.target.value })}
+                className={selectClass}
+                placeholder="0"
+              />
+            </div>
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="outline" onClick={() => setShowAddAccountModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={addingAccount} className="bg-brand hover:bg-brand-deep text-white">
+                {addingAccount ? "Adding..." : "Add Account"}
               </Button>
             </DialogFooter>
           </form>

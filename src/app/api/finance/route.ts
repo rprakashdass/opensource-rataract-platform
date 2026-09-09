@@ -4,6 +4,7 @@ import { getSession , canManageFinance } from "@/lib/auth/session";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import { handleApiError } from "@/lib/api-error";
 import { sendEmail } from "@/lib/email";
+import { createTransactionCore } from "@/features/finance/services/createTransactionCore";
 
 // Helper to get logged in user
 async function getSessionUser() {
@@ -34,6 +35,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    // Prefer the actual incoming request's origin over NEXT_PUBLIC_APP_URL —
+    // a misconfigured env var (e.g. left as localhost in prod) would
+    // otherwise silently produce broken links in this email.
+    const baseUrl = new URL(req.url).origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -46,34 +51,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Amount and description are required" }, { status: 400 });
     }
 
-    if (category) {
-      await prisma.financeCategory.upsert({
-        where: { id: category },
-        update: {},
-        create: {
-          id: category,
-          name: category.replace(/_/g, ' '),
-          type: "INCOME" // Member contributions are usually income
-        }
-      });
-    }
-
-    const transaction = await prisma.transaction.create({
-      data: {
-        clubId: user.member?.clubId || club.id,
-        userId: user.id,
-        memberId: user.member?.id || null,
-        title: payload.title || description.substring(0, 50),
-        type: "INCOME", // Member payments are INCOME for the club
-        status: "PENDING_APPROVAL", // Needs treasury approval
-        amount: parseFloat(amount),
-        description,
-        categoryId: category || null,
-        receiptUrl: receiptUrl || null,
-        eventId: eventId || null,
-        paymentRequestId: paymentRequestId || null,
-      },
+    const result = await createTransactionCore({
+      clubId: user.member?.clubId || club.id,
+      title: payload.title,
+      description,
+      amount: parseFloat(amount),
+      type: "INCOME", // Member payments are INCOME for the club
+      status: "PENDING_APPROVAL", // Needs treasury approval
+      autoApprove: false,
+      payer: { mode: "self", userId: user.id, memberId: user.member?.id || null },
+      categoryId: category || null,
+      categoryType: "INCOME",
+      receiptUrl: receiptUrl || null,
+      eventId: eventId || null,
+      paymentRequestId: paymentRequestId || null,
+      createdBy: user.id,
     });
+    if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
+    const transaction = result.transaction;
 
     // Notify the Treasurer (board position) so a submission -> approval
     // doesn't just sit unnoticed until someone happens to check the panel.
@@ -99,7 +94,7 @@ export async function POST(req: Request) {
                 <p>Hi ${name},</p>
                 <p><strong>${payerName}</strong> submitted a payment of <strong>${amountStr}</strong> for approval.</p>
                 <p><strong>Description:</strong> ${description}</p>
-                <p><a href="${process.env.NEXT_PUBLIC_APP_URL || ""}/admin/finance/transactions/${transaction.id}">Review and approve</a></p>
+                <p><a href="${baseUrl}/admin/finance/transactions/${transaction.id}">Review and approve</a></p>
               </div>
             `,
             text: `${payerName} submitted a payment of ${amountStr} for approval. ${description}`,

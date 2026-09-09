@@ -72,14 +72,18 @@ export default function TransactionLedger({
     return matchesSearch && matchesFy && matchesAccount && matchesType && matchesCategory && matchesProject && matchesEvent && matchesStatus;
   });
 
-  async function handleStatusUpdate(id: string, status: "APPROVED" | "REJECTED") {
+  async function handleStatusUpdate(id: string, status: "APPROVED" | "REJECTED", emailReceipt = true) {
     setLoading(true);
     try {
-      const res = await updateTransactionStatus(id, status);
+      const res = await updateTransactionStatus(id, status, { emailReceipt });
       if (res.error) {
         toast.error(res.error);
       } else {
-        toast.success(`Transaction marked as ${status.toLowerCase()}`);
+        toast.success(
+          status === "APPROVED" && !emailReceipt
+            ? "Approved and receipt generated — not sent yet."
+            : `Transaction marked as ${status.toLowerCase()}`
+        );
         setSelectedTx(null);
         router.refresh();
       }
@@ -502,6 +506,15 @@ export default function TransactionLedger({
                   <div className="flex gap-2">
                     <Button onClick={() => handleStatusUpdate(selectedTx.id, "REJECTED")} disabled={loading} variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50">
                       Reject Claim
+                    </Button>
+                    <Button
+                      onClick={() => handleStatusUpdate(selectedTx.id, "APPROVED", false)}
+                      disabled={loading}
+                      variant="outline"
+                      className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                      title="Approve and generate the receipt, but don't email it yet"
+                    >
+                      Approve Only
                     </Button>
                     <Button onClick={() => handleStatusUpdate(selectedTx.id, "APPROVED")} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700">
                       Approve & Disburse

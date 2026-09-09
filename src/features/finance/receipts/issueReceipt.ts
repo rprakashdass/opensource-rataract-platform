@@ -161,8 +161,17 @@ export async function issueReceipt(
 }
 
 async function nextReceiptNumber(clubId: string, fyLabel: string): Promise<string> {
-  const count = await prisma.transaction.count({ where: { clubId, receiptNumber: { not: null } } });
-  return `RCPT/${fyLabel}/${String(count + 1).padStart(4, "0")}`;
+  // Derived from the highest number actually issued, not a row count — a
+  // count drifts (and collides) the moment any receipted transaction is
+  // deleted, since the count drops but already-issued numbers don't free up.
+  const prefix = `RCPT/${fyLabel}/`;
+  const last = await prisma.transaction.findFirst({
+    where: { clubId, receiptNumber: { startsWith: prefix } },
+    orderBy: { receiptNumber: "desc" },
+    select: { receiptNumber: true },
+  });
+  const lastSeq = last?.receiptNumber ? parseInt(last.receiptNumber.slice(prefix.length), 10) || 0 : 0;
+  return `${prefix}${String(lastSeq + 1).padStart(4, "0")}`;
 }
 
 // President/Treasurer are registered board roles (BoardMember), not free

@@ -49,13 +49,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Title and Amount are required" }, { status: 400 });
     }
 
+    // categoryId is the real (FinanceCategory-backed) system now; `category`
+    // (the legacy enum) is kept in sync alongside it while anything still
+    // reads the old column — dropped in a later migration once nothing does.
+    const categoryValue = data.category || "OTHER";
+    let categoryId: string | null = null;
+    if (categoryValue !== "OTHER") {
+      await prisma.financeCategory.upsert({
+        where: { id: categoryValue },
+        update: {},
+        create: { id: categoryValue, name: categoryValue.replace(/_/g, " "), type: "INCOME" },
+      });
+      categoryId = categoryValue;
+    }
+
     const request = await prisma.paymentRequest.create({
       data: {
         clubId: club.id,
         title: data.title.trim(),
         description: data.description?.trim() || null,
         amount: parseFloat(data.amount),
-        category: data.category || "OTHER",
+        category: categoryValue,
+        categoryId,
         isGlobal: data.isGlobal,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         assignees: {

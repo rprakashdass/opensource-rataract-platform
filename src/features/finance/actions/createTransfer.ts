@@ -94,7 +94,10 @@ export async function createTransfer(data: any) {
     });
 
     revalidatePath("/admin/finance");
-    return { success: true, transfer: result };
+    // Return primitives only — a Server Action's return value crosses the
+    // server/client boundary via RSC serialization, which can't handle a
+    // Prisma Decimal (result.amount) the way JSON.stringify can.
+    return { success: true, id: result.id };
   } catch (error: any) {
     console.error("Transfer funds error:", error);
     return { error: error.message || "Failed to transfer funds" };

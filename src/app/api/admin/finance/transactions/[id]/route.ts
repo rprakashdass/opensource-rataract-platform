@@ -1,66 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
-import { sendEmail } from "@/lib/email";
-import { getTransactionReceiptEmailHtml } from "@/lib/email-templates";
-import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
 import { handleApiError } from "@/lib/api-error";
-
-function adminOnly(session: any) {
-  return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
-}
+import { reverseTransactionEffects } from "@/features/finance/services/reverseTransactionEffects";
 
 function financeAdminOnly(session: any) {
   return session && session.roles?.some((r: string) => ["SUPER_ADMIN", "CLUB_ADMIN", "FINANCE_ADMIN"].includes(r));
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const { id } = await params;
-    const session = await getSession();
-    if (!financeAdminOnly(session)) {
-      return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
-    }
-
-    const { status } = await req.json();
-
-    if (!["APPROVED", "REJECTED"].includes(status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-    }
-
-    const transaction = await prisma.transaction.update({
-      where: { id },
-      data: { status },
-      include: {
-        user: true,
-      }
-    });
-
-    const club = await prisma.club.findFirst();
-
-    if (status === "APPROVED") {
-      // Generate the official receipt (PDF → Supabase Storage) and email it, attached.
-      // Wrapped so a receipt/email failure never blocks the approval itself.
-      try {
-        await issueReceipt(id, { email: true });
-      } catch (err) {
-        console.error("Failed to issue receipt on approval:", err);
-      }
-    } else if (transaction.user?.email) {
-      // Rejected — notify, no receipt.
-      sendEmail({
-        to: transaction.user.email,
-        subject: "Payment Request Rejected",
-        text: `Hi ${transaction.user.name || "Member"},\n\nYour recent payment request for Rs. ${transaction.amount} (${transaction.description || "No description"}) has been rejected by the finance team.`,
-        html: getTransactionReceiptEmailHtml(transaction, club),
-      }).catch((err) => console.error("Failed to send transaction email:", err));
-    }
-
-    return NextResponse.json(transaction);
-  } catch (error: any) {
-    return handleApiError(error, "Failed to update transaction status");
-  }
-}
+// Approval/rejection lives solely in `updateTransactionStatus` (the server
+// action used by TransactionLedger/TransactionDetailView) — that's the only
+// path that correctly credits/reverses the account balance. A PATCH handler
+// used to live here too, updating status without ever touching the account,
+// silently under-crediting the club's balance. It had no callers; removed
+// rather than left as a landmine for something to call it again.
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -70,7 +23,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Unauthorized. Finance Admin required." }, { status: 403 });
     }
 
-    const { amount, description, date, category } = await req.json();
+    const { amount, description, date, categoryId } = await req.json();
+
+    // categoryId currently doubles as a stable slug ("DUES", "SPONSORSHIP",
+    // ...) rather than a real cuid FK — same convention createTransactionCore
+    // uses — so it must exist before the Transaction can reference it.
+    if (categoryId) {
+      const existingTx = await prisma.transaction.findUnique({ where: { id }, select: { type: true } });
+      await prisma.financeCategory.upsert({
+        where: { id: categoryId },
+        update: {},
+        create: { id: categoryId, name: categoryId.replace(/_/g, " "), type: existingTx?.type || "EXPENSE" },
+      });
+    }
 
     const transaction = await prisma.transaction.update({
       where: { id },
@@ -78,7 +43,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         amount: parseFloat(amount),
         description,
         date: date ? new Date(date) : undefined,
-        category,
+        categoryId: categoryId ?? undefined,
       }
     });
 
@@ -104,21 +69,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       // deleting it must reverse that credit — otherwise the balance stays
       // permanently inflated by an amount that no longer has a transaction
       // backing it.
-      if (existing.status === "APPROVED") {
-        if (existing.accountId) {
-          const adjustment = existing.type === "INCOME" ? -existing.amount.toNumber() : existing.amount.toNumber();
-          await tx.account.update({
-            where: { id: existing.accountId },
-            data: { currentBalance: { increment: adjustment } },
-          });
-        }
-        if (existing.contributorId) {
-          await tx.contributor.update({
-            where: { id: existing.contributorId },
-            data: { totalContributed: { decrement: existing.amount } },
-          });
-        }
-      }
+      await reverseTransactionEffects(tx, existing);
 
       await tx.transaction.delete({ where: { id } });
     });

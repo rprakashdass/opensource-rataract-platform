@@ -5,6 +5,7 @@ import { getSession, canManageFinance } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
+import { createTransactionCore } from "@/features/finance/services/createTransactionCore";
 
 export interface DirectPaymentInput {
   memberId?: string; // set when the payer is an existing member
@@ -48,131 +49,38 @@ export async function recordDirectPayment(input: DirectPaymentInput, opts?: { is
     if (!clubId) clubId = (await prisma.club.findFirst())?.id;
     if (!clubId) return { error: "No club found." };
 
-    // Active financial year (create one if none exists yet).
-    let fy = await prisma.financialYear.findFirst({ where: { clubId, status: "ACTIVE" } });
-    if (!fy) {
-      fy = await prisma.financialYear.create({
-        data: {
-          clubId,
-          name: "RY 2026-27",
-          startDate: new Date("2026-07-01"),
-          endDate: new Date("2027-06-30"),
-          openingBalance: 0,
-          status: "ACTIVE",
-        },
-      });
-    }
-
-    // Resolve the payer: either an existing member, or an external contributor
-    // (matched/created so their giving accumulates over time).
-    let memberId: string | null = null;
-    let payerUserId: string | null = null;
-    let contributorId: string | null = null;
-
-    if (input.memberId) {
-      const m = await prisma.member.findUnique({ where: { id: input.memberId }, select: { id: true, userId: true } });
-      if (!m) return { error: "Selected member not found." };
-      memberId = m.id;
-      payerUserId = m.userId;
-
-      if (input.paymentRequestId) {
-        const duplicate = await prisma.transaction.findFirst({
-          where: {
-            memberId: m.id,
-            paymentRequestId: input.paymentRequestId,
-            status: "APPROVED"
-          }
-        });
-        if (duplicate) {
-          return { error: "This member has already paid for this request." };
-        }
-      }
-    } else {
-      let contributor = await prisma.contributor.findFirst({ where: { clubId, name } });
-      if (!contributor) {
-        contributor = await prisma.contributor.create({
-          data: { clubId, name, contact: input.payerEmail?.trim() || null, type: "DONOR", totalContributed: 0 },
-        });
-      } else if (input.payerEmail?.trim() && !contributor.contact) {
-        contributor = await prisma.contributor.update({
-          where: { id: contributor.id },
-          data: { contact: input.payerEmail.trim() },
-        });
-      }
-      contributorId = contributor.id;
-    }
-
-    const txn = await prisma.$transaction(async (tx) => {
-      const created = await tx.transaction.create({
-        data: {
-          clubId,
-          title: description.slice(0, 120),
-          description,
-          amount,
-          type: "INCOME",
-          status: "APPROVED",
-          date: input.date ? new Date(input.date) : new Date(),
-          categoryId: input.categoryId || null,
-          accountId: input.accountId || null,
-          financialYearId: fy!.id,
-          paymentMethod: input.paymentMethod || "CASH",
-          referenceNumber: input.referenceNumber?.trim() || null,
-          memberId,
-          userId: payerUserId,
-          contributorId,
-          paymentRequestId: input.paymentRequestId || null,
-          createdBy: session.id,
-          approvedBy: session.id,
-          approvedAt: new Date(),
-        },
-      });
-
-      // Credit the account, and the contributor's running total (external only).
-      if (input.accountId) {
-        await tx.account.update({
-          where: { id: input.accountId },
-          data: { currentBalance: { increment: amount } },
-        });
-      }
-      if (contributorId) {
-        await tx.contributor.update({
-          where: { id: contributorId },
-          data: { totalContributed: { increment: amount } },
-        });
-      }
-
-      await tx.auditLog.create({
-        data: {
-          userId: session.id,
-          action: "record_direct_payment",
-          entity: "transaction",
-          entityId: created.id,
-          changes: JSON.stringify({ payer: name, amount, method: input.paymentMethod }),
-        },
-      });
-
-      return created;
+    const result = await createTransactionCore({
+      clubId,
+      description,
+      amount,
+      type: "INCOME",
+      autoApprove: true,
+      payer: input.memberId
+        ? { mode: "member", memberId: input.memberId }
+        : { mode: "contributor", name, contact: input.payerEmail?.trim() || null },
+      categoryId: input.categoryId || null,
+      categoryType: "INCOME",
+      accountId: input.accountId || null,
+      paymentRequestId: input.paymentRequestId || null,
+      paymentMethod: input.paymentMethod || "CASH",
+      referenceNumber: input.referenceNumber?.trim() || null,
+      date: input.date || null,
+      createdBy: session.id,
+      issueReceiptNow: opts?.issueReceiptNow,
+      emailReceipt: true,
     });
-
-    // Issue the official receipt (PDF → Drive) and email it if we have an address.
-    // Skipped here (and deferred by the caller) for bulk recording — PDF
-    // render + upload + SMTP send per row is too slow to do N times inline.
-    let receiptNumber: string | undefined;
-    let url: string | null = null;
-    if (opts?.issueReceiptNow !== false) {
-      try {
-        const r = await issueReceipt(txn.id, { email: true });
-        receiptNumber = r.receiptNumber;
-        url = r.url;
-      } catch (err) {
-        console.error("recordDirectPayment: receipt generation failed:", err);
-      }
-    }
+    if ("error" in result) return { error: result.error };
 
     revalidatePath("/admin/finance");
     revalidatePath("/admin/finance/transactions");
     revalidatePath("/admin/finance/requests");
-    return { success: true, transactionId: txn.id, receiptNumber, url, emailed: opts?.issueReceiptNow !== false && !!input.payerEmail?.trim() };
+    return {
+      success: true,
+      transactionId: result.transaction.id,
+      receiptNumber: result.receiptNumber,
+      url: result.receiptUrl,
+      emailed: opts?.issueReceiptNow !== false && !!input.payerEmail?.trim(),
+    };
   } catch (e: any) {
     console.error("recordDirectPayment error:", e);
     return { error: e.message || "Failed to record payment" };

@@ -46,16 +46,20 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
     }
   };
 
-  const handleStatusUpdate = async (newStatus: "APPROVED" | "REJECTED") => {
+  const handleStatusUpdate = async (newStatus: "APPROVED" | "REJECTED", emailReceipt = true) => {
     setLoading(true);
     startTransition(() => {
       setOptimisticStatus(newStatus);
     });
-    
+
     try {
-      const res = await updateTransactionStatus(transaction.id, newStatus);
+      const res = await updateTransactionStatus(transaction.id, newStatus, { emailReceipt });
       if (res.error) throw new Error(res.error);
-      toast.success(`Transaction ${newStatus.toLowerCase()} successfully`);
+      toast.success(
+        newStatus === "APPROVED" && !emailReceipt
+          ? "Approved and receipt generated — not sent yet."
+          : `Transaction ${newStatus.toLowerCase()} successfully`
+      );
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to update status");
@@ -263,15 +267,25 @@ export default function TransactionDetailView({ transaction }: TransactionDetail
             <CardContent className="space-y-3">
               {optimisticStatus === "PENDING_APPROVAL" && (
                 <>
-                  <Button 
-                    onClick={() => handleStatusUpdate("APPROVED")} 
+                  <Button
+                    onClick={() => handleStatusUpdate("APPROVED")}
                     disabled={loading}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    Approve Transaction
+                    Approve & Disburse
                   </Button>
-                  <Button 
+                  <Button
+                    onClick={() => handleStatusUpdate("APPROVED", false)}
+                    disabled={loading}
+                    variant="outline"
+                    className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50 gap-2"
+                    title="Approve and generate the receipt, but don't email it yet"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    Approve Only
+                  </Button>
+                  <Button
                     onClick={() => handleStatusUpdate("REJECTED")}
                     disabled={loading}
                     variant="outline"

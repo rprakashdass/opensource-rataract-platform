@@ -4,9 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { getSession , canManageFinance } from "@/lib/auth/session";
 import { TransactionStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { issueReceipt } from "@/features/finance/receipts/issueReceipt";
+import { reverseTransactionEffects } from "@/features/finance/services/reverseTransactionEffects";
+import { sendEmail } from "@/lib/email";
 
-export async function updateTransactionStatus(transactionId: string, newStatus: TransactionStatus) {
+export async function updateTransactionStatus(
+  transactionId: string,
+  newStatus: TransactionStatus,
+  opts?: { emailReceipt?: boolean }
+) {
   try {
     const session = await getSession();
     if (!session || !canManageFinance(session)) return { error: "Unauthorized" };
@@ -49,12 +56,9 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
             data: { currentBalance: { increment: adjustment } }
           });
         } else if (isCurrentlyCredited && !shouldBeCredited) {
-          // Reverse account balance adjustment
-          const adjustment = existing.type === "INCOME" ? -existing.amount : existing.amount;
-          await tx.account.update({
-            where: { id: accountId },
-            data: { currentBalance: { increment: adjustment } }
-          });
+          // Reverse account balance AND contributor total — same formula
+          // `DELETE` uses, so un-approving and deleting can't drift apart.
+          await reverseTransactionEffects(tx, existing);
         }
       }
 
@@ -93,15 +97,64 @@ export async function updateTransactionStatus(transactionId: string, newStatus: 
     // and never blocks the status change if it fails.
     if (newStatus === "APPROVED" && result?.status === "APPROVED") {
       try {
-        await issueReceipt(transactionId, { email: true });
+        await issueReceipt(transactionId, { email: opts?.emailReceipt !== false });
       } catch (err) {
         console.error("Failed to issue receipt on approval:", err);
       }
     }
 
+    // On rejection, tell the payer — otherwise a submission just vanishes
+    // from their view with no explanation of what happened to it.
+    if (newStatus === "REJECTED" && result?.status === "REJECTED") {
+      after(async () => {
+        try {
+          const payer = await prisma.transaction.findUnique({
+            where: { id: transactionId },
+            select: {
+              amount: true,
+              description: true,
+              title: true,
+              member: { select: { name: true, email: true } },
+              user: { select: { name: true, email: true } },
+              contributor: { select: { name: true, contact: true } },
+            },
+          });
+          if (!payer) return;
+
+          const email = payer.member?.email || payer.user?.email
+            || (payer.contributor?.contact?.includes("@") ? payer.contributor.contact : null);
+          if (!email) return;
+
+          const name = payer.member?.name || payer.user?.name || payer.contributor?.name || "there";
+          const amountStr = `₹${Number(payer.amount).toLocaleString("en-IN")}`;
+
+          await sendEmail({
+            to: email,
+            subject: `Payment not approved — ${payer.title}`,
+            category: "official",
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <p>Hi ${name},</p>
+                <p>Your submitted payment of <strong>${amountStr}</strong> for <strong>${payer.description || payer.title}</strong> was not approved by the finance team.</p>
+                <p>If you believe this is a mistake, reply to this email or reach out to the treasurer directly.</p>
+              </div>
+            `,
+            text: `Hi ${name}, your submitted payment of ${amountStr} for ${payer.description || payer.title} was not approved. Reply to this email if you believe this is a mistake.`,
+          });
+        } catch (err) {
+          console.error("[updateTransactionStatus] rejection notify failed:", err);
+        }
+      });
+    }
+
     revalidatePath("/admin/finance");
     revalidatePath("/admin/finance/transactions");
-    return { success: true, transaction: result };
+    // Server Action return values cross the server/client boundary via
+    // React's RSC serialization, which — unlike JSON.stringify — doesn't
+    // know how to handle a Prisma Decimal (result.amount). No caller reads
+    // the transaction object, so return primitives only instead of the raw
+    // Prisma row.
+    return { success: true, id: result.id, status: result.status };
   } catch (error: any) {
     console.error("Update transaction status error:", error);
     return { error: error.message || "Failed to update transaction status" };

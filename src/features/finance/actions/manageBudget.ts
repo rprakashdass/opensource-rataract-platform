@@ -5,6 +5,7 @@ import { getSession , canManageFinance } from "@/lib/auth/session";
 import { canManageEvent } from "@/lib/auth/canManageEvent";
 import { revalidatePath } from "next/cache";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
+import { getOrCreateActiveFinancialYear } from "@/lib/finance/financialYear";
 
 export async function createBudget(data: {
   amount: number;
@@ -44,7 +45,10 @@ export async function createBudget(data: {
     });
 
     revalidatePath("/admin/finance/budgets");
-    return { success: true, budget };
+    // Decimal (allocatedAmount) can't cross the Server Action -> client
+    // boundary raw — same class of bug fixed in updateTransactionStatus/
+    // createTransfer this session.
+    return { success: true, budget: { ...budget, allocatedAmount: Number(budget.allocatedAmount) } };
   } catch (error: any) {
     console.error("Create budget error:", error);
     if (error.code === 'P2002') {
@@ -71,21 +75,7 @@ export async function setEventBudget(eventId: string, amount: number) {
     const event = await prisma.event.findUnique({ where: { id: eventId }, select: { clubId: true } });
     if (!event) return { error: "Event not found" };
 
-    let fy = await prisma.financialYear.findFirst({
-      where: { clubId: event.clubId, status: "ACTIVE" }
-    });
-    if (!fy) {
-      fy = await prisma.financialYear.create({
-        data: {
-          clubId: event.clubId,
-          name: "RY 2026-27",
-          startDate: new Date("2026-07-01"),
-          endDate: new Date("2027-06-30"),
-          openingBalance: 0,
-          status: "ACTIVE"
-        }
-      });
-    }
+    const fy = await getOrCreateActiveFinancialYear(event.clubId);
 
     const budget = await prisma.budget.upsert({
       where: { eventId },
