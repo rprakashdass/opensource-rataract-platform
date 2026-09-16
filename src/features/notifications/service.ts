@@ -382,8 +382,16 @@ async function fetchAttachment(url: string, defaultName: string) {
       content = Buffer.from(arrayBuffer);
     }
     
-    const filename = url.split("/").pop() || defaultName;
-    const cleanName = filename.replace(/^\d+_[a-z0-9]+_/i, "") || defaultName;
+    // Storage filenames are randomized (timestamp_random.ext) with no way to
+    // recover the original name, so look it up from the Document record —
+    // which keeps the uploader's real filename — before falling back.
+    let cleanName = url.split("/").pop() || defaultName;
+    try {
+      const doc = await prisma.document.findFirst({ where: { fileUrl: url }, select: { fileName: true } });
+      if (doc?.fileName) cleanName = doc.fileName;
+    } catch (lookupError) {
+      console.error(`[Email Service] Failed to look up original filename for ${url}:`, lookupError);
+    }
 
     return {
       filename: cleanName,
