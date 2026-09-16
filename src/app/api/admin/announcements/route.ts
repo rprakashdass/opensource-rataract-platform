@@ -39,7 +39,8 @@ export async function POST(req: Request) {
       minutesUrl,
       minutesContent,
       visibility,
-      specificRecipientIds
+      specificRecipientIds,
+      attachments
     } = data;
 
     if (!clubId || !title) {
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
         calendarEventId,
         visibility: visibility || "PUBLIC",
         specificRecipientIds: specificRecipientIds || [],
+        attachments: attachments || [],
       }
     });
 

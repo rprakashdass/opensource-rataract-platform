@@ -1525,6 +1525,7 @@ enum DocumentType {
   REPORT
   CERTIFICATE
   CLUB_ASSET
+  OTHER
 }
 
 model Document {

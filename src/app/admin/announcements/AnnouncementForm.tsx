@@ -61,6 +61,8 @@ export default function AnnouncementForm({ initialData, clubId, clubName: clubNa
   // File State
   const [agendaUrl, setAgendaUrl] = useState(initialData?.agendaUrl || "");
   const [minutesUrl, setMinutesUrl] = useState(initialData?.minutesUrl || "");
+  const [attachments, setAttachments] = useState<string[]>(initialData?.attachments || []);
+  const [pendingAttachmentUrl, setPendingAttachmentUrl] = useState("");
 
   // Recipients State
   const [members, setMembers] = useState<any[]>([]);
@@ -168,6 +170,7 @@ export default function AnnouncementForm({ initialData, clubId, clubName: clubNa
       agendaUrl,
       minutesContent,
       minutesUrl,
+      attachments,
       visibility,
       specificRecipientIds: selectedRecipientIds,
       clubId,
@@ -643,6 +646,49 @@ export default function AnnouncementForm({ initialData, clubId, clubName: clubNa
               </div>
             </>
           )}
+
+          <div className="space-y-2 pt-6 border-t border-slate-200">
+            <label className="text-sm font-medium text-slate-700">Attachments (Optional)</label>
+            <p className="text-xs text-slate-500 mb-2">Files added here are attached directly to the email sent to recipients.</p>
+            {attachments.length > 0 && (
+              <ul className="space-y-2 mb-3">
+                {attachments.map((url, idx) => (
+                  <li key={url + idx} className="flex items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                    <span className="text-sm text-slate-700 truncate">
+                      {(() => {
+                        try {
+                          const parts = new URL(url).pathname.split('/');
+                          return decodeURIComponent(parts[parts.length - 1]);
+                        } catch {
+                          return url;
+                        }
+                      })()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))}
+                      className="text-xs font-semibold text-red-500 hover:text-red-700 flex-shrink-0"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <DocumentUpload
+              key={attachments.length}
+              value={pendingAttachmentUrl}
+              onChange={(url) => {
+                if (url) {
+                  setAttachments([...attachments, url]);
+                }
+                setPendingAttachmentUrl("");
+              }}
+              type="OTHER"
+              linkedEntityType="ANNOUNCEMENT"
+              label="Attachment"
+            />
+          </div>
         </div>
       </div>
 

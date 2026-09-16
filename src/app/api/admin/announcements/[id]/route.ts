@@ -50,7 +50,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       agendaContent,
       minutesContent,
       visibility,
-      specificRecipientIds
+      specificRecipientIds,
+      attachments
     } = data;
 
     const announcement = await prisma.announcement.update({
@@ -72,6 +73,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         minutesContent: minutesContent !== undefined ? minutesContent : existing.minutesContent,
         visibility: visibility !== undefined ? visibility : existing.visibility,
         specificRecipientIds: specificRecipientIds !== undefined ? specificRecipientIds : existing.specificRecipientIds,
+        attachments: attachments !== undefined ? attachments : existing.attachments,
       },
     });
 
