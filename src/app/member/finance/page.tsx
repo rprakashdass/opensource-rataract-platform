@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
-import { Banknote, AlertCircle, Plus, Download } from "lucide-react";
+import { Banknote, AlertCircle, Plus, Download, Lock } from "lucide-react";
 import Link from "next/link";
 import PendingRequests from "./_components/PendingRequests";
 import { PageHeader, StatCard, StatGrid } from "@/components/portal";
@@ -59,15 +59,22 @@ export default async function MemberFinancePage() {
     .filter(t => t.type === "INCOME" && t.status === "APPROVED")
     .reduce((acc: number, curr) => acc + Number(curr.amount), 0);
 
-  const totalPending = pendingRequests.reduce((acc: number, curr) => acc + Number(curr.amount), 0);
+  // A closed request is no longer being collected, so it isn't a pending due —
+  // but it stays visible in its own section rather than silently vanishing.
+  const openRequests = pendingRequests.filter((r: any) => !r.closedAt);
+  const closedRequests = pendingRequests.filter((r: any) => r.closedAt);
+
+  const totalPending = openRequests.reduce((acc: number, curr) => acc + Number(curr.amount), 0);
 
   // Prisma Decimal can't cross the server→client boundary — serialize amounts
   // (including nested transactions) before handing to the client component.
-  const safePendingRequests = pendingRequests.map((r: any) => ({
+  const serialize = (list: any[]) => list.map((r: any) => ({
     ...r,
     amount: Number(r.amount),
     transactions: (r.transactions ?? []).map((t: any) => ({ ...t, amount: Number(t.amount) })),
   }));
+  const safeOpenRequests = serialize(openRequests);
+  const safeClosedRequests = serialize(closedRequests);
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -90,13 +97,24 @@ export default async function MemberFinancePage() {
         <StatCard label="Total Pending Dues" value={`₹${totalPending.toLocaleString()}`} icon={AlertCircle} tone="warning" />
       </StatGrid>
 
-      {pendingRequests.length > 0 && (
+      {openRequests.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4 text-amber-800">
             <AlertCircle className="h-5 w-5" />
             <h2 className="font-semibold text-base">Action Required: Pending Payments</h2>
           </div>
-          <PendingRequests requests={safePendingRequests} />
+          <PendingRequests requests={safeOpenRequests} />
+        </div>
+      )}
+
+      {closedRequests.length > 0 && (
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-1 text-slate-700">
+            <Lock className="h-5 w-5" />
+            <h2 className="font-semibold text-base">Closed Requests</h2>
+          </div>
+          <p className="text-xs text-slate-500 mb-4">The club has stopped collecting these. Nothing is owed here.</p>
+          <PendingRequests requests={safeClosedRequests} />
         </div>
       )}
 

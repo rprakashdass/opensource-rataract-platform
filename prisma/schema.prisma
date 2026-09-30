@@ -1251,6 +1251,13 @@ model PaymentRequest {
   isGlobal    Boolean             @default(false)
   dueDate     DateTime?
 
+  // Closing stops collection: the request drops off members' action lists,
+  // the pay page turns into a "closed" notice, and notify refuses to send.
+  // Deliberately NOT a delete — the request and its transactions stay on the
+  // books, and a close can be undone (closedAt back to null).
+  closedAt DateTime?
+  closedBy String? // User id of the admin who closed it
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

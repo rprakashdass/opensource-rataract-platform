@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { redirect, notFound } from "next/navigation";
 import { PageHeader } from "@/components/portal";
-import { Receipt, CheckCircle2, Clock, Download } from "lucide-react";
+import { Receipt, CheckCircle2, Clock, Download, Lock } from "lucide-react";
 import SubmitPaymentForm from "../../_components/SubmitPaymentForm";
 import { getOrCreateDefaultClub } from "@/app/api/admin/club/route";
 import { formatIST } from "@/lib/date-utils";
@@ -50,6 +50,11 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
             </div>
             <div>
               <h2 className="text-base font-semibold text-slate-900">₹{Number(request.amount).toLocaleString("en-IN")}</h2>
+              {request.closedAt && (
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full">
+                  <Lock className="h-2.5 w-2.5" /> Closed
+                </span>
+              )}
               {request.dueDate && (
                 <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                   <Clock className="h-3 w-3" /> Due {formatIST(request.dueDate, "MMM d, yyyy")}
@@ -64,7 +69,16 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
         )}
 
         <div className="p-6">
-          {paidTransaction ? (
+          {!paidTransaction && !pendingTransaction && request.closedAt ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center space-y-2">
+              <Lock className="h-8 w-8 text-slate-500 mx-auto" />
+              <p className="text-sm font-semibold text-slate-800">This payment request is closed</p>
+              <p className="text-xs text-slate-600">
+                The club closed it on {formatIST(request.closedAt, "MMM d, yyyy")} and is no longer collecting payments for it.
+              </p>
+              <p className="text-xs text-slate-600">If you still need to pay, reach out to the treasurer.</p>
+            </div>
+          ) : paidTransaction ? (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center space-y-3">
               <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto" />
               <p className="text-sm font-semibold text-emerald-800">You've already paid this request</p>

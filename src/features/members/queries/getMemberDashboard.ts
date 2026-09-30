@@ -151,6 +151,10 @@ export async function getMemberDashboard() {
 
     const pendingPaymentRequests = allRequests.filter(pr => {
         if (pr.dismissedBy.includes(member.id)) return false;
+        // Closed requests aren't being collected any more — the dashboard is a
+        // nag list, so they belong on /member/finance (where they're shown as
+        // closed), not here.
+        if (pr.closedAt) return false;
         // Check if there's any transaction that is APPROVED or PENDING_APPROVAL
         const hasPaidOrPending = pr.transactions.some(tx => 
             tx.status === "APPROVED" || tx.status === "PENDING_APPROVAL"

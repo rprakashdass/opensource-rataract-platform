@@ -26,6 +26,7 @@ export async function notifyPaymentRequest(requestId: string) {
     },
   });
   if (!request) return { error: "Request not found" };
+  if (request.closedAt) return { error: "This request is closed — reopen it before notifying anyone." };
 
   const audience = request.isGlobal
     ? await prisma.member.findMany({

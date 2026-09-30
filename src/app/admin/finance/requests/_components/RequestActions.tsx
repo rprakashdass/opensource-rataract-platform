@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2, HandCoins, Users, Send, Bell, Loader2 } from "lucide-react";
+import { Edit2, Trash2, HandCoins, Users, Send, Bell, Loader2, Lock, LockOpen } from "lucide-react";
 import RequestEditDialog from "../../_components/RequestEditDialog";
 import { RecordDirectPaymentDialog } from "../../_components/RecordDirectPaymentDialog";
 import { BulkRecordPaymentsDialog } from "./BulkRecordPaymentsDialog";
 import { notifyPaymentRequest } from "@/features/finance/actions/notifyPaymentRequest";
+import { setPaymentRequestClosed } from "@/features/finance/actions/setPaymentRequestClosed";
 
 export default function RequestActions({
   request,
@@ -23,6 +24,7 @@ export default function RequestActions({
     category: string;
     isGlobal: boolean;
     dueDate: string | null;
+    closedAt: string | null;
   };
   members?: { id: string; name: string | null; email: string | null }[];
   accounts?: { id: string; name: string }[];
@@ -30,7 +32,10 @@ export default function RequestActions({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [notifying, setNotifying] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [editing, setEditing] = useState(false);
+
+  const isClosed = !!request.closedAt;
 
   const handleCopyLink = async () => {
     const link = `${window.location.origin}/member/finance/requests/${request.id}`;
@@ -55,6 +60,21 @@ export default function RequestActions({
     }
   };
 
+  const handleToggleClosed = async () => {
+    if (!isClosed && !confirm("Close this payment request? Members will see it as closed and can no longer pay it. You can reopen it later.")) return;
+    setClosing(true);
+    try {
+      const res = await setPaymentRequestClosed(request.id, !isClosed);
+      if (res.error) throw new Error(res.error);
+      toast.success(isClosed ? "Payment request reopened" : "Payment request closed");
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update request");
+    } finally {
+      setClosing(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm("Delete this payment request? This cannot be undone.")) return;
     setLoading(true);
@@ -76,7 +96,7 @@ export default function RequestActions({
       <Button variant="outline" size="icon" className="h-8 w-8 hover:text-brand hover:bg-pink-50" onClick={handleCopyLink} title="Share the pay link">
         <Send className="w-3.5 h-3.5 text-slate-500" />
       </Button>
-      <Button variant="outline" size="icon" className="h-8 w-8 hover:text-brand hover:bg-pink-50" onClick={handleNotify} disabled={notifying} title="Email everyone who still owes this">
+      <Button variant="outline" size="icon" className="h-8 w-8 hover:text-brand hover:bg-pink-50" onClick={handleNotify} disabled={notifying || isClosed} title={isClosed ? "Closed — reopen it to notify members" : "Email everyone who still owes this"}>
         {notifying ? <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" /> : <Bell className="w-3.5 h-3.5 text-slate-500" />}
       </Button>
       <RecordDirectPaymentDialog
@@ -105,6 +125,16 @@ export default function RequestActions({
       />
       <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setEditing(true)}>
         <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className={`h-8 w-8 ${isClosed ? "hover:text-emerald-700 hover:bg-emerald-50" : "hover:text-amber-700 hover:bg-amber-50"}`}
+        onClick={handleToggleClosed}
+        disabled={closing}
+        title={isClosed ? "Reopen this request" : "Close this request — members stop being asked to pay"}
+      >
+        {closing ? <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" /> : isClosed ? <LockOpen className="w-3.5 h-3.5 text-emerald-600" /> : <Lock className="w-3.5 h-3.5 text-amber-600" />}
       </Button>
       <Button variant="outline" size="icon" className="h-8 w-8 hover:text-rose-600 hover:bg-rose-50" onClick={handleDelete} disabled={loading}>
         <Trash2 className="w-3.5 h-3.5" />

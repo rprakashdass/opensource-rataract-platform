@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader, TableWrap, PortalEmptyState } from "@/components/portal";
 import RequestActions from "../_components/RequestActions";
 import { formatIST } from "@/lib/date-utils";
+import { Lock } from "lucide-react";
 
 export default async function PaymentRequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -59,6 +60,7 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
     category: request.category,
     isGlobal: request.isGlobal,
     dueDate: request.dueDate ? request.dueDate.toISOString() : null,
+    closedAt: request.closedAt ? request.closedAt.toISOString() : null,
   };
 
   return (
@@ -70,6 +72,18 @@ export default async function PaymentRequestDetailPage({ params }: { params: Pro
         backLabel="Back to Requests"
         actions={<RequestActions request={actionsPayload} members={allMembers} accounts={accounts} />}
       />
+
+      {request.closedAt && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 flex items-start gap-3">
+          <Lock className="h-4 w-4 text-slate-500 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-slate-800">This request is closed</p>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Closed {formatIST(request.closedAt, "MMM d, yyyy")}. Members see it as closed and can no longer pay it, and notifications are off. Reopen it from the actions above to start collecting again.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 grid grid-cols-2 sm:grid-cols-4 gap-6">
         <div>

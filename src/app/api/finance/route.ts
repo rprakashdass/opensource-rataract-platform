@@ -51,6 +51,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Amount and description are required" }, { status: 400 });
     }
 
+    // A closed request no longer collects — reject submissions against it so a
+    // stale pay link or bookmark can't slip a payment past the close.
+    if (paymentRequestId) {
+      const request = await prisma.paymentRequest.findUnique({
+        where: { id: paymentRequestId },
+        select: { closedAt: true },
+      });
+      if (request?.closedAt) {
+        return NextResponse.json({ error: "This payment request has been closed and is no longer accepting payments." }, { status: 400 });
+      }
+    }
+
     const result = await createTransactionCore({
       clubId: user.member?.clubId || club.id,
       title: payload.title,

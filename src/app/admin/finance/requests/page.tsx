@@ -63,6 +63,7 @@ export default async function PaymentRequestsPage() {
       category: req.category,
       isGlobal: req.isGlobal,
       amount: Number(req.amount),
+      isClosed: !!req.closedAt,
       paidCount,
       audienceCount,
       dismissedCount: req.dismissedBy.length,
@@ -75,6 +76,7 @@ export default async function PaymentRequestsPage() {
         category: req.category,
         isGlobal: req.isGlobal,
         dueDate: req.dueDate ? req.dueDate.toISOString() : null,
+        closedAt: req.closedAt ? req.closedAt.toISOString() : null,
       },
     };
   });
@@ -96,7 +98,10 @@ export default async function PaymentRequestsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <Link href={`/admin/finance/requests/${row.id}`} className="font-semibold text-slate-900 hover:text-brand hover:underline">{row.title}</Link>
-                  <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wide block w-fit">{row.category.replace(/_/g, " ")}</Badge>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">{row.category.replace(/_/g, " ")}</Badge>
+                    {row.isClosed && <Badge className="text-[10px] uppercase tracking-wide bg-slate-200 text-slate-600 hover:bg-slate-200">Closed</Badge>}
+                  </div>
                 </div>
                 <div className="font-bold text-slate-900 whitespace-nowrap">₹{row.amount.toLocaleString()}</div>
               </div>
@@ -132,10 +137,13 @@ export default async function PaymentRequestsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={row.id} className={`hover:bg-slate-50 transition-colors ${row.isClosed ? "bg-slate-50/60" : ""}`}>
                   <td className="px-6 py-4">
                     <Link href={`/admin/finance/requests/${row.id}`} className="font-bold text-slate-900 hover:text-brand hover:underline">{row.title}</Link>
-                    <Badge variant="secondary" className="mt-1 text-[10px] uppercase tracking-wide block w-fit">{row.category.replace(/_/g, " ")}</Badge>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">{row.category.replace(/_/g, " ")}</Badge>
+                      {row.isClosed && <Badge className="text-[10px] uppercase tracking-wide bg-slate-200 text-slate-600 hover:bg-slate-200">Closed</Badge>}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-slate-600">
                     {row.isGlobal ? "All Members" : `${row.audienceCount} member${row.audienceCount === 1 ? "" : "s"}`}
